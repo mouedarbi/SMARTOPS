@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # SMARTOPS Applications
     'system.apps.SystemConfig',
+    'licensing.apps.LicensingConfig',
 ]
 
 # ... (reste du fichier)
