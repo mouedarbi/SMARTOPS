@@ -6,3 +6,6 @@ __pycache__/
 media/
 static/
 credentials.txt
+tmp_plugin/
+rebuild_plugin/
+run_bench.py

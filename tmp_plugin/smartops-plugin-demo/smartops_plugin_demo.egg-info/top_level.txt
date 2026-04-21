@@ -1,1 +1,0 @@
-smartops_plugin_demo
