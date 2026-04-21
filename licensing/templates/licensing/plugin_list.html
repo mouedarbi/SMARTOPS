@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Modules Premium | SMARTOPS{% endblock %}
+{% block page_title %}Gestion des Modules Premium{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+
+    <!-- Section Activation / Console -->
+    <div class="mb-10 bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden border border-slate-800">
+        <div class="absolute top-0 right-0 p-10 opacity-10">
+            <i class="las la-plug text-[150px] text-white"></i>
+        </div>
+        
+        <div class="relative z-10">
+            <div id="activation-form-container">
+                <h2 class="text-3xl font-black text-white mb-2 tracking-tight">Activer un nouveau module</h2>
+                <p class="text-slate-400 font-medium mb-8">Collez votre clé de licence récupérée sur la Marketplace SMARTOPS pour installer l'extension.</p>
+                
+                <form id="activation-form" class="flex flex-col md:flex-row gap-4">
+                    {% csrf_token %}
+                    <div class="flex-grow">
+                        <input type="text" id="license_key_input" name="license_key" required 
+                               class="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-2xl text-white font-mono font-bold placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                               placeholder="00000000-0000-0000-0000-000000000000">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-10 py-5 rounded-2xl shadow-xl shadow-blue-900/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm">
+                        Activer & Installer
+                    </button>
+                </form>
+            </div>
+
+            <!-- Console de Streaming -->
+            <div id="install-console-container" class="hidden">
+                <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-white/20">
+                    <div class="bg-slate-100 px-6 py-3 border-b border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-full bg-rose-500"></span>
+                            <span class="h-3 w-3 rounded-full bg-amber-500"></span>
+                            <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
+                            <span class="ml-4 text-[10px] font-black uppercase tracking-widest text-slate-400">System Terminal</span>
+                        </div>
+                        <div id="install-loader" class="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <pre id="install-log" class="p-8 text-xs font-mono text-slate-700 bg-white max-h-[400px] overflow-y-auto whitespace-pre-wrap leading-relaxed"></pre>
+                    <div id="install-footer" class="hidden bg-slate-50 px-8 py-4 border-t border-slate-200 text-right">
+                        <button onclick="window.location.reload()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest">Fermer & Actualiser</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Modules Installés -->
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                <i class="las la-cubes text-2xl text-blue-600"></i>
+                Modules Installés
+            </h3>
+            <span class="px-4 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase">{{ plugins.count }} Module(s)</span>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50/50 text-[10px] uppercase tracking-widest text-slate-400 font-black">
+                        <th class="px-10 py-5">Module</th>
+                        <th class="px-10 py-5">Version</th>
+                        <th class="px-10 py-5">Date d'installation</th>
+                        <th class="px-10 py-5 text-right">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for plugin in plugins %}
+                    <tr class="group hover:bg-slate-50/50 transition-all">
+                        <td class="px-10 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
+                                    <i class="las la-cube"></i>
+                                </div>
+                                <div>
+                                    <p class="font-black text-slate-900">{{ plugin.name }}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono tracking-tighter uppercase">{{ plugin.slug }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-10 py-6">
+                            <span class="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-slate-200">v{{ plugin.version }}</span>
+                        </td>
+                        <td class="px-10 py-6 text-sm font-medium text-slate-500">
+                            {{ plugin.installed_at|date:"d M Y" }}
+                        </td>
+                        <td class="px-10 py-6 text-right">
+                            <div class="flex items-center justify-end gap-4">
+                                {% if plugin.is_active %}
+                                    <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase border border-emerald-100">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                        Actif
+                                    </span>
+                                    <button onclick="uninstallPlugin('{{ plugin.slug }}', '{{ plugin.name }}')" 
+                                            class="text-slate-300 hover:text-rose-600 transition p-2 hover:bg-rose-50 rounded-xl"
+                                            title="Désactiver et Supprimer">
+                                        <i class="las la-trash-alt text-xl"></i>
+                                    </button>
+                                {% else %}
+                                    <span class="px-4 py-1.5 bg-slate-100 text-slate-400 rounded-full text-[10px] font-black uppercase border border-slate-200">Inactif</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-10 py-20 text-center">
+                            <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                                <i class="las la-search text-4xl"></i>
+                            </div>
+                            <p class="text-slate-400 font-bold">Aucun module premium activé sur cette instance.</p>
+                            <p class="text-slate-300 text-xs mt-2 italic">Achetez vos modules sur la Marketplace pour étendre les capacités de SMARTOPS.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const form = document.getElementById('activation-form');
+    const consoleContainer = document.getElementById('install-console-container');
+    const formContainer = document.getElementById('activation-form-container');
+    const logPre = document.getElementById('install-log');
+    const footer = document.getElementById('install-footer');
+    const loader = document.getElementById('install-loader');
+
+    async function streamLogs(url) {
+        logPre.textContent = ">>> Lancement du processus...\n";
+        try {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = decoder.decode(value, { stream: true });
+                logPre.textContent += text;
+                logPre.scrollTop = logPre.scrollHeight;
+            }
+            loader.classList.add('hidden');
+            footer.classList.remove('hidden');
+        } catch (err) {
+            logPre.textContent += `\n!!! ERREUR CRITIQUE : ${err.message}`;
+            loader.classList.add('hidden');
+            footer.classList.remove('hidden');
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const key = document.getElementById('license_key_input').value;
+            formContainer.classList.add('hidden');
+            consoleContainer.classList.remove('hidden');
+            await streamLogs(`{% url 'plugin_install_stream' %}?license_key=${key}`);
+        });
+    }
+
+    async function uninstallPlugin(slug, name) {
+        if (!confirm(`Êtes-vous sûr de vouloir désinstaller le module "${name}" ?\nCette action supprimera le package Python.`)) {
+            return;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        formContainer.classList.add('hidden');
+        consoleContainer.classList.remove('hidden');
+        loader.classList.remove('hidden');
+        footer.classList.add('hidden');
+        await streamLogs(`{% url 'plugin_uninstall_stream' %}?slug=${slug}`);
+    }
+</script>
+{% endblock %}
