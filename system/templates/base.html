@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
     <style>
         .sidebar-item-active {
-            background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0) 100%);
-            border-left: 4px solid #4f46e5;
-            color: #4f46e5;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 100%);
+            border-left: 4px solid #3b82f6;
+            color: #60a5fa;
         }
     </style>
 </head>
@@ -21,27 +21,27 @@
     <div class="flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
-        <aside class="w-72 bg-white border-r border-slate-200 flex flex-col flex-shrink-0">
+        <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
             <!-- Logo / Brand -->
-            <div class="p-8 border-b border-slate-50">
+            <div class="p-8 border-b border-slate-800">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                    <div class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-900">
                         <i class="las la-tools text-2xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-black tracking-tighter text-slate-800">SMARTOPS</h1>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 -mt-1">Core Engine</p>
+                        <h1 class="text-xl font-black tracking-tighter text-white">SMARTOPS</h1>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 -mt-1">Core Engine</p>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation -->
             <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 mt-2">Principal</p>
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 mt-2">Principal</p>
                 
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group">
-                    <i class="las la-home text-xl text-slate-400 group-hover:text-indigo-600 transition"></i>
-                    <span class="font-bold text-slate-600 group-hover:text-indigo-600">Tableau de Bord</span>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                    <i class="las la-home text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Tableau de Bord</span>
                 </a>
 
                 <a href="{% url 'system_config' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl sidebar-item-active transition group">
@@ -49,28 +49,28 @@
                     <span class="font-bold">Paramètres Système</span>
                 </a>
 
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 mt-8">Extensions</p>
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 mt-8">Extensions</p>
 
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group">
-                    <i class="las la-plug text-xl text-slate-400 group-hover:text-indigo-600 transition"></i>
-                    <span class="font-bold text-slate-600 group-hover:text-indigo-600">Modules Premium</span>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                    <i class="las la-plug text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Modules Premium</span>
                 </a>
 
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group text-slate-300 pointer-events-none">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group text-slate-700 pointer-events-none">
                     <i class="las la-history text-xl"></i>
                     <span class="font-bold italic">Mises à jour</span>
                 </a>
             </nav>
 
             <!-- User / Instance Footer -->
-            <div class="p-6 border-t border-slate-50 bg-slate-50/50">
+            <div class="p-6 border-t border-slate-800 bg-slate-950/50">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-slate-200 border border-white shadow-sm flex items-center justify-center text-slate-500 font-bold text-xs uppercase">
+                    <div class="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center text-slate-400 font-bold text-xs uppercase">
                         {{ user.username|slice:":2" }}
                     </div>
                     <div class="overflow-hidden">
-                        <p class="text-xs font-bold text-slate-800 truncate">{{ user.username }}</p>
-                        <p class="text-[9px] text-slate-400 font-medium truncate">ID: {{ config.installation_uuid|slice:":8" }}...</p>
+                        <p class="text-xs font-bold text-white truncate">{{ user.username }}</p>
+                        <p class="text-[9px] text-slate-500 font-medium truncate">ID: {{ config.installation_uuid|slice:":8" }}...</p>
                     </div>
                 </div>
             </div>

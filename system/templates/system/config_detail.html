@@ -22,7 +22,7 @@
         <!-- Colonne Gauche : Identité Technique -->
         <div class="space-y-8">
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="p-6 bg-indigo-600 text-white">
+                <div class="p-6 bg-blue-600 text-white">
                     <h3 class="text-lg font-bold flex items-center gap-2">
                         <i class="las la-fingerprint text-xl"></i>
                         Identité Unique
@@ -32,7 +32,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">ID d'Installation (UUID)</label>
-                            <div class="mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-xs text-indigo-700 font-bold break-all select-all cursor-pointer hover:bg-indigo-50 transition" title="Cliquer pour copier">
+                            <div class="mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-xs text-blue-700 font-bold break-all select-all cursor-pointer hover:bg-blue-50 transition" title="Cliquer pour copier">
                                 {{ config.installation_uuid }}
                             </div>
                         </div>
@@ -44,7 +44,7 @@
 
                         <div class="pt-4 border-t border-slate-50">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Version du Noyau</label>
-                            <p class="text-sm font-bold text-indigo-600 mt-1">v1.0.0-stable</p>
+                            <p class="text-sm font-bold text-blue-600 mt-1">v1.0.0-stable</p>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
-                        <i class="las la-building text-2xl text-indigo-600"></i>
+                        <i class="las la-building text-2xl text-blue-600"></i>
                         Informations de l'Entreprise
                     </h3>
                 </div>
@@ -111,11 +111,11 @@
 
                             <div class="md:col-span-2 pt-4">
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Mettre à jour le Logo</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200 border-dashed rounded-2xl hover:border-indigo-400 transition cursor-pointer">
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200 border-dashed rounded-2xl hover:border-blue-400 transition cursor-pointer">
                                     <div class="space-y-1 text-center">
                                         <i class="las la-cloud-upload-alt text-4xl text-slate-300"></i>
                                         <div class="flex text-sm text-slate-600">
-                                            <label for="{{ form.company_logo.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-bold text-indigo-600 hover:text-indigo-500">
+                                            <label for="{{ form.company_logo.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-bold text-blue-600 hover:text-blue-500">
                                                 <span>Télécharger un fichier</span>
                                                 {{ form.company_logo }}
                                             </label>
@@ -127,7 +127,7 @@
                         </div>
 
                         <div class="pt-8 mt-8 border-t border-slate-50 flex justify-end">
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-indigo-100 transition duration-200 transform hover:scale-[1.02]">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-blue-100 transition duration-200 transform hover:scale-[1.02]">
                                 Enregistrer les modifications
                             </button>
                         </div>
@@ -149,8 +149,8 @@
         document.execCommand('copy');
         
         // Petit feedback visuel
-        this.classList.add('bg-indigo-100');
-        setTimeout(() => this.classList.remove('bg-indigo-100'), 200);
+        this.classList.add('bg-blue-100');
+        setTimeout(() => this.classList.remove('bg-blue-100'), 200);
     });
 </script>
 
