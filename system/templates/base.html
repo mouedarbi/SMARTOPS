@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SMARTOPS{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons (Line Awesome) -->
+    <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <style>
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0) 100%);
+            border-left: 4px solid #4f46e5;
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white border-r border-slate-200 flex flex-col flex-shrink-0">
+            <!-- Logo / Brand -->
+            <div class="p-8 border-b border-slate-50">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+                        <i class="las la-tools text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tighter text-slate-800">SMARTOPS</h1>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 -mt-1">Core Engine</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 mt-2">Principal</p>
+                
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group">
+                    <i class="las la-home text-xl text-slate-400 group-hover:text-indigo-600 transition"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-600">Tableau de Bord</span>
+                </a>
+
+                <a href="{% url 'system_config' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl sidebar-item-active transition group">
+                    <i class="las la-cog text-xl"></i>
+                    <span class="font-bold">Paramètres Système</span>
+                </a>
+
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 mt-8">Extensions</p>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group">
+                    <i class="las la-plug text-xl text-slate-400 group-hover:text-indigo-600 transition"></i>
+                    <span class="font-bold text-slate-600 group-hover:text-indigo-600">Modules Premium</span>
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition group text-slate-300 pointer-events-none">
+                    <i class="las la-history text-xl"></i>
+                    <span class="font-bold italic">Mises à jour</span>
+                </a>
+            </nav>
+
+            <!-- User / Instance Footer -->
+            <div class="p-6 border-t border-slate-50 bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full bg-slate-200 border border-white shadow-sm flex items-center justify-center text-slate-500 font-bold text-xs uppercase">
+                        {{ user.username|slice:":2" }}
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-slate-800 truncate">{{ user.username }}</p>
+                        <p class="text-[9px] text-slate-400 font-medium truncate">ID: {{ config.installation_uuid|slice:":8" }}...</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-grow overflow-y-auto">
+            <!-- Header -->
+            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+                <h2 class="text-lg font-bold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h2>
+                
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
+                        <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Pas de connexion portail</span>
+                    </div>
+                    <a href="/admin/logout/" class="text-slate-400 hover:text-red-600 transition">
+                        <i class="las la-sign-out-alt text-2xl"></i>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <div class="p-10">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+    </div>
+
+</body>
+</html>

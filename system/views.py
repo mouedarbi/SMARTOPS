@@ -33,7 +33,7 @@ def system_config_view(request):
         form = SystemConfigurationForm(instance=config)
         
     context = {
-        'config': config,
+        'config': config, # Nécessaire pour l'UUID dans la sidebar
         'form': form,
         'page_title': "Paramètres du Système"
     }
