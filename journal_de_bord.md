@@ -67,3 +67,27 @@
     - **Solution** : Correction des imports manquants dans `licensing/services.py`.
 
 - **Outcome** : SMARTOPS est devenu un système totalement extensible. N'importe quel module activé en base de données s'intègre désormais de manière transparente au noyau.
+
+---
+
+## [21/04/2026] - Phase 4 : Cycle de Vie complet et Gestion des Erreurs
+
+### Avancement : Moteur de gestion des modules (Install/Uninstall)
+- **Description** : Implémentation du système "Hot-Unplug" pour libérer les ressources et les licences proprement.
+- **Implementation** :
+    - **Streaming Console** : Création d'un terminal HTTP en temps réel pour afficher les logs de `pip install` et `pip uninstall`.
+    - **Libération Stricte** : Développement du protocole de libération de licence envoyant l'UUID Licence + UUID Machine au Portail.
+    - **Routage de secours** : Sécurisation du fichier `urls.py` pour ignorer les modules corrompus ou supprimés sans faire planter l'application.
+
+### Problèmes rencontrés et Résolutions :
+
+1. **Crash "TypeError: 'module' object is not iterable"** :
+    - **Description** : Django plantait au démarrage après une désinstallation.
+    - **Solution** : Suppression de lignes de code orphelines (résidus de manipulations) à la fin de `licensing/views.py` et nettoyage des dossiers `__pycache__`.
+
+2. **Échec de l'import des menus (404 sur les URLs des modules)** :
+    - **Description** : Le lien apparaissait mais l'URL ne répondait pas.
+    - **Cause** : Archive ZIP mal structurée (dossiers imbriqués) empêchant Django de localiser `urls.py`.
+    - **Solution** : Reconstruction d'un package ZIP "FINAL" avec une structure à plat et une `TRACE_ID` pour vérification.
+
+- **Outcome** : Le cycle de vie (Achat -> Installation -> Utilisation -> Désinstallation -> Libération) est validé à 100%. La plateforme est techniquement mature et robuste.
