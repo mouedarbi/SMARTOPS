@@ -1,0 +1,14 @@
+[project]
+name = "smartops-plugin-demo"
+version = "1.0.0"
+description = "Un exemple de plugin premium pour SmartOps"
+dependencies = [
+    "pluggy>=1.0.0",
+]
+
+[project.entry-points."smartops.plugins"]
+demo = "smartops_plugin_demo.hookimpls:plugin_implementation"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

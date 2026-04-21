@@ -6,16 +6,6 @@
 {% block content %}
 <div class="max-w-6xl mx-auto">
 
-    {% if messages %}
-    <div class="mb-8 space-y-4">
-        {% for message in messages %}
-        <div class="p-4 rounded-2xl flex items-center gap-3 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700 border border-emerald-100{% else %}bg-red-50 text-red-700 border border-red-100{% endif %}">
-            <i class="las {% if message.tags == 'success' %}la-check-circle{% else %}la-exclamation-circle{% endif %} text-xl"></i>
-            <span class="font-bold text-sm">{{ message }}</span>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         

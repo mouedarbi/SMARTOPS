@@ -14,6 +14,24 @@ from .models import SystemConfiguration
 from .forms import SystemConfigurationForm
 
 @login_required
+def dashboard_view(request):
+    """
+    Vue principale du tableau de bord.
+    """
+    config = SystemConfiguration.get_instance()
+    
+    # Si l'installation n'est pas personnalisée, on force la configuration
+    if config.company_name == 'Nouvelle Installation SMARTOPS' or not config.company_name:
+        messages.info(request, "Bienvenue ! Veuillez personnaliser le nom de votre société pour déverrouiller le système.")
+        return redirect('system_config')
+
+    context = {
+        'config': config,
+        'page_title': "Tableau de Bord"
+    }
+    return render(request, 'system/dashboard.html', context)
+
+@login_required
 def system_config_view(request):
     """
     Vue unique pour visualiser et modifier la configuration du système.

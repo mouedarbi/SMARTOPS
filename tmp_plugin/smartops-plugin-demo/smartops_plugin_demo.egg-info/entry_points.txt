@@ -1,0 +1,2 @@
+[smartops.plugins]
+demo = smartops_plugin_demo.hookimpls:plugin_implementation

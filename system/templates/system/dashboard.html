@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | SMARTOPS{% endblock %}
+{% block page_title %}Tableau de Bord Principal{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    
+    <!-- En-tête de bienvenue -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">Bonjour, {{ user.username }}</h1>
+            <p class="text-slate-500 text-lg mt-1 font-medium italic">Gérez votre activité de maintenance aujourd'hui.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
+                <i class="las la-calendar text-blue-600 mr-2"></i>
+                {{ "today"|date:"d F Y" }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Rapides (Widgets) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Widget 1 -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                <i class="las la-hard-hat text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Interventions</p>
+                <p class="text-2xl font-black text-slate-800">0</p>
+            </div>
+        </div>
+
+        <!-- Widget 2 -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                <i class="las la-tools text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Équipements</p>
+                <p class="text-2xl font-black text-slate-800">0</p>
+            </div>
+        </div>
+
+        <!-- Widget 3 -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                <i class="las la-building text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Bâtiments</p>
+                <p class="text-2xl font-black text-slate-800">0</p>
+            </div>
+        </div>
+
+        <!-- Widget 4 -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600">
+                <i class="las la-file-contract text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Contrats</p>
+                <p class="text-2xl font-black text-slate-800">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Activité Récente (Grand) -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+                <div class="p-8 border-b border-slate-50 flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                        <i class="las la-history text-2xl text-blue-600"></i>
+                        Activités Récentes
+                    </h3>
+                </div>
+                <div class="p-20 text-center">
+                    <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
+                        <i class="las la-ghost text-4xl"></i>
+                    </div>
+                    <p class="text-slate-400 font-medium">Aucune donnée pour le moment.</p>
+                    <p class="text-slate-300 text-sm italic mt-2">Installez des modules premium pour commencer à gérer votre flotte.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Infos Entreprise (Petit) -->
+        <div>
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <i class="las la-info-circle text-lg text-blue-600"></i>
+                        Votre Entreprise
+                    </h3>
+                </div>
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        {% if config.company_logo %}
+                            <img src="{{ config.company_logo.url }}" alt="Logo" class="max-h-24 mx-auto mb-4 rounded-xl shadow-sm p-1 bg-white border border-slate-100">
+                        {% else %}
+                            <div class="h-20 w-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 font-bold">SM</div>
+                        {% endif %}
+                        <h4 class="text-xl font-black text-slate-800 leading-tight">{{ config.company_name }}</h4>
+                        <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Identité Validée</p>
+                    </div>
+
+                    <div class="space-y-4 pt-6 border-t border-slate-50">
+                        <div class="flex items-center gap-3 text-slate-600">
+                            <i class="las la-map-marker-alt text-xl text-blue-400"></i>
+                            <span class="text-xs font-bold">{{ config.company_address|truncatechars:40 }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-slate-600">
+                            <i class="las la-at text-xl text-blue-400"></i>
+                            <span class="text-xs font-bold">{{ config.company_email }}</span>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'system_config' %}" class="mt-8 block w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-center py-3 rounded-xl text-sm transition border border-slate-100">
+                        Éditer les informations
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -22,8 +22,10 @@ from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')), # Login, Logout, Password management
     path('system/', include('system.urls')),
-    path('', lambda request: redirect('system_config')), # Redirection racine vers configuration
+    path('licensing/', include('licensing.urls')),
+    path('', lambda request: redirect('dashboard')),
 ]
 
 if settings.DEBUG:

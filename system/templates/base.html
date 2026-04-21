@@ -39,14 +39,14 @@
             <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
                 <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 mt-2">Principal</p>
                 
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'dashboard' %}sidebar-item-active{% endif %}">
                     <i class="las la-home text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Tableau de Bord</span>
                 </a>
 
-                <a href="{% url 'system_config' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl sidebar-item-active transition group">
-                    <i class="las la-cog text-xl"></i>
-                    <span class="font-bold">Paramètres Système</span>
+                <a href="{% url 'system_config' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'system_config' %}sidebar-item-active{% endif %}">
+                    <i class="las la-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Paramètres Système</span>
                 </a>
 
                 <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 mt-8">Extensions</p>
@@ -56,9 +56,9 @@
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Modules Premium</span>
                 </a>
 
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group text-slate-700 pointer-events-none">
-                    <i class="las la-history text-xl"></i>
-                    <span class="font-bold italic">Mises à jour</span>
+                <a href="{% url 'sync_portal' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                    <i class="las la-history text-xl text-slate-500 group-hover:text-blue-400"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Vérifier mises à jour</span>
                 </a>
             </nav>
 
@@ -83,10 +83,17 @@
                 <h2 class="text-lg font-bold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h2>
                 
                 <div class="flex items-center gap-6">
+                    {% if config.last_sync_portal %}
+                    <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-sm"></span>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-600">Connecté au Portail</span>
+                    </div>
+                    {% else %}
                     <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
                         <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
                         <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Pas de connexion portail</span>
                     </div>
+                    {% endif %}
                     <a href="/admin/logout/" class="text-slate-400 hover:text-red-600 transition">
                         <i class="las la-sign-out-alt text-2xl"></i>
                     </a>
@@ -95,6 +102,22 @@
 
             <!-- Page Body -->
             <div class="p-10">
+                {% if messages %}
+                <div class="max-w-6xl mx-auto mb-8 space-y-4">
+                    {% for message in messages %}
+                    <div class="message-item p-4 rounded-2xl flex items-center justify-between gap-3 shadow-sm border {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700 border-emerald-100{% elif message.tags == 'info' %}bg-blue-50 text-blue-700 border-blue-100{% elif message.tags == 'warning' %}bg-amber-50 text-amber-700 border-amber-100{% else %}bg-rose-50 text-rose-700 border-rose-100{% endif %}">
+                        <div class="flex items-center gap-3">
+                            <i class="las {% if message.tags == 'success' %}la-check-circle{% elif message.tags == 'info' %}la-info-circle{% elif message.tags == 'warning' %}la-exclamation-triangle{% else %}la-exclamation-circle{% endif %} text-xl"></i>
+                            <span class="font-bold text-sm">{{ message }}</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-current opacity-50 hover:opacity-100 transition">
+                            <i class="las la-times text-lg"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
                 {% block content %}{% endblock %}
             </div>
         </main>

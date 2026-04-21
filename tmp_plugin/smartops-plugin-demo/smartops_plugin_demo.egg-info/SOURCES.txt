@@ -1,0 +1,9 @@
+pyproject.toml
+smartops_plugin_demo/__init__.py
+smartops_plugin_demo/hookimpls.py
+smartops_plugin_demo.egg-info/PKG-INFO
+smartops_plugin_demo.egg-info/SOURCES.txt
+smartops_plugin_demo.egg-info/dependency_links.txt
+smartops_plugin_demo.egg-info/entry_points.txt
+smartops_plugin_demo.egg-info/requires.txt
+smartops_plugin_demo.egg-info/top_level.txt

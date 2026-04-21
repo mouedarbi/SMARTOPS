@@ -17,7 +17,16 @@ class Plugin(models.Model):
     """
     slug = models.SlugField(
         unique=True, 
-        help_text="Identifiant technique unique du plugin (ex: smartops-billing)"
+        help_text="Identifiant technique unique (ex: smartops-billing)"
+    )
+    python_path = models.CharField(
+        max_length=255, 
+        blank=True, 
+        help_text="Le chemin d'importation Python (ex: smartops_plugin_demo)"
+    )
+    priority = models.IntegerField(
+        default=100, 
+        help_text="Ordre de chargement dans INSTALLED_APPS (le plus petit en premier)"
     )
     name = models.CharField(max_length=255, verbose_name="Nom du Plugin")
     version = models.CharField(max_length=50, blank=True, verbose_name="Version Installée")
