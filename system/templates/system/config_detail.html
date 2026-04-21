@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | SMARTOPS</title>
+    <!-- Utilisation de Tailwind CSS via CDN pour un rendu propre immédiat -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans leading-normal tracking-normal">
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- En-tête -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-extrabold text-indigo-700 tracking-tight">SMARTOPS CORE</h1>
+            <p class="mt-2 text-lg text-gray-600 uppercase tracking-widest font-semibold">Console de Configuration du Système</p>
+        </header>
+
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-200{% else %}bg-red-100 text-red-700 border border-red-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Sidebar: Identité Technique -->
+            <div class="md:col-span-1">
+                <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+                    <div class="p-6 bg-indigo-600 text-white">
+                        <h2 class="text-xl font-bold">Identité Unique</h2>
+                        <p class="text-indigo-100 text-sm opacity-80 mt-1">Identifiant de votre instance</p>
+                    </div>
+                    <div class="p-6">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ID Installation (UUID)</label>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono text-sm break-all text-indigo-800 font-bold select-all" title="Cliquer pour tout sélectionner">
+                            {{ config.installation_uuid }}
+                        </div>
+                        <p class="mt-4 text-xs text-gray-500 italic leading-relaxed">
+                            Ce numéro identifie votre machine de manière unique auprès de la Marketplace SMARTOPS. 
+                            Ne le partagez pas publiquement.
+                        </p>
+                        
+                        <div class="mt-8 pt-6 border-t border-gray-100">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Statut Connexion</label>
+                            <div class="flex items-center">
+                                <span class="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
+                                <span class="text-sm font-semibold text-red-600">Non connecté au Portail</span>
+                            </div>
+                        </div>
+
+                        {% if config.company_logo %}
+                        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Logo Actuel</label>
+                            <img src="{{ config.company_logo.url }}" alt="Logo Entreprise" class="max-h-32 mx-auto rounded-lg shadow-sm border border-gray-50 p-2">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main: Formulaire Configuration -->
+            <div class="md:col-span-2">
+                <div class="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <svg class="h-6 w-6 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-7h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        Informations de l'Entreprise
+                    </h2>
+                    
+                    <form method="post" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nom de la Société</label>
+                                {{ form.company_name }}
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Adresse Complète</label>
+                                {{ form.company_address }}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Téléphone</label>
+                                {{ form.company_phone }}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Email Professionnel</label>
+                                {{ form.company_email }}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Site Web</label>
+                                {{ form.company_website }}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Numéro de TVA</label>
+                                {{ form.company_vat }}
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Changer le Logo</label>
+                                {{ form.company_logo }}
+                            </div>
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-100 flex justify-end">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Enregistrer la Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-16 text-center text-gray-400 text-xs">
+            &copy; 2026 SMARTOPS CORE v1.0.0 - Système Auto-Hébergé.
+        </footer>
+    </div>
+
+    <!-- Script simple pour copier l'UUID d'un clic -->
+    <script>
+        document.querySelector('.select-all').addEventListener('click', function() {
+            const range = document.createRange();
+            range.selectNode(this);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            try {
+                document.execCommand('copy');
+                alert('ID Installation copié dans le presse-papier !');
+            } catch (err) {
+                console.error('Échec de la copie', err);
+            }
+        });
+    </script>
+</body>
+</html>
