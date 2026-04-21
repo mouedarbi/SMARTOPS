@@ -30,10 +30,10 @@ class Plugin(models.Model):
     )
     name = models.CharField(max_length=255, verbose_name="Nom du Plugin")
     version = models.CharField(max_length=50, blank=True, verbose_name="Version Installée")
-    license_key_hash = models.CharField(
+    license_key = models.CharField(
         max_length=255, 
         blank=True, 
-        help_text="Hachage de la clé de licence pour vérification locale"
+        help_text="Clé de licence (UUID) utilisée pour ce module"
     )
     is_active = models.BooleanField(default=False, verbose_name="Statut d'Activation")
     installed_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'Installation")

@@ -102,10 +102,10 @@ class LicenseService:
     @classmethod
     def activate_plugin(cls, key):
         """
-        Processus complet : Validation -> Téléchargement -> Installation.
-        Vérifie d'abord si le module n'est pas déjà présent localement.
+        Processus complet : Validation -> Téléchargement -> Installation physique.
+        Utilise l'UUID d'installation pour le Hardware Binding.
         """
-        # 1. Validation auprès du portail
+        # 1. Validation auprès du portail (Envoie Key + UUID)
         validation_data = cls.validate_key_with_portal(key)
         
         if not validation_data.get('success'):
@@ -113,26 +113,34 @@ class LicenseService:
 
         plugin_slug = validation_data['plugin_slug']
         
-        # 2. Contrôle d'intégrité local (Empêcher le double emploi de clé)
-        if Plugin.objects.filter(slug=plugin_slug).exists():
-            plugin = Plugin.objects.get(slug=plugin_slug)
-            if plugin.is_active:
-                return {"success": False, "error": f"Le module '{plugin.name}' est déjà installé et actif sur cette machine."}
-            # Si installé mais inactif, on pourrait autoriser la réactivation
+        # 2. Contrôle local : Déjà installé ?
+        if Plugin.objects.filter(slug=plugin_slug, is_active=True).exists():
+            return {"success": False, "error": f"Le module '{plugin_slug}' est déjà installé et actif."}
 
-        # 3. Enregistrement / Mise à jour en base locale
+        # 3. Enregistrement / Mise à jour en base locale (Prépare l'injection dans settings)
         plugin, created = Plugin.objects.get_or_create(slug=plugin_slug)
         plugin.name = validation_data['plugin_name']
         plugin.version = validation_data['version']
-        plugin.license_key_hash = Plugin.hash_key(key)
+        plugin.python_path = validation_data.get('package_name', plugin_slug.replace('-', '_'))
+        plugin.license_key = key # UUID en clair
         plugin.is_active = True
         plugin.save()
 
-        # 4. Installation physique (À implémenter avec PluginInstaller)
-        # return cls.install_physically(validation_data)
+        # 4. Installation physique (Hot-Plug via pip + migrate)
+        from .installer import PluginInstaller
+        success, message = PluginInstaller.install(
+            plugin.python_path, 
+            validation_data['download_url']
+        )
+        
+        if not success:
+            # En cas d'échec physique, on désactive le module en base pour rester cohérent
+            plugin.is_active = False
+            plugin.save()
+            return {"success": False, "error": message}
         
         return {
             "success": True,
-            "message": f"Module '{plugin.name}' activé avec succès.",
+            "message": f"Module '{plugin.name}' activé et installé ! Veuillez redémarrer le serveur.",
             "plugin": plugin
         }
