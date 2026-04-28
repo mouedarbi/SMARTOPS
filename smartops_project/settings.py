@@ -49,8 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # SMARTOPS Core Applications
+    'accounts.apps.AccountsConfig',
     'system.apps.SystemConfig',
     'licensing.apps.LicensingConfig',
+    'inventory.apps.InventoryConfig',
 ]
 
 # Injection automatique des plugins depuis la base de données
@@ -119,4 +121,5 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+AUTH_USER_MODEL = 'accounts.CustomUser'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
