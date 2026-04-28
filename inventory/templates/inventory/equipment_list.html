@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block page_title %}Gestion des Équipements{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Liste des Équipements</h2>
+        <a href="{% url 'equipment_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
+            + Nouvel Équipement
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="p-4 font-bold text-slate-700">Nom</th>
+                    <th class="p-4 font-bold text-slate-700">Type</th>
+                    <th class="p-4 font-bold text-slate-700">Bâtiment</th>
+                    <th class="p-4 font-bold text-slate-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipment in equipments %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="p-4 font-medium">{{ equipment.name }}</td>
+                    <td class="p-4 text-slate-600">{{ equipment.equipment_type.name }}</td>
+                    <td class="p-4 text-slate-600">{{ equipment.building.name }}</td>
+                    <td class="p-4">
+                        <span class="text-slate-400 italic text-sm">Gestion des champs dynamiques à venir</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="p-8 text-center text-slate-400">Aucun équipement trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

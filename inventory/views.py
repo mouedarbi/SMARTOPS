@@ -3,19 +3,58 @@ Fichier : views.py
 Projet : SMARTOPS (Core Application)
 Application : inventory
 Auteur : Mohamed Ouedarbi
-Version : 1.0
-Description : Vues CRUD pour la gestion des clients.
+Version : 1.1
+Description : Vues CRUD pour la gestion des clients, bâtiments et équipements.
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Client, Building
-from .forms import ClientForm, BuildingForm
+from .models import Client, Building, Equipment
+from .forms import ClientForm, BuildingForm, EquipmentForm
 
 # --- VUES CLIENT ---
 
-# ... (Vues Client existantes) ...
+@login_required
+def client_list_view(request):
+    """
+    Liste les clients enregistrés.
+    """
+    clients = Client.objects.all().order_by('-created_at')
+    return render(request, 'inventory/client_list.html', {'clients': clients})
+
+@login_required
+def client_create_view(request):
+    """
+    Crée un nouveau client.
+    """
+    if request.method == 'POST':
+        form = ClientForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Client créé avec succès.")
+            return redirect('client_list')
+    else:
+        form = ClientForm()
+    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Nouveau Client'})
+
+@login_required
+def client_update_view(request, pk):
+    """
+    Met à jour un client existant.
+    """
+    client = get_object_or_404(Client, pk=pk)
+    if request.method == 'POST':
+        form = ClientForm(request.POST, instance=client)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Informations mises à jour.")
+            return redirect('client_list')
+    else:
+        form = ClientForm(instance=client)
+    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Modifier Client'})
+
+# --- VUES BÂTIMENT ---
 
 @login_required
 def building_list_view(request):
@@ -55,3 +94,28 @@ def building_update_view(request, pk):
     else:
         form = BuildingForm(instance=building)
     return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Modifier Bâtiment'})
+
+# --- VUES ÉQUIPEMENT ---
+
+@login_required
+def equipment_list_view(request):
+    """
+    Liste les équipements enregistrés.
+    """
+    equipments = Equipment.objects.all().order_by('name')
+    return render(request, 'inventory/equipment_list.html', {'equipments': equipments})
+
+@login_required
+def equipment_create_view(request):
+    """
+    Crée un nouvel équipement.
+    """
+    if request.method == 'POST':
+        form = EquipmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Équipement créé avec succès.")
+            return redirect('equipment_list')
+    else:
+        form = EquipmentForm()
+    return render(request, 'inventory/equipment_form.html', {'form': form, 'title': 'Nouvel Équipement'})
