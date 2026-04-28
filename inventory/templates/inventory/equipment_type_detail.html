@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block page_title %}Champs : {{ type.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 mb-6">
+        <h3 class="font-bold text-lg mb-4">Ajouter un champ personnalisé</h3>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700">
+                Ajouter Champ
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 class="font-bold text-lg mb-4">Champs actuels</h3>
+        <ul class="space-y-2">
+            {% for field in type.fields.all %}
+            <li class="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between">
+                <span>{{ field.field_name }} <span class="text-slate-400">({{ field.field_type }})</span></span>
+                {% if field.required %}<span class="text-xs bg-rose-100 text-rose-600 px-2 py-1 rounded">Requis</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

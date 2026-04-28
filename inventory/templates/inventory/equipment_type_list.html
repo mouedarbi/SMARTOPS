@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block page_title %}Types d'Équipement{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 mb-6">
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex gap-4">
+                {{ form.name }}
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700">
+                    Créer Type
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="p-4 font-bold text-slate-700">Nom du Type</th>
+                    <th class="p-4 font-bold text-slate-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for type in types %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="p-4 font-medium">{{ type.name }}</td>
+                    <td class="p-4">
+                        <a href="{% url 'equipment_type_detail' type.pk %}" class="text-blue-600 hover:underline">Gérer Champs</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

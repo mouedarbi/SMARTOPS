@@ -14,4 +14,6 @@ urlpatterns = [
     path('buildings/<int:pk>/edit/', building_update_view, name='building_update'),
     path('equipments/', equipment_list_view, name='equipment_list'),
     path('equipments/new/', equipment_create_view, name='equipment_create'),
+    path('types/', equipment_type_list_view, name='equipment_type_list'),
+    path('types/<int:pk>/', equipment_type_detail_view, name='equipment_type_detail'),
 ]
