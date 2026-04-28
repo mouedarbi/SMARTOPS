@@ -46,6 +46,21 @@
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Tableau de Bord</span>
                 </a>
 
+                <a href="{% url 'client_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'client' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-user-tie text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Clients</span>
+                </a>
+
+                <a href="{% url 'building_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'building' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-building text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Bâtiments</span>
+                </a>
+
+                <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-tools text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Équipements</span>
+                </a>
+
                 <!-- SECTION : EXTENSIONS (Dynamique via Pluggy) -->
                 <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Extensions</p>
                 
