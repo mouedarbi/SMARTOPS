@@ -18,6 +18,8 @@ class Client(models.Model):
     address = models.TextField(verbose_name=_("Adresse"))
     contact_name = models.CharField(max_length=255, verbose_name=_("Contact"))
     email = models.EmailField(verbose_name=_("Email"))
+    phone = models.CharField(max_length=50, verbose_name=_("Téléphone"), blank=True)
+    vat_number = models.CharField(max_length=50, verbose_name=_("Numéro de TVA"), blank=True)
     is_active = models.BooleanField(default=True, verbose_name=_("Est Actif"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Date de création"))
 
