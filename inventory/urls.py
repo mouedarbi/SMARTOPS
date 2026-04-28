@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     client_list_view, client_create_view, client_update_view,
     building_list_view, building_create_view, building_update_view,
-    equipment_list_view, equipment_create_view
+    equipment_list_view, equipment_create_view,
+    equipment_type_list_view, equipment_type_detail_view
 )
 
 urlpatterns = [

@@ -91,3 +91,21 @@
     - **Solution** : Reconstruction d'un package ZIP "FINAL" avec une structure à plat et une `TRACE_ID` pour vérification.
 
 - **Outcome** : Le cycle de vie (Achat -> Installation -> Utilisation -> Désinstallation -> Libération) est validé à 100%. La plateforme est techniquement mature et robuste.
+
+---
+
+## 29 Avril 2026 - Développement Core Métier (Phase 1 & 2)
+
+### Réalisations :
+- **Architecture Core :** Intégration complète du modèle `CustomUser` (Auth, RBAC, Soft-delete) et résolution de la cohérence des migrations.
+- **Application Inventaire :** 
+  - Développement des modèles `Client`, `Building`, `Equipment` et `EquipmentType` (avec champs dynamiques JSONField).
+  - Implémentation des vues CRUD pour les Clients, Bâtiments, Types et Équipements.
+  - Tests unitaires complets pour valider la robustesse des données.
+- **UI Custom Dashboard :** 
+  - Intégration des liens de gestion dans la sidebar existante (Tailwind).
+  - Correction des problèmes de routage (NoReverseMatch, NameError) pour assurer l'accessibilité.
+
+### État du projet :
+- Le système est stable et testé. Les fonctionnalités de base du cœur de métier sont opérationnelles.
+- Git commit final effectué pour l'ensemble des fonctionnalités implémentées aujourd'hui.

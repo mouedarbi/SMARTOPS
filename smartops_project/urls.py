@@ -14,6 +14,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('system/', include('system.urls')),
     path('licensing/', include('licensing.urls')),
+    path('inventory/', include('inventory.urls')),
     path('', lambda request: redirect('dashboard')),
 ]
 

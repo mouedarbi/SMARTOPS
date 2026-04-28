@@ -56,9 +56,14 @@
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Bâtiments</span>
                 </a>
 
-                <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name and 'type' not in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                     <i class="las la-tools text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Équipements</span>
+                </a>
+
+                <a href="{% url 'equipment_type_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'type' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-tags text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Types d'Équipement</span>
                 </a>
 
                 <!-- SECTION : EXTENSIONS (Dynamique via Pluggy) -->
