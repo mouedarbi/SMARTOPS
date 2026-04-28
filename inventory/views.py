@@ -10,44 +10,48 @@ Description : Vues CRUD pour la gestion des clients.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Client
-from .forms import ClientForm
+from .models import Client, Building
+from .forms import ClientForm, BuildingForm
+
+# --- VUES CLIENT ---
+
+# ... (Vues Client existantes) ...
 
 @login_required
-def client_list_view(request):
+def building_list_view(request):
     """
-    Liste les clients enregistrés.
+    Liste les bâtiments enregistrés.
     """
-    clients = Client.objects.all().order_by('-created_at')
-    return render(request, 'inventory/client_list.html', {'clients': clients})
+    buildings = Building.objects.all().order_by('name')
+    return render(request, 'inventory/building_list.html', {'buildings': buildings})
 
 @login_required
-def client_create_view(request):
+def building_create_view(request):
     """
-    Crée un nouveau client.
+    Crée un nouveau bâtiment.
     """
     if request.method == 'POST':
-        form = ClientForm(request.POST)
+        form = BuildingForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Client créé avec succès.")
-            return redirect('client_list')
+            messages.success(request, "Bâtiment créé avec succès.")
+            return redirect('building_list')
     else:
-        form = ClientForm()
-    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Nouveau Client'})
+        form = BuildingForm()
+    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Nouveau Bâtiment'})
 
 @login_required
-def client_update_view(request, pk):
+def building_update_view(request, pk):
     """
-    Met à jour un client existant.
+    Met à jour un bâtiment existant.
     """
-    client = get_object_or_404(Client, pk=pk)
+    building = get_object_or_404(Building, pk=pk)
     if request.method == 'POST':
-        form = ClientForm(request.POST, instance=client)
+        form = BuildingForm(request.POST, instance=building)
         if form.is_valid():
             form.save()
-            messages.success(request, "Informations mises à jour.")
-            return redirect('client_list')
+            messages.success(request, "Informations bâtiment mises à jour.")
+            return redirect('building_list')
     else:
-        form = ClientForm(instance=client)
-    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Modifier Client'})
+        form = BuildingForm(instance=building)
+    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Modifier Bâtiment'})

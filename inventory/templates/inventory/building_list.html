@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block page_title %}Gestion des Bâtiments{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Liste des Bâtiments</h2>
+        <a href="{% url 'building_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
+            + Nouveau Bâtiment
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="p-4 font-bold text-slate-700">Nom</th>
+                    <th class="p-4 font-bold text-slate-700">Client</th>
+                    <th class="p-4 font-bold text-slate-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for building in buildings %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="p-4 font-medium">{{ building.name }}</td>
+                    <td class="p-4 text-slate-600">{{ building.client.name }}</td>
+                    <td class="p-4">
+                        <a href="{% url 'building_update' building.pk %}" class="text-blue-600 hover:underline">Modifier</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="p-8 text-center text-slate-400">Aucun bâtiment trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
