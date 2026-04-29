@@ -163,4 +163,35 @@
 
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Déclenchement de la synchro silencieuse (Throttle 24h géré côté serveur)
+    fetch('{% url "api_check_sync" %}')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.updates_available) {
+                const notif = document.getElementById('sync-notification');
+                notif.innerHTML = `
+                    <div class="p-6 bg-blue-600 border border-blue-500 rounded-3xl flex items-center justify-between shadow-xl shadow-blue-100 animate-pulse text-white">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                                <i class="las la-gift text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black uppercase tracking-widest text-blue-100">Mises à jour disponibles</p>
+                                <p class="text-xs font-medium text-white/80">${data.module_updates.length} module(s) peuvent être mis à jour.</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'plugin_list' %}" class="px-6 py-3 bg-white text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition shadow-lg">
+                            Mettre à jour maintenant
+                        </a>
+                    </div>
+                `;
+                notif.classList.remove('hidden');
+            }
+        })
+        .catch(err => console.log("Portail SMARTOPS inaccessible (Mode Offline)"));
+});
+</script>
 {% endblock %}

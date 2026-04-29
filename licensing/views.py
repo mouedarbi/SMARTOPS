@@ -174,6 +174,30 @@ def plugin_uninstall_stream_view(request):
     return StreamingHttpResponse(stream_uninstallation(), content_type='text/plain')
 
 @login_required
+def api_check_sync(request):
+    """
+    API interne appelée par le dashboard pour synchroniser en arrière-plan.
+    Gère un throttle de 24h pour éviter de surcharger le portail.
+    """
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    config = SystemConfiguration.get_instance()
+    force = request.GET.get('force') == 'true'
+    
+    # Si la dernière synchro date de moins de 24h, on ignore (sauf si force=true)
+    if not force and config.last_sync_portal:
+        if timezone.now() < config.last_sync_portal + timedelta(hours=24):
+            return JsonResponse({
+                "success": True, 
+                "message": "Synchro récente, sautée.",
+                "already_synced": True
+            })
+    
+    result = LicenseService.sync_with_portal()
+    return JsonResponse(result)
+
+@login_required
 def sync_portal_view(request):
     """
     Déclenche la synchronisation manuelle avec le Portail SMARTOPS.
