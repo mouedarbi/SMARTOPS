@@ -25,12 +25,39 @@
             <div class="space-y-6">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-search text-lg"></i> Sélection Rapide
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">1. Choisir le Client</label>
+                            {{ form.client }}
+                        </div>
+                        <div id="building_container" class="hidden">
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Choisir le Bâtiment</label>
+                            {{ form.building }}
+                        </div>
+                        <div id="equipment_reference_container" class="space-y-2">
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Ou Rechercher par Référence / Nom</label>
+                            <div class="relative">
+                                <input type="text" id="equipment_search" class="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm" placeholder="Ex: SN-12345, Ascenseur...">
+                                <i class="las la-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            </div>
+                            <div id="search_results" class="hidden mt-2 max-h-40 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg z-10">
+                                <!-- Résultats AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
                         <i class="las la-info-circle text-lg"></i> Identification
                     </h4>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Équipement concerné</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Équipement sélectionné</label>
                             {{ form.equipment }}
                         </div>
                         <div>
@@ -106,4 +133,99 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const clientSelect = document.getElementById('id_client');
+    const buildingSelect = document.getElementById('id_building');
+    const buildingContainer = document.getElementById('building_container');
+    const equipmentSelect = document.getElementById('id_equipment');
+    const equipmentSearch = document.getElementById('equipment_search');
+    const searchResults = document.getElementById('search_results');
+
+    // 1. Client -> Bâtiment
+    clientSelect.addEventListener('change', function() {
+        const clientId = this.value;
+        if (!clientId) {
+            buildingContainer.classList.add('hidden');
+            return;
+        }
+
+        fetch(`/maintenance/api/buildings/?client_id=${clientId}`)
+            .then(res => res.json())
+            .then(data => {
+                buildingSelect.innerHTML = '<option value="">--- Choisir un bâtiment ---</option>';
+                data.forEach(b => {
+                    buildingSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+                });
+                buildingContainer.classList.remove('hidden');
+            });
+    });
+
+    // 2. Bâtiment -> Équipements
+    buildingSelect.addEventListener('change', function() {
+        const buildingId = this.value;
+        if (!buildingId) return;
+
+        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
+            .then(res => res.json())
+            .then(data => {
+                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                data.forEach(e => {
+                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                });
+            });
+    });
+
+    // 3. Recherche par référence
+    let searchTimeout;
+    equipmentSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value;
+        if (query.length < 2) {
+            searchResults.classList.add('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/maintenance/api/equipments/?search=${query}`)
+                .then(res => res.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(e => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-50';
+                            div.textContent = e.text;
+                            div.addEventListener('click', () => {
+                                // On ajoute l'option au select si elle n'existe pas
+                                if (![...equipmentSelect.options].some(opt => opt.value == e.id)) {
+                                    const opt = document.createElement('option');
+                                    opt.value = e.id;
+                                    opt.textContent = e.text;
+                                    equipmentSelect.appendChild(opt);
+                                }
+                                equipmentSelect.value = e.id;
+                                equipmentSearch.value = e.text;
+                                searchResults.classList.add('hidden');
+                            });
+                            searchResults.appendChild(div);
+                        });
+                        searchResults.classList.remove('hidden');
+                    } else {
+                        searchResults.innerHTML = '<div class="p-3 text-xs text-slate-400 italic">Aucun résultat</div>';
+                        searchResults.classList.remove('hidden');
+                    }
+                });
+        }, 300);
+    });
+
+    // Fermer les résultats au clic extérieur
+    document.addEventListener('click', function(e) {
+        if (!equipmentSearch.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -84,7 +84,7 @@ class MaintenanceTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Ticket #{self.id} - {self.equipment.nom} ({self.get_status_display()})"
+        return f"Ticket #{self.id} - {self.equipment.name} ({self.get_status_display()})"
 
     class Meta:
         verbose_name = "Ticket de Maintenance"
@@ -107,7 +107,7 @@ def sync_maintenance_event(sender, instance, created, **kwargs):
     if created or not instance.event:
         # Création de l'événement
         event = Event.objects.create(
-            title=f"INT-{instance.id}: {instance.equipment.nom}",
+            title=f"INT-{instance.id}: {instance.equipment.name}",
             description=f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}",
             start=instance.planned_start,
             end=instance.planned_end,
@@ -118,7 +118,7 @@ def sync_maintenance_event(sender, instance, created, **kwargs):
     else:
         # Mise à jour de l'événement existant
         event = instance.event
-        event.title = f"INT-{instance.id}: {instance.equipment.nom}"
+        event.title = f"INT-{instance.id}: {instance.equipment.name}"
         event.start = instance.planned_start
         event.end = instance.planned_end
         event.description = f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}"

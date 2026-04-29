@@ -86,17 +86,49 @@ def technician_list(request):
         'page_title': "Équipe Technique"
     }
     return render(request, 'maintenance/technician_list.html', context)
+from .forms import MaintenanceTicketForm, TechnicianForm
 
 @login_required
 @user_passes_test(is_management_staff)
 def technician_detail(request, pk):
     """
-    Détail d'un technicien.
+    Détail et édition d'un technicien avec statistiques de performance.
     """
     technician = get_object_or_404(Technician, pk=pk)
+    tickets = technician.tickets.all()
+    
+    # Calcul des statistiques
+    total_tickets = tickets.count()
+    done_tickets = tickets.filter(status='done').count()
+    completion_rate = (done_tickets / total_tickets * 100) if total_tickets > 0 else 0
+    
+    # Calcul de la durée moyenne des interventions terminées
+    avg_duration_minutes = 0
+    completed_with_time = tickets.filter(status='done', effective_start__isnull=False, effective_end__isnull=False)
+    if completed_with_time.exists():
+        total_duration = sum([(t.effective_end - t.effective_start).total_seconds() for t in completed_with_time], 0)
+        avg_duration_minutes = (total_duration / completed_with_time.count()) / 60
+
+    if request.method == 'POST':
+        form = TechnicianForm(request.POST, instance=technician)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Profil de {technician} mis à jour.")
+            return redirect('technician_list')
+    else:
+        form = TechnicianForm(instance=technician)
+
     context = {
         'technician': technician,
-        'page_title': f"Profil Technicien : {technician}"
+        'form': form,
+        'page_title': f"Profil Technicien : {technician}",
+        'stats': {
+            'total': total_tickets,
+            'done': done_tickets,
+            'completion_rate': round(completion_rate, 1),
+            'avg_duration': round(avg_duration_minutes, 0),
+            'pending': tickets.filter(status__in=['pending', 'planned', 'in_progress']).count()
+        }
     }
     return render(request, 'maintenance/technician_detail.html', context)
 
@@ -115,6 +147,30 @@ from django.http import JsonResponse
 
 @login_required
 @user_passes_test(is_management_staff)
+def api_get_buildings(request):
+    client_id = request.GET.get('client_id')
+    from inventory.models import Building
+    buildings = Building.objects.filter(client_id=client_id).values('id', 'name')
+    return JsonResponse(list(buildings), safe=False)
+
+@login_required
+@user_passes_test(is_management_staff)
+def api_get_equipments(request):
+    building_id = request.GET.get('building_id')
+    search = request.GET.get('search')
+    from inventory.models import Equipment
+    
+    equipments = Equipment.objects.all()
+    if building_id:
+        equipments = equipments.filter(building_id=building_id)
+    if search:
+        equipments = equipments.filter(serial_number__icontains=search) | equipments.filter(name__icontains=search)
+        
+    data = [{'id': e.id, 'text': f"{e.name} ({e.serial_number}) - {e.building.name}"} for e in equipments[:20]]
+    return JsonResponse(data, safe=False)
+
+@login_required
+@user_passes_test(is_management_staff)
 def api_events(request):
     """
     Retourne les événements de maintenance au format JSON pour FullCalendar.
@@ -130,7 +186,7 @@ def api_events(request):
     for ticket in tickets:
         events.append({
             'id': ticket.id,
-            'title': f"INT-{ticket.id}: {ticket.equipment.nom}",
+            'title': f"INT-{ticket.id}: {ticket.equipment.name}",
             'start': ticket.planned_start.isoformat(),
             'end': ticket.planned_end.isoformat(),
             'description': f"Technicien: {ticket.technician}",

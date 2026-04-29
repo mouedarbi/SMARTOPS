@@ -12,10 +12,26 @@ from django.utils import timezone
 from datetime import timedelta, time
 from .models import MaintenanceTicket, Technician
 
+from inventory.models import Client, Building
+
 class MaintenanceTicketForm(forms.ModelForm):
     # Choix pour les créneaux horaires
     TIME_SLOTS = [(time(h, m).strftime('%H:%M'), f"{h:02d}:{m:02d}") for h in range(7, 20) for m in (0, 30)]
     
+    # Champs de filtrage (non-persistés directement mais utilisés pour le UI)
+    client = forms.ModelChoiceField(
+        queryset=Client.objects.all(),
+        required=False,
+        label="Filtrer par Client",
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
+    )
+    building = forms.ModelChoiceField(
+        queryset=Building.objects.none(),
+        required=False,
+        label="Filtrer par Bâtiment",
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
+    )
+
     # Choix pour les durées
     DURATION_CHOICES = [
         (3600, '1 heure'),
@@ -27,42 +43,51 @@ class MaintenanceTicketForm(forms.ModelForm):
 
     planned_date = forms.DateField(
         label="Date de l'intervention",
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
+        widget=forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={'type': 'date', 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}
+        ),
     )
     start_time_slot = forms.ChoiceField(
         label="Heure de début",
         choices=TIME_SLOTS,
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
     )
     duration_seconds = forms.TypedChoiceField(
         label="Durée estimée",
         choices=DURATION_CHOICES,
         coerce=int,
         initial=5400,
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
     )
 
     class Meta:
         model = MaintenanceTicket
         fields = ['equipment', 'technician', 'type', 'status', 'description']
         widgets = {
-            'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
-            'technician': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
-            'type': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
-            'status': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm'}),
-            'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm', 'placeholder': 'Détaillez le problème ou les tâches à effectuer...'}),
+            'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'technician': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'type': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'status': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm', 'placeholder': 'Détaillez le problème ou les tâches à effectuer...'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk and self.instance.planned_start:
-            self.fields['planned_date'].initial = self.instance.planned_start.date()
-            self.fields['start_time_slot'].initial = self.instance.planned_start.strftime('%H:%M')
-            if self.instance.planned_end:
-                diff = (self.instance.planned_end - self.instance.planned_start).total_seconds()
-                # On cherche la durée la plus proche
-                closest = min([c[0] for c in self.DURATION_CHOICES], key=lambda x: abs(x - diff))
-                self.fields['duration_seconds'].initial = int(closest)
+        if self.instance and self.instance.pk:
+            if self.instance.equipment:
+                self.fields['client'].initial = self.instance.equipment.building.client
+                self.fields['building'].queryset = Building.objects.filter(client=self.instance.equipment.building.client)
+                self.fields['building'].initial = self.instance.equipment.building
+
+            if self.instance.planned_start:
+                self.fields['planned_date'].initial = self.instance.planned_start.strftime('%Y-%m-%d')
+                self.fields['start_time_slot'].initial = self.instance.planned_start.strftime('%H:%M')
+                if self.instance.planned_end:
+                    diff = (self.instance.planned_end - self.instance.planned_start).total_seconds()
+                    # On cherche la durée la plus proche
+                    closest = min([c[0] for c in self.DURATION_CHOICES], key=lambda x: abs(x - diff))
+                    self.fields['duration_seconds'].initial = int(closest)
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -75,6 +100,37 @@ class MaintenanceTicketForm(forms.ModelForm):
         instance.planned_start = timezone.make_aware(timezone.datetime.combine(planned_date, start_time))
         instance.planned_end = instance.planned_start + timedelta(seconds=duration_sec)
         
+        if commit:
+            instance.save()
+        return instance
+
+class TechnicianForm(forms.ModelForm):
+    """
+    Formulaire pour éditer le profil d'un technicien.
+    """
+    specialties_str = forms.CharField(
+        label="Spécialités (séparées par des virgules)",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm', 'placeholder': 'Ex: Electrique, Hydraulique, Froid'})
+    )
+
+    class Meta:
+        model = Technician
+        fields = ['is_active']
+        widgets = {
+            'is_active': forms.CheckboxInput(attrs={'class': 'h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['specialties_str'].initial = ", ".join(self.instance.specialties)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Conversion de la chaîne en liste
+        spec_str = self.cleaned_data.get('specialties_str', '')
+        instance.specialties = [s.strip() for s in spec_str.split(',') if s.strip()]
         if commit:
             instance.save()
         return instance

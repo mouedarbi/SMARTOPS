@@ -23,4 +23,6 @@ urlpatterns = [
     # Calendrier
     path('calendar/', views.maintenance_calendar, name='maintenance_calendar'),
     path('api/events/', views.api_events, name='api_events'),
+    path('api/buildings/', views.api_get_buildings, name='api_get_buildings'),
+    path('api/equipments/', views.api_get_equipments, name='api_get_equipments'),
 ]
