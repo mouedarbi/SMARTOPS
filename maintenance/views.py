@@ -81,6 +81,8 @@ def technician_list(request):
     technicians = Technician.objects.all()
     context = {
         'technicians': technicians,
+        'active_count': technicians.filter(is_active=True).count(),
+        'inactive_count': technicians.filter(is_active=False).count(),
         'page_title': "Équipe Technique"
     }
     return render(request, 'maintenance/technician_list.html', context)
