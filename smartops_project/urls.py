@@ -11,7 +11,8 @@ import importlib.util
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('auth/', include('django.contrib.auth.urls')),
     path('system/', include('system.urls')),
     path('maintenance/', include('maintenance.urls')),
     path('licensing/', include('licensing.urls')),

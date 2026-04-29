@@ -106,6 +106,11 @@
                         <i class="las la-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
                         <span class="font-bold text-slate-400 group-hover:text-blue-400">Système</span>
                     </a>
+
+                    <a href="{% url 'user_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'user' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-users text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Utilisateurs</span>
+                    </a>
                     
                     <a href="{% url 'plugin_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'plugin_list' %}sidebar-item-active{% endif %}">
                         <i class="las la-plug text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
