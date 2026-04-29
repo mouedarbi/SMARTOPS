@@ -122,4 +122,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'accounts.CustomUser'
+# Default Auto Field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- CONFIGURATION INTERCONNEXION (PFE) ---
+# MARKETPLACE_URL : URL du portail commercial SMARTOPS_PORTAL.
+# En local (DEBUG=True), on pointe vers le port par défaut de Django (8000).
+# En production, on utilise le domaine sécurisé.
+if DEBUG:
+    MARKETPLACE_URL = os.getenv('MARKETPLACE_URL', 'http://127.0.0.1:8000')
+else:
+    MARKETPLACE_URL = os.getenv('MARKETPLACE_URL', 'https://www.opensmartops.org')

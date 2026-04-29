@@ -33,7 +33,7 @@ class LicenseService:
         sys_config = SystemConfiguration.get_instance()
         installation_uuid = str(sys_config.installation_uuid)
         
-        marketplace_url = getattr(settings, 'MARKETPLACE_URL', 'http://127.0.0.1:8002')
+        marketplace_url = settings.MARKETPLACE_URL
         api_endpoint = f"{marketplace_url}/api/licensing/validate/"
         
         payload = {
@@ -76,7 +76,7 @@ class LicenseService:
             for p in Plugin.objects.filter(is_active=True)
         ]
         
-        marketplace_url = getattr(settings, 'MARKETPLACE_URL', 'http://127.0.0.1:8002')
+        marketplace_url = settings.MARKETPLACE_URL
         api_endpoint = f"{marketplace_url}/api/licensing/sync/"
         
         payload = {

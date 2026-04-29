@@ -134,7 +134,7 @@ def plugin_uninstall_stream_view(request):
         # 1. Libération de la licence sur le Portail
         yield ">>> Communication avec le Portail pour libérer la licence...\n"
         sys_config = SystemConfiguration.get_instance()
-        marketplace_url = getattr(settings, 'MARKETPLACE_URL', 'http://127.0.0.1:8002')
+        marketplace_url = settings.MARKETPLACE_URL
         
         try:
             resp = requests.post(f"{marketplace_url}/api/licensing/release/", json={
