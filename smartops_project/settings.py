@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'system.apps.SystemConfig',
     'licensing.apps.LicensingConfig',
     'inventory.apps.InventoryConfig',
+    'maintenance.apps.MaintenanceConfig',
     'schedule',
 ]
 
