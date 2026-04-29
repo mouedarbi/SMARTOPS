@@ -109,3 +109,16 @@
 ### État du projet :
 - Le système est stable et testé. Les fonctionnalités de base du cœur de métier sont opérationnelles.
 - Git commit final effectué pour l'ensemble des fonctionnalités implémentées aujourd'hui.
+
+---
+
+## [29/04/2026] - Optimisation UX et Nettoyage Système
+
+### Avancement : Amélioration du module Maintenance et Connectivité
+- **Description** : Refonte de la fiche technicien et optimisation du flux de création de tickets. Nettoyage des résidus du système de plugins.
+- **Implementation** :
+    - **Stats Techniciens** : Ajout de calculs de performance en temps réel (taux de succès, durée moyenne).
+    - **Sélection Intelligente** : Mise en place de filtres AJAX (Client > Bâtiment > Équipement) et recherche par référence/S/N dans le formulaire de ticket.
+    - **Visibilité UI** : Correction des contrastes (blanc sur blanc) dans les formulaires Tailwind.
+    - **Maintenance Système** : Suppression des répertoires orphelins (`tmp_plugin`, `rebuild_plugin`) et mise à jour de l'`URL Marketplace` vers la production (`https://opensmartops.org`).
+- **Outcome** : Une interface plus fluide, une meilleure traçabilité des performances et un socle de plugins assaini.
