@@ -157,9 +157,12 @@
                         <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Pas de connexion portail</span>
                     </div>
                     {% endif %}
-                    <a href="{% url 'logout' %}" class="text-slate-400 hover:text-red-600 transition">
-                        <i class="las la-sign-out-alt text-2xl"></i>
-                    </a>
+                    <form action="{% url 'logout' %}" method="post" id="logout-form" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-slate-400 hover:text-red-600 transition p-0 bg-transparent border-none cursor-pointer">
+                            <i class="las la-sign-out-alt text-2xl"></i>
+                        </button>
+                    </form>
                 </div>
             </header>
 
