@@ -12,6 +12,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import SystemConfiguration
 from .forms import SystemConfigurationForm
+from inventory.models import Equipment, Building, Client
+from maintenance.models import MaintenanceTicket
 
 @login_required
 def dashboard_view(request):
@@ -25,9 +27,22 @@ def dashboard_view(request):
         messages.info(request, "Bienvenue ! Veuillez personnaliser le nom de votre société pour déverrouiller le système.")
         return redirect('system_config')
 
+    # Statistiques
+    stats = {
+        'tickets_count': MaintenanceTicket.objects.count(),
+        'equipment_count': Equipment.objects.count(),
+        'buildings_count': Building.objects.count(),
+        'clients_count': Client.objects.count(),
+    }
+
+    # Activité récente (10 derniers tickets)
+    recent_tickets = MaintenanceTicket.objects.all().order_by('-created_at')[:10]
+
     context = {
         'config': config,
-        'page_title': "Tableau de Bord"
+        'page_title': "Tableau de Bord",
+        'stats': stats,
+        'recent_tickets': recent_tickets,
     }
     return render(request, 'system/dashboard.html', context)
 

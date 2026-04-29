@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Planning de Maintenance | SMARTOPS{% endblock %}
+{% block page_title %}Planning de Maintenance{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Calendrier des Interventions</h3>
+            <p class="text-slate-500 font-medium italic">Vision globale de la charge de travail de votre équipe.</p>
+        </div>
+        <div class="flex gap-2">
+             <a href="{% url 'ticket_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
+                <i class="las la-plus-circle text-xl"></i>
+                Nouveau Ticket
+            </a>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 min-h-[700px]">
+        <!-- FullCalendar CSS -->
+        <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+        <!-- FullCalendar JS -->
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
+
+        <div id='calendar'></div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --fc-border-color: #f1f5f9;
+        --fc-button-bg-color: #0f172a;
+        --fc-button-border-color: #0f172a;
+        --fc-button-hover-bg-color: #1e293b;
+        --fc-button-hover-border-color: #1e293b;
+        --fc-button-active-bg-color: #3b82f6;
+        --fc-button-active-border-color: #3b82f6;
+        --fc-event-bg-color: #3b82f6;
+        --fc-event-border-color: #3b82f6;
+    }
+    .fc .fc-toolbar-title {
+        font-weight: 900;
+        letter-spacing: -0.025em;
+        color: #1e293b;
+        text-transform: capitalize;
+    }
+    .fc .fc-col-header-cell-cushion {
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+        padding: 10px 0;
+    }
+    .fc-theme-standard td, .fc-theme-standard th {
+        border: 1px solid #f8fafc;
+    }
+    .fc-v-event {
+        border-radius: 8px;
+        padding: 2px 5px;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            locale: 'fr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            slotMinTime: '07:00:00',
+            slotMaxTime: '20:00:00',
+            events: '/maintenance/api/events/', // Endpoint à créer pour JSON
+            eventClick: function(info) {
+                if (info.event.id) {
+                    window.location.href = "/maintenance/tickets/" + info.event.id + "/";
+                }
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

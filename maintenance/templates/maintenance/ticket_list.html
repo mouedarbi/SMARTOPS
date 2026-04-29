@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Tickets de Maintenance | SMARTOPS{% endblock %}
+{% block page_title %}Tickets de Maintenance{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    
+    <!-- Actions -->
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Liste des interventions</h3>
+            <p class="text-slate-500 font-medium italic">Suivez et planifiez vos opérations de maintenance.</p>
+        </div>
+        <a href="{% url 'ticket_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
+            <i class="las la-plus-circle text-xl"></i>
+            Nouveau Ticket
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">ID</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Date Prévue</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
+                    <th class="px-6 py-4 text-right"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for ticket in tickets %}
+                <tr class="hover:bg-slate-50/50 transition group">
+                    <td class="px-6 py-4">
+                        <span class="font-black text-slate-400">#{{ ticket.id }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800">{{ ticket.equipment.nom }}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">S/N: {{ ticket.equipment.numero_serie|default:"N/A" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if ticket.technician %}
+                        <div class="flex items-center gap-2">
+                            <div class="h-6 w-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black">
+                                {{ ticket.technician.user.username|slice:":1"|upper }}
+                            </div>
+                            <span class="font-medium text-slate-600">{{ ticket.technician }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-slate-300 italic text-sm">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {% if ticket.type == 'emergency' %}bg-rose-50 text-rose-600 border border-rose-100{% elif ticket.type == 'repair' %}bg-amber-50 text-amber-600 border border-amber-100{% else %}bg-blue-50 text-blue-600 border border-blue-100{% endif %}">
+                            {{ ticket.get_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-700 text-sm">{{ ticket.planned_start|date:"d/m/Y" }}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full {% if ticket.status == 'done' %}bg-emerald-500{% elif ticket.status == 'in_progress' %}bg-blue-500 animate-pulse{% elif ticket.status == 'pending' %}bg-slate-300{% elif ticket.status == 'canceled' %}bg-rose-500{% else %}bg-amber-500{% endif %}"></span>
+                            <span class="font-bold text-sm text-slate-600">{{ ticket.get_status_display }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{% url 'ticket_detail' ticket.id %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center inline-flex">
+                            <i class="las la-edit text-xl"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-20 text-center">
+                        <div class="flex flex-col items-center opacity-30">
+                            <i class="las la-clipboard-list text-6xl"></i>
+                            <p class="mt-4 font-bold tracking-tight">Aucun ticket trouvé</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

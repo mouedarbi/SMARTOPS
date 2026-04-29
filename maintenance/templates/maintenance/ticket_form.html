@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | SMARTOPS{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <div class="mb-8 flex items-center gap-4">
+        <a href="{% url 'ticket_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
+            <i class="las la-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{% if ticket %}Modifier le ticket #{{ ticket.id }}{% else %}Nouveau ticket d'intervention{% endif %}</h3>
+            <p class="text-slate-500 font-medium italic">Veuillez renseigner les informations de planification.</p>
+        </div>
+    </div>
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Colonne Gauche : Identification -->
+            <div class="space-y-6">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-info-circle text-lg"></i> Identification
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Équipement concerné</label>
+                            {{ form.equipment }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Technicien assigné</label>
+                            {{ form.technician }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Type</label>
+                                {{ form.type }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Statut initial</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-align-left text-lg"></i> Travail à effectuer
+                    </h4>
+                    <div>
+                        {{ form.description }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne Droite : Planification -->
+            <div class="space-y-6">
+                <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
+                        <i class="las la-calendar-check text-lg"></i> Planification
+                    </h4>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Date de l'intervention</label>
+                            {{ form.planned_date }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Heure de début</label>
+                                {{ form.start_time_slot }}
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Durée prévue</label>
+                                {{ form.duration_seconds }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-blue-700/50 rounded-2xl border border-blue-500/30">
+                        <p class="text-xs font-medium text-blue-100 leading-relaxed italic">
+                            <i class="las la-lightbulb mr-1"></i>
+                            La validation créera automatiquement un événement dans le calendrier partagé des techniciens.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
+                        <i class="las la-check-circle text-xl"></i>
+                        Enregistrer le Ticket
+                    </button>
+                    <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
+                        Annuler
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+{% endblock %}

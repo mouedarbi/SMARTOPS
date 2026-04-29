@@ -66,6 +66,24 @@
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Types d'Équipement</span>
                 </a>
 
+                <!-- SECTION : MAINTENANCE -->
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Opérations</p>
+
+                <a href="{% url 'ticket_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'ticket' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-clipboard-list text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Interventions</span>
+                </a>
+
+                <a href="{% url 'maintenance_calendar' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'calendar' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-calendar text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Planning</span>
+                </a>
+
+                <a href="{% url 'technician_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'technician' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    <i class="las la-users-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Techniciens</span>
+                </a>
+
                 <!-- SECTION : EXTENSIONS (Dynamique via Pluggy) -->
                 <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Extensions</p>
                 
