@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | SMARTOPS{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <div class="mb-8 flex items-center gap-4">
+        <a href="{% url 'technician_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
+            <i class="las la-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{{ technician }}</h3>
+            <p class="text-slate-500 font-medium italic">Consultez et modifiez les compétences et le statut du technicien.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Colonne Gauche : Infos User & Stats -->
+        <div class="space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center">
+                <div class="h-24 w-24 rounded-3xl bg-slate-900 flex items-center justify-center text-white text-3xl font-black mx-auto mb-6 shadow-xl shadow-slate-200">
+                    {{ technician.user.username|slice:":2"|upper }}
+                </div>
+                <h4 class="text-xl font-black text-slate-800 tracking-tight">{{ technician.user.get_full_name|default:technician.user.username }}</h4>
+                <p class="text-sm font-medium text-slate-400 mb-6 italic">{{ technician.user.email }}</p>
+                
+                <div class="pt-6 border-t border-slate-50 flex flex-col gap-3">
+                    <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <span>Dernier login</span>
+                        <span class="text-slate-600">{{ technician.user.last_login|date:"d/m/Y"|default:"Jamais" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <span>Statut Compte</span>
+                        {% if technician.is_active %}
+                        <span class="text-emerald-600 flex items-center gap-1"><i class="las la-check-circle"></i> Actif</span>
+                        {% else %}
+                        <span class="text-rose-600 flex items-center gap-1"><i class="las la-times-circle"></i> Inactif</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Cards Grid -->
+            <div class="grid grid-cols-1 gap-4">
+                <div class="bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-100 text-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200">Performance</h4>
+                        <i class="las la-chart-pie text-2xl text-blue-200/50"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-end mb-1">
+                                <p class="text-3xl font-black">{{ stats.completion_rate }}%</p>
+                                <p class="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Taux de succès</p>
+                            </div>
+                            <div class="h-1.5 w-full bg-blue-400/30 rounded-full overflow-hidden">
+                                <div class="h-full bg-white rounded-full" style="width: {{ stats.completion_rate }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-6 rounded-3xl shadow-lg shadow-slate-100 text-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Efficacité</h4>
+                        <i class="las la-clock text-2xl text-slate-500/50"></i>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black">{{ stats.avg_duration }} <span class="text-sm font-medium text-slate-400">min</span></p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Durée moyenne / intervention</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Charge de travail</h4>
+                        <i class="las la-tasks text-2xl text-slate-200"></i>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div>
+                            <p class="text-2xl font-black text-slate-800">{{ stats.pending }}</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">En cours</p>
+                        </div>
+                        <div class="h-8 w-px bg-slate-100"></div>
+                        <div>
+                            <p class="text-2xl font-black text-slate-800">{{ stats.total }}</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne Droite : Formulaire Edit & History -->
+        <div class="md:col-span-2 space-y-8">
+            <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
+                <form method="POST" class="space-y-8">
+                    {% csrf_token %}
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                            <i class="las la-user-cog text-lg"></i> Paramètres du Profil
+                        </h4>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Spécialités Techniques</label>
+                            {{ form.specialties_str }}
+                            <p class="mt-2 text-[10px] text-slate-400 italic">Entrez les compétences séparées par des virgules (ex: HVAC, Gaz, Électricité)</p>
+                            
+                            {% if technician.specialties %}
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                {% for spec in technician.specialties %}
+                                <span class="px-3 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-bold border border-slate-100">
+                                    {{ spec }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h5 class="text-sm font-black text-slate-700">Disponibilité du Technicien</h5>
+                                <p class="text-xs text-slate-500 font-medium">Si inactif, il n'apparaîtra plus dans les choix de planification.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <label class="text-xs font-black uppercase tracking-widest text-slate-400">Inactif</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    {{ form.is_active }}
+                                </label>
+                                <label class="text-xs font-black uppercase tracking-widest text-emerald-600">Actif</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-50 flex gap-4">
+                        <button type="submit" class="flex-grow py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
+                            <i class="las la-save text-xl"></i>
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Liste des derniers tickets -->
+            <div>
+                 <div class="flex items-center justify-between mb-6">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dernières interventions</h4>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-300">{{ stats.total }} au total</span>
+                 </div>
+                 <div class="space-y-3">
+                    {% for ticket in technician.tickets.all|dictsortreversed:"planned_start"|slice:":5" %}
+                    <div class="bg-white p-5 rounded-3xl border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition group">
+                        <div class="flex items-center gap-5">
+                            <div class="h-12 w-12 rounded-2xl {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-500{% elif ticket.status == 'emergency' %}bg-rose-50 text-rose-500{% else %}bg-blue-50 text-blue-500{% endif %} flex items-center justify-center transition group-hover:scale-110">
+                                <i class="las {% if ticket.type == 'repair' %}la-tools{% elif ticket.type == 'emergency' %}la-exclamation-triangle{% else %}la-calendar-check{% endif %} text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-800">{{ ticket.equipment.name }}</p>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight flex items-center gap-1">
+                                        <i class="las la-calendar"></i> {{ ticket.planned_start|date:"d/m/Y" }}
+                                    </p>
+                                    <div class="h-1 w-1 bg-slate-200 rounded-full"></div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight flex items-center gap-1">
+                                        <i class="las la-map-marker"></i> {{ ticket.equipment.building.name }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest 
+                                {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-600
+                                {% elif ticket.status == 'pending' %}bg-slate-50 text-slate-400
+                                {% elif ticket.status == 'in_progress' %}bg-blue-50 text-blue-600
+                                {% else %}bg-amber-50 text-amber-600{% endif %}">
+                                {{ ticket.get_status_display }}
+                            </span>
+                            <a href="{% url 'ticket_detail' ticket.id %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
+                                <i class="las la-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="bg-slate-50 border-2 border-dashed border-slate-200 p-10 rounded-3xl text-center">
+                        <i class="las la-clipboard-list text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-sm text-slate-400 font-medium">Aucune intervention enregistrée pour ce technicien.</p>
+                    </div>
+                    {% endfor %}
+                 </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
