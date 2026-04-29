@@ -131,3 +131,16 @@ def delete_maintenance_event(sender, instance, **kwargs):
     """
     if instance.event:
         instance.event.delete()
+
+# --- SIGNALS POUR PROFILS TECHNICIENS ---
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_technician_profile(sender, instance, created, **kwargs):
+    """
+    Crée automatiquement un profil Technicien si le rôle est 'technician'.
+    """
+    if instance.role == 'technician' and not instance.is_deleted:
+        Technician.objects.get_or_create(user=instance)
+    elif instance.role != 'technician':
+        # Optionnel : On pourrait désactiver ou supprimer le profil si le rôle change
+        Technician.objects.filter(user=instance).delete()
