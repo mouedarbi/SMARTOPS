@@ -16,6 +16,10 @@ from .forms import CustomUserForm, CustomUserCreateForm
 def is_admin(user):
     return user.is_authenticated and (user.role == 'admin' or user.is_superuser)
 
+def is_management_staff(user):
+    """Autorise uniquement les Admins et les Managers (et superusers)."""
+    return user.is_authenticated and (user.role in ['admin', 'manager'] or user.is_superuser)
+
 @login_required
 @user_passes_test(is_admin)
 def user_list(request):

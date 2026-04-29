@@ -9,13 +9,15 @@ Description : Vues pour la gestion de la configuration système.
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import SystemConfiguration
 from .forms import SystemConfigurationForm
 from inventory.models import Equipment, Building, Client
 from maintenance.models import MaintenanceTicket
+from accounts.views import is_management_staff
 
 @login_required
+@user_passes_test(is_management_staff)
 def dashboard_view(request):
     """
     Vue principale du tableau de bord.
@@ -47,6 +49,7 @@ def dashboard_view(request):
     return render(request, 'system/dashboard.html', context)
 
 @login_required
+@user_passes_test(is_management_staff)
 def system_config_view(request):
     """
     Vue unique pour visualiser et modifier la configuration du système.

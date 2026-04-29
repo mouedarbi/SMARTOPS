@@ -9,19 +9,22 @@ Description : Vues CRUD pour la gestion des clients, bâtiments, équipements et
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from accounts.views import is_management_staff
 from .models import Client, Building, Equipment, EquipmentType, EquipmentTypeField
 from .forms import ClientForm, BuildingForm, EquipmentForm, EquipmentTypeForm, EquipmentTypeFieldForm
 
 # --- VUES CLIENT ---
 
 @login_required
+@user_passes_test(is_management_staff)
 def client_list_view(request):
     """Liste les clients enregistrés."""
     clients = Client.objects.all().order_by('-created_at')
     return render(request, 'inventory/client_list.html', {'clients': clients})
 
 @login_required
+@user_passes_test(is_management_staff)
 def client_create_view(request):
     """Crée un nouveau client."""
     if request.method == 'POST':
@@ -35,6 +38,7 @@ def client_create_view(request):
     return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Nouveau Client'})
 
 @login_required
+@user_passes_test(is_management_staff)
 def client_update_view(request, pk):
     """Met à jour un client existant."""
     client = get_object_or_404(Client, pk=pk)
@@ -51,12 +55,14 @@ def client_update_view(request, pk):
 # --- VUES BÂTIMENT ---
 
 @login_required
+@user_passes_test(is_management_staff)
 def building_list_view(request):
     """Liste les bâtiments enregistrés."""
     buildings = Building.objects.all().order_by('name')
     return render(request, 'inventory/building_list.html', {'buildings': buildings})
 
 @login_required
+@user_passes_test(is_management_staff)
 def building_create_view(request):
     """Crée un nouveau bâtiment."""
     if request.method == 'POST':
@@ -70,6 +76,7 @@ def building_create_view(request):
     return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Nouveau Bâtiment'})
 
 @login_required
+@user_passes_test(is_management_staff)
 def building_update_view(request, pk):
     """Met à jour un bâtiment existant."""
     building = get_object_or_404(Building, pk=pk)
@@ -86,12 +93,14 @@ def building_update_view(request, pk):
 # --- VUES ÉQUIPEMENT ---
 
 @login_required
+@user_passes_test(is_management_staff)
 def equipment_list_view(request):
     """Liste les équipements enregistrés."""
     equipments = Equipment.objects.all().order_by('name')
     return render(request, 'inventory/equipment_list.html', {'equipments': equipments})
 
 @login_required
+@user_passes_test(is_management_staff)
 def equipment_create_view(request):
     """Crée un nouvel équipement."""
     if request.method == 'POST':
@@ -107,6 +116,7 @@ def equipment_create_view(request):
 # --- VUES TYPE ÉQUIPEMENT ---
 
 @login_required
+@user_passes_test(is_management_staff)
 def equipment_type_list_view(request):
     """Liste les types d'équipement."""
     types = EquipmentType.objects.all().order_by('name')
@@ -120,6 +130,7 @@ def equipment_type_list_view(request):
     return render(request, 'inventory/equipment_type_list.html', {'types': types, 'form': form})
 
 @login_required
+@user_passes_test(is_management_staff)
 def equipment_type_detail_view(request, pk):
     """Détail d'un type et gestion de ses champs."""
     etype = get_object_or_404(EquipmentType, pk=pk)
