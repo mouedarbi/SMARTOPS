@@ -135,6 +135,7 @@ SESSION_COOKIE_NAME = 'smartops_sessionid'
 CSRF_COOKIE_NAME = 'smartops_csrftoken'
 
 # Auth redirects
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
