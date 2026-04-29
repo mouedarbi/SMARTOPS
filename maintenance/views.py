@@ -7,7 +7,7 @@ Version : 1.0
 Description : Vues pour la gestion de la maintenance dans l'admin custom.
 """
 
-from django.shortcuts import render, get_object_or_be404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import MaintenanceTicket, Technician
