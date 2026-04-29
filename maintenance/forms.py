@@ -12,7 +12,7 @@ from django.utils import timezone
 from datetime import timedelta, time
 from .models import MaintenanceTicket, Technician
 
-from inventory.models import Client, Building
+from inventory.models import Client, Building, Equipment
 
 class MaintenanceTicketForm(forms.ModelForm):
     # Choix pour les créneaux horaires
@@ -66,19 +66,31 @@ class MaintenanceTicketForm(forms.ModelForm):
         fields = ['equipment', 'technician', 'type', 'status', 'description']
         widgets = {
             'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'technician': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'type': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'status': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm', 'placeholder': 'Détaillez le problème ou les tâches à effectuer...'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            if self.instance.equipment:
-                self.fields['client'].initial = self.instance.equipment.building.client
-                self.fields['building'].queryset = Building.objects.filter(client=self.instance.equipment.building.client)
-                self.fields['building'].initial = self.instance.equipment.building
+        
+        # 1. État par défaut (vide)
+        self.fields['equipment'].queryset = Equipment.objects.none()
+        self.fields['equipment'].choices = [('', '--- Choisir un équipement ---')]
+        
+        # 2. Si mode édition : pré-peupler les menus déroulants
+        if self.instance and self.instance.pk and self.instance.equipment:
+            building = self.instance.equipment.building
+            client = building.client
+            
+            # Client (Lecture seule dans template, mais on garde la logique)
+            self.fields['client'].initial = client
+            
+            # Peupler Bâtiments
+            self.fields['building'].queryset = Building.objects.filter(client=client)
+            self.fields['building'].initial = building
+            
+            # Peupler Équipements
+            self.fields['equipment'].queryset = Equipment.objects.filter(building=building)
+            self.fields['equipment'].choices = [(e.id, str(e)) for e in self.fields['equipment'].queryset]
+            self.fields['equipment'].initial = self.instance.equipment
 
             if self.instance.planned_start:
                 self.fields['planned_date'].initial = self.instance.planned_start.strftime('%Y-%m-%d')
@@ -88,6 +100,22 @@ class MaintenanceTicketForm(forms.ModelForm):
                     # On cherche la durée la plus proche
                     closest = min([c[0] for c in self.DURATION_CHOICES], key=lambda x: abs(x - diff))
                     self.fields['duration_seconds'].initial = int(closest)
+        
+        # 3. Validation dynamique pour le formulaire POST (Ajax)
+        if self.data.get('building'):
+            try:
+                building_id = int(self.data.get('building'))
+                self.fields['equipment'].queryset = Equipment.objects.filter(building_id=building_id)
+                self.fields['equipment'].choices = [(e.id, str(e)) for e in self.fields['equipment'].queryset]
+            except (ValueError, TypeError):
+                pass
+        
+        if self.data.get('client'):
+            try:
+                client_id = int(self.data.get('client'))
+                self.fields['building'].queryset = Building.objects.filter(client_id=client_id)
+            except (ValueError, TypeError):
+                pass
 
     def save(self, commit=True):
         instance = super().save(commit=False)

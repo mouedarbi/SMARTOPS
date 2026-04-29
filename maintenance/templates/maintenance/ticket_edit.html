@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | SMARTOPS
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buildingSelect = document.getElementById('id_building');
+    const equipmentSelect = document.getElementById('id_equipment');
+
+    // Bâtiment -> Équipements
+    buildingSelect.addEventListener('change', function() {
+        const buildingId = this.value;
+        if (!buildingId) return;
+
+        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
+            .then(res => res.json())
+            .then(data => {
+                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                data.forEach(e => {
+                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                });
+            });
+    });
+});
+</script>
+{% endblock %}
+{% block page_title %}{{ page_title }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buildingSelect = document.getElementById('id_building');
+    const equipmentSelect = document.getElementById('id_equipment');
+
+    // Bâtiment -> Équipements
+    buildingSelect.addEventListener('change', function() {
+        const buildingId = this.value;
+        if (!buildingId) return;
+
+        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
+            .then(res => res.json())
+            .then(data => {
+                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                data.forEach(e => {
+                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                });
+            });
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <div class="mb-8 flex items-center gap-4">
+        <a href="{% url 'ticket_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
+            <i class="las la-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Modifier le ticket #{{ ticket.id }}</h3>
+        </div>
+    </div>
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="space-y-6">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-search text-lg"></i> Informations Client
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">1. Client</label>
+                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-bold shadow-sm">
+                                {{ ticket.equipment.building.client.name }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Bâtiment</label>
+                            {{ form.building }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">3. Équipement</label>
+                            {{ form.equipment }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-info-circle text-lg"></i> Identification
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Technicien assigné</label>
+                            {{ form.technician }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Type</label>
+                                {{ form.type }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Statut</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne Droite : Planification -->
+            <div class="space-y-6">
+                <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
+                        <i class="las la-calendar-check text-lg"></i> Planification
+                    </h4>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Date de l'intervention</label>
+                            {{ form.planned_date }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Heure de début</label>
+                                {{ form.start_time_slot }}
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Durée prévue</label>
+                                {{ form.duration_seconds }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition">
+                        Enregistrer les modifications
+                    </button>
+                    <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
+                        Annuler
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buildingSelect = document.getElementById('id_building');
+    const equipmentSelect = document.getElementById('id_equipment');
+
+    // Bâtiment -> Équipements
+    buildingSelect.addEventListener('change', function() {
+        const buildingId = this.value;
+        if (!buildingId) return;
+
+        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
+            .then(res => res.json())
+            .then(data => {
+                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                data.forEach(e => {
+                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                });
+            });
+    });
+});
+</script>
+{% endblock %}
