@@ -122,3 +122,81 @@
     - **Visibilité UI** : Correction des contrastes (blanc sur blanc) dans les formulaires Tailwind.
     - **Maintenance Système** : Suppression des répertoires orphelins (`tmp_plugin`, `rebuild_plugin`) et mise à jour de l'`URL Marketplace` vers la production (`https://opensmartops.org`).
 - **Outcome** : Une interface plus fluide, une meilleure traçabilité des performances et un socle de plugins assaini.
+
+## Séance du 05/06/2026
+
+### Travaux réalisés
+1.  **Évolutions Métier (Module Maintenance) :**
+    *   Implémentation du nouvel état de ticket : **"À replanifier"** (`to_reschedule`).
+    *   Mise à jour du workflow : Distinction entre échecs techniques temporaires et annulations définitives.
+    *   Interface : Attribution de la couleur **Orange** pour l'identification visuelle immédiate des tickets à traiter en priorité.
+
+2.  **Infrastructure & DevOps :**
+    *   Mise en place de la **CI/CD via GitHub Actions** (`django_ci.yml`).
+    *   Configuration des environnements de test automatisés pour Python 3.13.
+    *   Stabilisation de l'environnement de développement sur **Django 6.0.4**.
+
+3.  **Maintenance du dépôt :**
+    *   Nettoyage de la racine du projet et organisation des documents techniques dans un répertoire externe.
+    *   Gestion du versionnement via une branche dédiée `feat-technician-app`.
+
+### Prochaines étapes
+*   Initialisation de l'application dédiée `technician`.
+*   Mise en place de l'interface mobile-first pour le personnel de terrain.
+
+---
+
+## Séance du 05/06/2026 (suite) - Résolution de la CI cassée (django-scheduler + tests inventaire)
+
+### Problèmes rencontrés
+
+#### Problème 1 — Échec de migration `0015` en CI (django-scheduler)
+
+**Symptôme :**
+```
+ValueError: Found wrong number (0) of indexes for schedule_calendarrelation(content_type_id, object_id).
+```
+La CI GitHub Actions échouait lors de la création de la base de test (`python manage.py test`), avant même d'exécuter un seul test.
+
+**Cause racine :**
+Les migrations vendorisées de `django-scheduler` utilisaient une chaîne d'opérations incompatible avec Django 6.0 :
+1. Migration `0003` et `0008` : `AlterIndexTogether` → censé créer des index non nommés en base de données.
+2. Migration `0015` (générée par `makemigrations` sur Django 6.0) : `RenameIndex(old_fields=...)` → cherche ces index non nommés pour les renommer.
+
+Or, **en Django 6.0, `AlterIndexTogether` est devenu un no-op au niveau base de données** (il ne maintient plus que l'état de migration, sans créer d'index réel). Du coup, `RenameIndex` ne trouvait aucun index à renommer (0 trouvé).
+
+**Solution apportée :**
+Remplacement du contenu de la migration `schedule/migrations/0015_rename_*.py` :
+- **Avant** : 4 opérations `RenameIndex(old_fields=(...), new_name='...')` qui échouaient.
+- **Après** :
+  1. `SeparateDatabaseAndState` avec des `AlterIndexTogether(index_together=set())` en `state_operations` uniquement (sans toucher la DB) pour nettoyer l'état de migration.
+  2. 4 opérations `AddIndex` avec des index nommés explicitement pour créer les index directement en base.
+
+Cette approche fonctionne aussi bien sur une base fraîche (CI) que sur une base existante.
+
+---
+
+#### Problème 2 — 3 tests `inventory` en erreur (bug préexistant, masqué par le problème 1)
+
+**Symptôme :**
+```
+ValueError: Cannot assign "'elevator'": "Equipment.equipment_type" must be a "EquipmentType" instance.
+```
+Après correction du problème 1, les migrations passaient mais 3 tests sur 7 échouaient dans `inventory/tests.py`.
+
+**Cause racine :**
+Dans la méthode `setUp` des tests, le champ `equipment_type` (un `ForeignKey` vers le modèle `EquipmentType`) recevait une chaîne de caractères (`"elevator"`) au lieu d'une instance du modèle. Ce bug était masqué auparavant car la CI ne dépassait jamais l'étape des migrations.
+
+**Solution apportée :**
+Correction de `inventory/tests.py` :
+- Import ajouté : `from .models import ..., EquipmentType`
+- Création d'une instance `EquipmentType` dans `setUp` : `self.equipment_type = EquipmentType.objects.create(name="elevator")`
+- Utilisation de l'instance dans `Equipment.objects.create(equipment_type=self.equipment_type, ...)`
+- Mise à jour de l'assertion `test_equipment_creation` pour comparer avec l'instance et non la chaîne.
+
+### Résultat
+```
+Ran 7 tests in 1.017s
+OK
+```
+La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (environnement identique à GitHub Actions).

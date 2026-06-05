@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'inventory.apps.InventoryConfig',
     'maintenance.apps.MaintenanceConfig',
     'schedule',
+    'technician',
 ]
 
 # Injection automatique des plugins depuis la base de données
