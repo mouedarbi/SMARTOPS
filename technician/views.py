@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -16,12 +16,9 @@ def technician_login(request):
     if request.user.is_authenticated:
         if request.user.is_technician:
             return redirect('technician_dashboard')
-        return redirect('dashboard') # Redirige vers le dashboard manager si ce n'est pas un tech
+        return redirect('dashboard') 
 
     if request.method == 'POST':
-        # Logique de connexion (on garde simple pour le moment, mais on valide l'auth)
-        # En production, on utiliserait le système d'auth standard de Django
-        # Mais ici on veut un écran spécifique.
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
@@ -50,8 +47,6 @@ def technician_dashboard(request):
     today_end = today_start + timedelta(days=1)
     week_end = today_start + timedelta(days=7)
 
-    # Récupération des tickets pour le technicien connecté
-    # Note: On accède via technician_profile car c'est un OneToOneField sur CustomUser
     try:
         tech_profile = request.user.technician_profile
     except Exception:
@@ -77,6 +72,27 @@ def technician_dashboard(request):
         'now': now,
     }
     return render(request, 'technician/dashboard.html', context)
+
+@login_required
+@user_passes_test(is_technician)
+def technician_ticket_detail(request, pk):
+    """
+    Vue détaillée d'une intervention pour le technicien.
+    """
+    try:
+        tech_profile = request.user.technician_profile
+    except Exception:
+        messages.error(request, "Profil technicien introuvable.")
+        return redirect('technician_dashboard')
+
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
+    
+    context = {
+        'page_title': f"Intervention #{ticket.id}",
+        'ticket': ticket,
+        'now': timezone.now(),
+    }
+    return render(request, 'technician/ticket_detail.html', context)
 
 def technician_logout(request):
     logout(request)

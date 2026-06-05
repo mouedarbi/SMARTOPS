@@ -1,0 +1,106 @@
+{% extends 'technician/base_technician.html' %}
+
+{% block content %}
+<!-- Floating Action Button (Démarrer) -->
+{% if ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
+<div class="fixed bottom-6 left-0 right-0 px-6 z-20">
+    <a href="#" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+        <i class="fas fa-play text-xs"></i>
+        <span>DÉMARRER L'INTERVENTION</span>
+    </a>
+</div>
+{% endif %}
+
+<div class="px-4 py-6">
+    <!-- Header Ticket -->
+    <div class="flex items-center justify-between mb-6">
+        <a href="{% url 'technician_dashboard' %}" class="h-10 w-10 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+            <i class="fas fa-chevron-left text-xs"></i>
+        </a>
+        <div class="text-right">
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block leading-none mb-1">Status Actuel</span>
+            <span class="text-xs font-bold px-3 py-1 rounded-full 
+                {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-600
+                {% elif ticket.status == 'in_progress' %}bg-blue-50 text-blue-600
+                {% elif ticket.status == 'to_reschedule' %}bg-orange-50 text-orange-600
+                {% else %}bg-slate-100 text-slate-500{% endif %}">
+                {{ ticket.get_status_display|upper }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Info Card -->
+    <div class="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div>
+                <h2 class="font-black text-slate-800 text-lg leading-tight">{{ ticket.equipment.name }}</h2>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">{{ ticket.equipment.serial_number }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+            <div>
+                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Horaire Prévu</span>
+                <p class="text-sm font-bold text-slate-700">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</p>
+            </div>
+            <div>
+                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Type</span>
+                <p class="text-sm font-bold text-blue-600">{{ ticket.get_type_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single Page Sections -->
+    <div class="space-y-6">
+        <!-- Section: Localisation -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Localisation</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="h-10 w-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center shrink-0">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-slate-800">{{ ticket.equipment.building.name }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ ticket.equipment.building.address }}<br>{{ ticket.equipment.building.zip_code }} {{ ticket.equipment.building.city }}</p>
+                    </div>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query={{ ticket.equipment.building.address|urlencode }}+{{ ticket.equipment.building.city|urlencode }}" 
+                   target="_blank"
+                   class="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold tracking-wider active:scale-[0.98] transition-all">
+                    <i class="fas fa-directions"></i>
+                    OUVRIR DANS MAPS
+                </a>
+            </div>
+        </section>
+
+        <!-- Section: Description Travail -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Consignes / Problème</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-sm text-slate-600 leading-relaxed italic">
+                    {% if ticket.description %}
+                        "{{ ticket.description }}"
+                    {% else %}
+                        Aucune consigne spécifique renseignée.
+                    {% endif %}
+                </p>
+            </div>
+        </section>
+
+        <!-- Section: Historique Rapide -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Dernier Historique</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-400 text-center py-2">Fonctionnalité en cours de développement</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Padding for floating button -->
+    <div class="h-24"></div>
+</div>
+{% endblock %}
