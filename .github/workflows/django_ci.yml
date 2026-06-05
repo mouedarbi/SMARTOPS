@@ -25,6 +25,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: Patch Scheduler Library
+      run: |
+        # On corrige l'index bug directement dans le site-packages de la CI
+        sed -i 's/models.Index(fields=\["content_type", "object_id"\]),/models.Index(fields=\["content_type_id", "object_id"\]),/' $(python -c "import site; print(site.getsitepackages()[0])")/schedule/models/calendars.py
     - name: Run Tests
       run: |
         python manage.py test
