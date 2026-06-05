@@ -47,6 +47,7 @@ class MaintenanceTicket(models.Model):
         ("pending", "En attente"),
         ("planned", "Planifié"),
         ("in_progress", "En cours"),
+        ("to_reschedule", "À replanifier"),
         ("done", "Terminé"),
         ("canceled", "Annulé"),
     ]
