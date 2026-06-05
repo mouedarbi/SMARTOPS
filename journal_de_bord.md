@@ -200,3 +200,24 @@ Ran 7 tests in 1.017s
 OK
 ```
 La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (environnement identique à GitHub Actions).
+
+### Suite de la séance du 05/06/2026 (Application Technicien)
+
+1.  **Phase 1 & 2 : Dashboard Mobile-First :**
+    *   Initialisation de l'application Django `technician`.
+    *   Mise en place d'un routage dédié (`/technician/`) indépendant du dashboard gestionnaire.
+    *   Création d'une interface responsive (Tailwind CSS) avec menu hamburger et horloge temps réel.
+    *   Implémentation du filtrage dynamique : Vue "Aujourd'hui" vs Vue "Semaine" (J+7) pour l'anticipation du planning.
+
+2.  **Phase 3 : Vue Détail Intervention :**
+    *   Développement d'une vue Single Page Scroll compacte pour le terrain.
+    *   Intégration d'un bouton intelligent "Ouvrir dans Maps" basé sur les coordonnées du bâtiment.
+    *   Mise en place d'un bouton d'action flottant (FAB) pour le démarrage de l'intervention.
+    *   Sécurisation des accès : Un technicien ne peut consulter que les interventions qui lui sont personnellement assignées.
+
+3.  **Administration :**
+    *   Enregistrement du modèle `CustomUser` dans l'admin Django avec gestion des rôles (`technician`, `manager`, etc.).
+
+### Prochaines étapes
+*   Phase 4 : Implémentation de la logique de changement de statut (Démarrer / Terminer).
+*   Phase 5 : Formulaire de saisie du rapport d'intervention et signature client.
