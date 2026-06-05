@@ -2,11 +2,21 @@
 
 {% block content %}
 <!-- Floating Action Button (Démarrer) -->
-{% if ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
+{% if ticket.status == 'pending' or ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
-    <a href="#" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+    <a href="{% url 'start_intervention' ticket.id %}" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
         <i class="fas fa-play text-xs"></i>
         <span>DÉMARRER L'INTERVENTION</span>
+    </a>
+</div>
+{% endif %}
+
+<!-- Floating Action Button (Terminer) -->
+{% if ticket.status == 'in_progress' %}
+<div class="fixed bottom-6 left-0 right-0 px-6 z-20">
+    <a href="{% url 'stop_intervention' ticket.id %}" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-emerald-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+        <i class="fas fa-check text-xs"></i>
+        <span>TERMINER L'INTERVENTION</span>
     </a>
 </div>
 {% endif %}
@@ -23,6 +33,7 @@
                 {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-600
                 {% elif ticket.status == 'in_progress' %}bg-blue-50 text-blue-600
                 {% elif ticket.status == 'to_reschedule' %}bg-orange-50 text-orange-600
+                {% elif ticket.status == 'pending' %}bg-amber-50 text-amber-600
                 {% else %}bg-slate-100 text-slate-500{% endif %}">
                 {{ ticket.get_status_display|upper }}
             </span>
@@ -76,6 +87,27 @@
                 </a>
             </div>
         </section>
+
+        <!-- Section: Temps Réel -->
+        {% if ticket.effective_start or ticket.effective_end %}
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Horodatage Réel</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 grid grid-cols-2 gap-4">
+                <div>
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Début Réel</span>
+                    <p class="text-sm font-bold text-slate-700">
+                        {% if ticket.effective_start %}{{ ticket.effective_start|date:"H:i" }}{% else %}--:--{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Fin Réelle</span>
+                    <p class="text-sm font-bold text-slate-700">
+                        {% if ticket.effective_end %}{{ ticket.effective_end|date:"H:i" }}{% else %}--:--{% endif %}
+                    </p>
+                </div>
+            </div>
+        </section>
+        {% endif %}
 
         <!-- Section: Description Travail -->
         <section>

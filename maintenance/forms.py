@@ -64,8 +64,13 @@ class MaintenanceTicketForm(forms.ModelForm):
     class Meta:
         model = MaintenanceTicket
         fields = ['equipment', 'technician', 'type', 'status', 'description']
+        labels = {
+            'status': "Statut de l'intervention",
+        }
         widgets = {
             'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'status': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'description': forms.Textarea(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -74,8 +79,14 @@ class MaintenanceTicketForm(forms.ModelForm):
         # 1. État par défaut (vide)
         self.fields['equipment'].queryset = Equipment.objects.none()
         self.fields['equipment'].choices = [('', '--- Choisir un équipement ---')]
-        
-        # 2. Si mode édition : pré-peupler les menus déroulants
+
+        # 1.bis Sécurité : Si l'intervention est en cours ou terminée, on verrouille la planification et le statut
+        if self.instance and self.instance.pk:
+            if self.instance.status in ['in_progress', 'done', 'canceled']:
+                # On verrouille TOUT pour éviter les incohérences avec le terrain
+                for field_name in self.fields:
+                    self.fields[field_name].disabled = True
+                    self.fields[field_name].required = False
         if self.instance and self.instance.pk and self.instance.equipment:
             building = self.instance.equipment.building
             client = building.client

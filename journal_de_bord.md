@@ -219,5 +219,29 @@ La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (envi
     *   Enregistrement du modèle `CustomUser` dans l'admin Django avec gestion des rôles (`technician`, `manager`, etc.).
 
 ### Prochaines étapes
-*   Phase 4 : Implémentation de la logique de changement de statut (Démarrer / Terminer).
 *   Phase 5 : Formulaire de saisie du rapport d'intervention et signature client.
+
+## Séance du 05/06/2026 (suite) - Phase 4 : Gestion du Cycle de Vie Terrain
+
+### Travaux réalisés
+1.  **Logique de Statut (Démarrer / Terminer) :**
+    *   Implémentation des vues `start_intervention` et `stop_intervention`.
+    *   Gestion automatisée des horodatages réels (`effective_start`, `effective_end`).
+    *   Sécurisation : Vérification stricte de l'assignation du technicien (404 si accès non autorisé).
+
+2.  **Interface Mobile-First :**
+    *   Ajout de Boutons d'Action Flottants (FAB) dynamiques en bas de l'écran.
+    *   Couleurs contextuelles : Bleu pour "Démarrer", Émeraude pour "Terminer".
+    *   Nouvelle section "Horodatage Réel" affichant les heures de début et de fin effectives.
+
+3.  **Qualité et Tests :**
+    *   Création d'une suite de tests automatisés (`technician/tests.py`) couvrant :
+        *   La transition de statut `planned` -> `in_progress`.
+        *   La transition de statut `in_progress` -> `done`.
+        *   L'interdiction de redémarrer un ticket terminé.
+        *   L'isolation de sécurité entre techniciens.
+    *   Validation : 4/4 tests OK sur environnement SQLite.
+
+### Prochaines étapes
+*   Phase 5 : Formulaire de saisie du rapport d'intervention (Mobile UI) et signature numérique client.
+*   Phase 6 : Synchronisation des données et clôture administrative.

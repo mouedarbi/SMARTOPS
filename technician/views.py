@@ -94,6 +94,55 @@ def technician_ticket_detail(request, pk):
     }
     return render(request, 'technician/ticket_detail.html', context)
 
+@login_required
+@user_passes_test(is_technician)
+def start_intervention(request, pk):
+    """
+    Démarre l'intervention : Change le statut et enregistre l'heure de début.
+    """
+    try:
+        tech_profile = request.user.technician_profile
+    except Exception:
+        messages.error(request, "Profil technicien introuvable.")
+        return redirect('technician_dashboard')
+
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
+    
+    if ticket.status in ['pending', 'planned', 'to_reschedule']:
+        ticket.status = 'in_progress'
+        ticket.effective_start = timezone.now()
+        ticket.save()
+        messages.success(request, "Intervention démarrée. Bon travail !")
+    else:
+        messages.warning(request, "Cette intervention ne peut pas être démarrée.")
+
+    return redirect('technician_ticket_detail', pk=pk)
+
+@login_required
+@user_passes_test(is_technician)
+def stop_intervention(request, pk):
+    """
+    Termine l'intervention : Change le statut et enregistre l'heure de fin.
+    Note : Sera enrichi en Phase 5 avec le rapport.
+    """
+    try:
+        tech_profile = request.user.technician_profile
+    except Exception:
+        messages.error(request, "Profil technicien introuvable.")
+        return redirect('technician_dashboard')
+
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
+    
+    if ticket.status == 'in_progress':
+        ticket.status = 'done'
+        ticket.effective_end = timezone.now()
+        ticket.save()
+        messages.success(request, "Intervention terminée avec succès.")
+    else:
+        messages.warning(request, "Cette intervention n'est pas en cours.")
+
+    return redirect('technician_ticket_detail', pk=pk)
+
 def technician_logout(request):
     logout(request)
     return redirect('technician_login')

@@ -11,10 +11,37 @@
             <i class="las la-arrow-left text-xl"></i>
         </a>
         <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{% if ticket %}Modifier le ticket #{{ ticket.id }}{% else %}Nouveau ticket d'intervention{% endif %}</h3>
-            <p class="text-slate-500 font-medium italic">Veuillez renseigner les informations de planification.</p>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight">{% if ticket %}Détail de l'intervention #{{ ticket.id }}{% else %}Nouveau ticket d'intervention{% endif %}</h3>
+            <p class="text-slate-500 font-medium italic">{% if ticket.status == 'done' %}Cette intervention est clôturée et ne peut plus être modifiée.{% else %}Veuillez renseigner les informations de planification.{% endif %}</p>
         </div>
     </div>
+
+    {% if ticket.effective_start or ticket.effective_end %}
+    <div class="mb-8 p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
+        <div class="flex items-center gap-6">
+            <div class="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl">
+                <i class="las la-clock"></i>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">Début Réel (Terrain)</span>
+                    <span class="text-xl font-black text-emerald-700">{{ ticket.effective_start|date:"H:i"|default:"--" }}</span>
+                    <span class="text-[10px] block text-emerald-600/50">{{ ticket.effective_start|date:"d/m/Y" }}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">Fin Réelle (Terrain)</span>
+                    <span class="text-xl font-black text-emerald-700">{{ ticket.effective_end|date:"H:i"|default:"En cours..." }}</span>
+                    <span class="text-[10px] block text-emerald-600/50">{{ ticket.effective_end|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black uppercase tracking-widest">
+                {% if ticket.status == 'done' %}Validé{% else %}Live{% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
 
     <form method="POST" class="space-y-6">
         {% csrf_token %}
@@ -29,6 +56,7 @@
                     </h4>
                     
                     <div class="space-y-4">
+                        {% if not ticket %}
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">1. Choisir le Client</label>
                             {{ form.client }}
@@ -47,6 +75,13 @@
                                 <!-- Résultats AJAX -->
                             </div>
                         </div>
+                        {% else %}
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Client & Site</p>
+                            <p class="font-black text-slate-800">{{ ticket.equipment.building.client.name }}</p>
+                            <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -70,7 +105,7 @@
                                 {{ form.type }}
                             </div>
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Statut initial</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Statut de l'intervention</label>
                                 {{ form.status }}
                             </div>
                         </div>
@@ -119,15 +154,27 @@
                     </div>
                 </div>
 
+                {% if ticket.status != 'done' %}
                 <div class="flex flex-col gap-3">
                     <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
-                        Enregistrer le Ticket
+                        Enregistrer les modifications
                     </button>
                     <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
                         Annuler
                     </a>
                 </div>
+                {% else %}
+                <div class="flex flex-col gap-3">
+                    <div class="w-full py-4 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-3">
+                        <i class="las la-lock text-xl"></i>
+                        INTERVENTION ARCHIVÉE
+                    </div>
+                    <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-900 font-black uppercase tracking-widest rounded-2xl border border-slate-200 text-center hover:bg-slate-50 transition">
+                        Retour à la liste
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
         </div>

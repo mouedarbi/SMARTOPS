@@ -98,6 +98,7 @@ class MaintenanceTicket(models.Model):
 def sync_maintenance_event(sender, instance, created, **kwargs):
     """
     Crée ou met à jour l'événement dans le calendrier lors de la sauvegarde d'un ticket.
+    Priorise les temps réels (terrain) sur les temps prévus pour un affichage "Live".
     """
     # Récupération ou création du calendrier principal de maintenance
     calendar, _ = Calendar.objects.get_or_create(
@@ -105,13 +106,21 @@ def sync_maintenance_event(sender, instance, created, **kwargs):
         defaults={'name': "Calendrier de Maintenance"}
     )
 
+    # Détermination des heures à afficher (Réel si dispo, sinon Prévu)
+    display_start = instance.effective_start if instance.effective_start else instance.planned_start
+    display_end = instance.effective_end if instance.effective_end else instance.planned_end
+
+    # Titre dynamique avec statut
+    status_label = instance.get_status_display().upper()
+    event_title = f"[{status_label}] INT-{instance.id}: {instance.equipment.name}"
+
     if created or not instance.event:
         # Création de l'événement
         event = Event.objects.create(
-            title=f"INT-{instance.id}: {instance.equipment.name}",
-            description=f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}",
-            start=instance.planned_start,
-            end=instance.planned_end,
+            title=event_title,
+            description=f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}\nStatut: {status_label}",
+            start=display_start,
+            end=display_end,
             calendar=calendar
         )
         # On met à jour l'instance sans redéclencher le signal
@@ -119,10 +128,10 @@ def sync_maintenance_event(sender, instance, created, **kwargs):
     else:
         # Mise à jour de l'événement existant
         event = instance.event
-        event.title = f"INT-{instance.id}: {instance.equipment.name}"
-        event.start = instance.planned_start
-        event.end = instance.planned_end
-        event.description = f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}"
+        event.title = event_title
+        event.start = display_start
+        event.end = display_end
+        event.description = f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}\nStatut: {status_label}"
         event.save()
 
 @receiver(post_delete, sender=MaintenanceTicket)
