@@ -245,3 +245,38 @@ La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (envi
 ### Prochaines étapes
 *   Phase 5 : Formulaire de saisie du rapport d'intervention (Mobile UI) et signature numérique client.
 *   Phase 6 : Synchronisation des données et clôture administrative.
+
+---
+
+## Séance du 13/06/2026 - v0.2.0 : REST API (DRF + JWT + Swagger)
+
+### Travaux réalisés
+
+1.  **Infrastructure API :**
+    *   Installation de `djangorestframework`, `djangorestframework-simplejwt`, `drf-spectacular`.
+    *   Création de l'application Django `api` (centralisée).
+    *   Configuration `REST_FRAMEWORK` + `SPECTACULAR_SETTINGS` dans `settings.py`.
+    *   Branchement sur `/api/v1/` dans le routeur principal.
+
+2.  **Endpoints implémentés :**
+    *   **Auth JWT** : `POST /api/v1/auth/token/`, `POST /api/v1/auth/token/refresh/`, `GET /api/v1/auth/me/`
+    *   **Inventaire** : CRUD Clients, Bâtiments, Types d'équipements, Équipements (avec filtres GET)
+    *   **Maintenance** : CRUD Tickets + actions `POST /api/v1/tickets/{id}/start/` et `POST /api/v1/tickets/{id}/stop/`
+    *   **Technicien Mobile** : `GET /api/v1/my/interventions/?range=today|week`
+    *   **Documentation** : `GET /api/v1/docs/` (Swagger UI), `GET /api/v1/redoc/` (ReDoc), `GET /api/v1/schema/` (OpenAPI JSON)
+
+3.  **Sécurité & RBAC :**
+    *   Permissions par rôle : `IsAdminOrManager`, `IsAdminOnly`, `IsTechnicianOwner`.
+    *   Un technicien ne voit que ses propres tickets via l'API.
+    *   L'action `stop` accepte un rapport d'intervention et un statut (`done` ou `to_reschedule`).
+
+4.  **Tests (15/15 OK) :**
+    *   Auth JWT : obtention, endpoint `/me/`, accès sans token refusé.
+    *   Inventaire : liste clients, créer client, filtre bâtiments, équipements.
+    *   Tickets : vision manager vs technicien, cycle start→stop avec rapport, endpoint mobile.
+    *   OpenAPI : schema et Swagger UI accessibles.
+
+### Prochaines étapes
+*   Phase 5 App Mobile : Formulaire rapport d'intervention + signature numérique (via l'API `/stop/`).
+*   Notifications push (Phase 6).
+*   Tests d'intégration supplémentaires (permissions croisées).

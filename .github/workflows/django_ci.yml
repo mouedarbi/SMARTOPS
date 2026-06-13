@@ -29,5 +29,5 @@ jobs:
       run: |
         python manage.py test
       env:
-        SECRET_KEY: "ci-test-key-not-for-production"
+        SECRET_KEY: "ci-test-key-not-for-production-minimum-32-chars-long"
         DEBUG: "True"
