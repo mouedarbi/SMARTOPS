@@ -63,8 +63,13 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex flex-col">
-                            <span class="font-bold text-slate-700 text-sm">{{ ticket.planned_start|date:"d/m/Y" }}</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</span>
+                            {% if ticket.effective_start %}
+                                <span class="font-bold text-blue-600 text-sm">EN DIRECT : {{ ticket.effective_start|date:"H:i" }}{% if ticket.effective_end %} - {{ ticket.effective_end|date:"H:i" }}{% endif %}</span>
+                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tight line-through">Prévu: {{ ticket.planned_start|date:"H:i" }}</span>
+                            {% else %}
+                                <span class="font-bold text-slate-700 text-sm">{{ ticket.planned_start|date:"d/m/Y" }}</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</span>
+                            {% endif %}
                         </div>
                     </td>
                     <td class="px-6 py-4">
@@ -75,7 +80,7 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                         <a href="{% url 'ticket_detail' ticket.id %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center inline-flex">
-                            <i class="las la-edit text-xl"></i>
+                            <i class="las la-search text-xl"></i>
                         </a>
                     </td>
                 </tr>

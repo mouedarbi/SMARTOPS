@@ -1,0 +1,255 @@
+// =============================================================================
+// SMARTOPS CORE — Schéma de base de données (format dbdiagram.io)
+// Généré le : 2026-06-06
+//
+// NOTES D'EXCLUSION :
+//   Les tables système Django suivantes ont été volontairement omises car
+//   elles n'appartiennent pas à la logique métier de l'application :
+//     - django_session, django_migrations, django_content_type
+//     - auth_permission, auth_group, auth_group_permissions
+//     - accounts_customuser_groups, accounts_customuser_user_permissions
+//     - django_admin_log
+//   Les tables schedule_calendarrelation et schedule_eventrelation utilisent
+//   des GenericForeignKey (content_type + object_id) qui ne peuvent pas être
+//   exprimées comme des FK SQL directes ; elles sont incluses avec une note.
+// =============================================================================
+
+
+// ---------------------------------------------------------------------------
+// GROUPE : Administration
+// ---------------------------------------------------------------------------
+
+TableGroup Administration {
+  accounts_customuser
+}
+
+Table accounts_customuser {
+  id              integer     [pk, increment, not null]
+  // --- Champs hérités de AbstractUser ---
+  password        varchar(128) [not null]
+  last_login      timestamp   [null]
+  is_superuser    boolean     [not null, default: false]
+  username        varchar(150) [not null, unique]
+  first_name      varchar(150) [not null, default: '']
+  last_name       varchar(150) [not null, default: '']
+  email           varchar(254) [not null, default: '']
+  is_staff        boolean     [not null, default: false]
+  is_active       boolean     [not null, default: true]
+  date_joined     timestamp   [not null]
+  // --- Champs métier SMARTOPS ---
+  role            varchar(20)  [not null, default: 'technician', note: 'admin | manager | technician | consultant']
+  is_deleted      boolean     [not null, default: false]
+  deleted_at      timestamp   [null]
+}
+
+
+// ---------------------------------------------------------------------------
+// GROUPE : Patrimoine
+// ---------------------------------------------------------------------------
+
+TableGroup Patrimoine {
+  inventory_client
+  inventory_building
+  inventory_equipmenttype
+  inventory_equipmenttypefield
+  inventory_equipment
+}
+
+Table inventory_client {
+  id           integer      [pk, increment, not null]
+  name         varchar(255) [not null]
+  address      text         [not null]
+  contact_name varchar(255) [not null]
+  email        varchar(254) [not null]
+  phone        varchar(50)  [not null, default: '']
+  vat_number   varchar(50)  [not null, default: '']
+  is_active    boolean      [not null, default: true]
+  created_at   timestamp    [not null]
+}
+
+Table inventory_building {
+  id        integer      [pk, increment, not null]
+  client_id integer      [not null, ref: > inventory_client.id]
+  name      varchar(255) [not null]
+  address   text         [not null]
+}
+
+Table inventory_equipmenttype {
+  id   integer      [pk, increment, not null]
+  name varchar(100) [not null, unique]
+}
+
+Table inventory_equipmenttypefield {
+  id                integer     [pk, increment, not null]
+  equipment_type_id integer     [not null, ref: > inventory_equipmenttype.id]
+  field_name        varchar(100) [not null]
+  field_type        varchar(20)  [not null, note: 'text | number | date']
+  required          boolean     [not null, default: false]
+}
+
+Table inventory_equipment {
+  id               integer      [pk, increment, not null]
+  building_id      integer      [not null, ref: > inventory_building.id]
+  name             varchar(255) [not null]
+  equipment_type_id integer     [not null, ref: > inventory_equipmenttype.id]
+  serial_number    varchar(100) [not null, unique]
+  installed_at     date         [not null]
+  custom_fields    json         [not null, default: '{}', note: 'Valeurs des champs personnalisés définis dans EquipmentTypeField']
+}
+
+
+// ---------------------------------------------------------------------------
+// GROUPE : Maintenance
+// ---------------------------------------------------------------------------
+
+TableGroup Maintenance {
+  maintenance_technician
+  maintenance_maintenanceticket
+  schedule_rule
+  schedule_calendar
+  schedule_event
+  schedule_occurrence
+  schedule_eventrelation
+  schedule_calendarrelation
+}
+
+Table maintenance_technician {
+  id          integer [pk, increment, not null]
+  user_id     integer [not null, unique, ref: - accounts_customuser.id, note: 'OneToOne — limité aux users avec role=technician']
+  specialties json    [not null, default: '[]', note: 'Liste libre de compétences (ex: Electrique, Hydraulique)']
+  is_active   boolean [not null, default: true]
+}
+
+Table maintenance_maintenanceticket {
+  id                  integer         [pk, increment, not null]
+  equipment_id        integer         [not null, ref: > inventory_equipment.id]
+  technician_id       integer         [null, ref: > maintenance_technician.id]
+  type                varchar(50)     [not null, default: 'maintenance', note: 'maintenance | repair | emergency']
+  planned_start       timestamp       [not null]
+  planned_end         timestamp       [not null]
+  effective_start     timestamp       [null]
+  effective_end       timestamp       [null]
+  start_latitude      decimal(9,6)    [null]
+  start_longitude     decimal(9,6)    [null]
+  status              varchar(20)     [not null, default: 'pending', note: 'pending | planned | in_progress | to_reschedule | done | canceled']
+  description         text            [not null, default: '']
+  intervention_report text            [not null, default: '']
+  event_id            integer         [null, unique, ref: - schedule_event.id, note: 'Synchro automatique via signal post_save']
+  created_at          timestamp       [not null]
+  updated_at          timestamp       [not null]
+}
+
+// --- Tables django-scheduler ---
+
+Table schedule_rule {
+  id          integer     [pk, increment, not null]
+  name        varchar(32) [not null]
+  description text        [not null]
+  frequency   varchar(10) [not null, note: 'YEARLY | MONTHLY | WEEKLY | DAILY | HOURLY | MINUTELY | SECONDLY']
+  params      text        [not null, default: '', note: 'Format rrule : "count:1;bysecond:1;byminute:1,2"']
+}
+
+Table schedule_calendar {
+  id   integer      [pk, increment, not null]
+  name varchar(200) [not null]
+  slug varchar(200) [not null, unique]
+}
+
+Table schedule_event {
+  id                   integer      [pk, increment, not null]
+  start                timestamp    [not null, note: 'Indexé']
+  end                  timestamp    [not null, note: 'Indexé']
+  title                varchar(255) [not null]
+  description          text         [not null, default: '']
+  creator_id           integer      [null, ref: > accounts_customuser.id]
+  created_on           timestamp    [not null]
+  updated_on           timestamp    [not null]
+  rule_id              integer      [null, ref: > schedule_rule.id, note: 'NULL = événement ponctuel']
+  end_recurring_period timestamp    [null, note: 'Ignoré pour les événements ponctuels']
+  calendar_id          integer      [not null, ref: > schedule_calendar.id]
+  color_event          varchar(10)  [not null, default: '']
+}
+
+Table schedule_occurrence {
+  id             integer      [pk, increment, not null]
+  event_id       integer      [not null, ref: > schedule_event.id]
+  title          varchar(255) [not null, default: '']
+  description    text         [not null, default: '']
+  start          timestamp    [not null, note: 'Indexé']
+  end            timestamp    [not null, note: 'Indexé']
+  cancelled      boolean      [not null, default: false]
+  original_start timestamp    [not null]
+  original_end   timestamp    [not null]
+  created_on     timestamp    [not null]
+  updated_on     timestamp    [not null]
+}
+
+Table schedule_eventrelation {
+  id              integer     [pk, increment, not null]
+  event_id        integer     [not null, ref: > schedule_event.id]
+  content_type_id integer     [not null, note: 'GenericFK — réf. vers django_content_type (omis)']
+  object_id       integer     [not null, note: 'GenericFK — id de l\'objet cible']
+  distinction     varchar(20) [not null]
+
+  indexes {
+    (content_type_id, object_id) [name: 'idx_eventrelation_gfk']
+  }
+}
+
+Table schedule_calendarrelation {
+  id              integer     [pk, increment, not null]
+  calendar_id     integer     [not null, ref: > schedule_calendar.id]
+  content_type_id integer     [not null, note: 'GenericFK — réf. vers django_content_type (omis)']
+  object_id       integer     [not null, note: 'GenericFK — id de l\'objet cible']
+  distinction     varchar(20) [not null]
+  inheritable     boolean     [not null, default: true]
+
+  indexes {
+    (content_type_id, object_id) [name: 'idx_calendarrelation_gfk']
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// GROUPE : Licences Core
+// ---------------------------------------------------------------------------
+
+TableGroup LicencesCore {
+  licensing_plugin
+}
+
+Table licensing_plugin {
+  id           integer      [pk, increment, not null]
+  slug         varchar(50)  [not null, unique, note: 'Identifiant technique (ex: smartops-billing)']
+  python_path  varchar(255) [not null, default: '', note: 'Chemin d\'import Python (ex: smartops_plugin_demo)']
+  priority     integer      [not null, default: 100, note: 'Ordre dans INSTALLED_APPS (plus petit = premier)']
+  name         varchar(255) [not null]
+  version      varchar(50)  [not null, default: '']
+  license_key  varchar(255) [not null, default: '', note: 'UUID de licence reçu du Portal']
+  is_active    boolean      [not null, default: false]
+  installed_at timestamp    [not null]
+  updated_at   timestamp    [not null]
+}
+
+
+// ---------------------------------------------------------------------------
+// GROUPE : Système
+// ---------------------------------------------------------------------------
+
+TableGroup Systeme {
+  system_systemconfiguration
+}
+
+Table system_systemconfiguration {
+  id                 integer      [pk, increment, not null]
+  installation_uuid  uuid         [not null, unique, note: 'Identifiant universel de cette instance SMARTOPS']
+  installed_at       timestamp    [not null]
+  last_sync_portal   timestamp    [null, note: 'Dernière synchronisation avec le Portal']
+  company_name       varchar(255) [not null]
+  company_address    text         [not null]
+  company_phone      varchar(50)  [not null, default: '']
+  company_email      varchar(254) [not null, default: '']
+  company_website    varchar(200) [not null, default: '']
+  company_vat        varchar(50)  [not null, default: '']
+  company_logo       varchar(100) [null, note: 'Chemin vers le fichier image (ImageField)']
+}

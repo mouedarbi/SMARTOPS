@@ -122,3 +122,161 @@
     - **Visibilité UI** : Correction des contrastes (blanc sur blanc) dans les formulaires Tailwind.
     - **Maintenance Système** : Suppression des répertoires orphelins (`tmp_plugin`, `rebuild_plugin`) et mise à jour de l'`URL Marketplace` vers la production (`https://opensmartops.org`).
 - **Outcome** : Une interface plus fluide, une meilleure traçabilité des performances et un socle de plugins assaini.
+
+## Séance du 05/06/2026
+
+### Travaux réalisés
+1.  **Évolutions Métier (Module Maintenance) :**
+    *   Implémentation du nouvel état de ticket : **"À replanifier"** (`to_reschedule`).
+    *   Mise à jour du workflow : Distinction entre échecs techniques temporaires et annulations définitives.
+    *   Interface : Attribution de la couleur **Orange** pour l'identification visuelle immédiate des tickets à traiter en priorité.
+
+2.  **Infrastructure & DevOps :**
+    *   Mise en place de la **CI/CD via GitHub Actions** (`django_ci.yml`).
+    *   Configuration des environnements de test automatisés pour Python 3.13.
+    *   Stabilisation de l'environnement de développement sur **Django 6.0.4**.
+
+3.  **Maintenance du dépôt :**
+    *   Nettoyage de la racine du projet et organisation des documents techniques dans un répertoire externe.
+    *   Gestion du versionnement via une branche dédiée `feat-technician-app`.
+
+### Prochaines étapes
+*   Initialisation de l'application dédiée `technician`.
+*   Mise en place de l'interface mobile-first pour le personnel de terrain.
+
+---
+
+## Séance du 05/06/2026 (suite) - Résolution de la CI cassée (django-scheduler + tests inventaire)
+
+### Problèmes rencontrés
+
+#### Problème 1 — Échec de migration `0015` en CI (django-scheduler)
+
+**Symptôme :**
+```
+ValueError: Found wrong number (0) of indexes for schedule_calendarrelation(content_type_id, object_id).
+```
+La CI GitHub Actions échouait lors de la création de la base de test (`python manage.py test`), avant même d'exécuter un seul test.
+
+**Cause racine :**
+Les migrations vendorisées de `django-scheduler` utilisaient une chaîne d'opérations incompatible avec Django 6.0 :
+1. Migration `0003` et `0008` : `AlterIndexTogether` → censé créer des index non nommés en base de données.
+2. Migration `0015` (générée par `makemigrations` sur Django 6.0) : `RenameIndex(old_fields=...)` → cherche ces index non nommés pour les renommer.
+
+Or, **en Django 6.0, `AlterIndexTogether` est devenu un no-op au niveau base de données** (il ne maintient plus que l'état de migration, sans créer d'index réel). Du coup, `RenameIndex` ne trouvait aucun index à renommer (0 trouvé).
+
+**Solution apportée :**
+Remplacement du contenu de la migration `schedule/migrations/0015_rename_*.py` :
+- **Avant** : 4 opérations `RenameIndex(old_fields=(...), new_name='...')` qui échouaient.
+- **Après** :
+  1. `SeparateDatabaseAndState` avec des `AlterIndexTogether(index_together=set())` en `state_operations` uniquement (sans toucher la DB) pour nettoyer l'état de migration.
+  2. 4 opérations `AddIndex` avec des index nommés explicitement pour créer les index directement en base.
+
+Cette approche fonctionne aussi bien sur une base fraîche (CI) que sur une base existante.
+
+---
+
+#### Problème 2 — 3 tests `inventory` en erreur (bug préexistant, masqué par le problème 1)
+
+**Symptôme :**
+```
+ValueError: Cannot assign "'elevator'": "Equipment.equipment_type" must be a "EquipmentType" instance.
+```
+Après correction du problème 1, les migrations passaient mais 3 tests sur 7 échouaient dans `inventory/tests.py`.
+
+**Cause racine :**
+Dans la méthode `setUp` des tests, le champ `equipment_type` (un `ForeignKey` vers le modèle `EquipmentType`) recevait une chaîne de caractères (`"elevator"`) au lieu d'une instance du modèle. Ce bug était masqué auparavant car la CI ne dépassait jamais l'étape des migrations.
+
+**Solution apportée :**
+Correction de `inventory/tests.py` :
+- Import ajouté : `from .models import ..., EquipmentType`
+- Création d'une instance `EquipmentType` dans `setUp` : `self.equipment_type = EquipmentType.objects.create(name="elevator")`
+- Utilisation de l'instance dans `Equipment.objects.create(equipment_type=self.equipment_type, ...)`
+- Mise à jour de l'assertion `test_equipment_creation` pour comparer avec l'instance et non la chaîne.
+
+### Résultat
+```
+Ran 7 tests in 1.017s
+OK
+```
+La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (environnement identique à GitHub Actions).
+
+### Suite de la séance du 05/06/2026 (Application Technicien)
+
+1.  **Phase 1 & 2 : Dashboard Mobile-First :**
+    *   Initialisation de l'application Django `technician`.
+    *   Mise en place d'un routage dédié (`/technician/`) indépendant du dashboard gestionnaire.
+    *   Création d'une interface responsive (Tailwind CSS) avec menu hamburger et horloge temps réel.
+    *   Implémentation du filtrage dynamique : Vue "Aujourd'hui" vs Vue "Semaine" (J+7) pour l'anticipation du planning.
+
+2.  **Phase 3 : Vue Détail Intervention :**
+    *   Développement d'une vue Single Page Scroll compacte pour le terrain.
+    *   Intégration d'un bouton intelligent "Ouvrir dans Maps" basé sur les coordonnées du bâtiment.
+    *   Mise en place d'un bouton d'action flottant (FAB) pour le démarrage de l'intervention.
+    *   Sécurisation des accès : Un technicien ne peut consulter que les interventions qui lui sont personnellement assignées.
+
+3.  **Administration :**
+    *   Enregistrement du modèle `CustomUser` dans l'admin Django avec gestion des rôles (`technician`, `manager`, etc.).
+
+### Prochaines étapes
+*   Phase 5 : Formulaire de saisie du rapport d'intervention et signature client.
+
+## Séance du 05/06/2026 (suite) - Phase 4 : Gestion du Cycle de Vie Terrain
+
+### Travaux réalisés
+1.  **Logique de Statut (Démarrer / Terminer) :**
+    *   Implémentation des vues `start_intervention` et `stop_intervention`.
+    *   Gestion automatisée des horodatages réels (`effective_start`, `effective_end`).
+    *   Sécurisation : Vérification stricte de l'assignation du technicien (404 si accès non autorisé).
+
+2.  **Interface Mobile-First :**
+    *   Ajout de Boutons d'Action Flottants (FAB) dynamiques en bas de l'écran.
+    *   Couleurs contextuelles : Bleu pour "Démarrer", Émeraude pour "Terminer".
+    *   Nouvelle section "Horodatage Réel" affichant les heures de début et de fin effectives.
+
+3.  **Qualité et Tests :**
+    *   Création d'une suite de tests automatisés (`technician/tests.py`) couvrant :
+        *   La transition de statut `planned` -> `in_progress`.
+        *   La transition de statut `in_progress` -> `done`.
+        *   L'interdiction de redémarrer un ticket terminé.
+        *   L'isolation de sécurité entre techniciens.
+    *   Validation : 4/4 tests OK sur environnement SQLite.
+
+### Prochaines étapes
+*   Phase 5 : Formulaire de saisie du rapport d'intervention (Mobile UI) et signature numérique client.
+*   Phase 6 : Synchronisation des données et clôture administrative.
+
+---
+
+## Séance du 13/06/2026 - v0.2.0 : REST API (DRF + JWT + Swagger)
+
+### Travaux réalisés
+
+1.  **Infrastructure API :**
+    *   Installation de `djangorestframework`, `djangorestframework-simplejwt`, `drf-spectacular`.
+    *   Création de l'application Django `api` (centralisée).
+    *   Configuration `REST_FRAMEWORK` + `SPECTACULAR_SETTINGS` dans `settings.py`.
+    *   Branchement sur `/api/v1/` dans le routeur principal.
+
+2.  **Endpoints implémentés :**
+    *   **Auth JWT** : `POST /api/v1/auth/token/`, `POST /api/v1/auth/token/refresh/`, `GET /api/v1/auth/me/`
+    *   **Inventaire** : CRUD Clients, Bâtiments, Types d'équipements, Équipements (avec filtres GET)
+    *   **Maintenance** : CRUD Tickets + actions `POST /api/v1/tickets/{id}/start/` et `POST /api/v1/tickets/{id}/stop/`
+    *   **Technicien Mobile** : `GET /api/v1/my/interventions/?range=today|week`
+    *   **Documentation** : `GET /api/v1/docs/` (Swagger UI), `GET /api/v1/redoc/` (ReDoc), `GET /api/v1/schema/` (OpenAPI JSON)
+
+3.  **Sécurité & RBAC :**
+    *   Permissions par rôle : `IsAdminOrManager`, `IsAdminOnly`, `IsTechnicianOwner`.
+    *   Un technicien ne voit que ses propres tickets via l'API.
+    *   L'action `stop` accepte un rapport d'intervention et un statut (`done` ou `to_reschedule`).
+
+4.  **Tests (15/15 OK) :**
+    *   Auth JWT : obtention, endpoint `/me/`, accès sans token refusé.
+    *   Inventaire : liste clients, créer client, filtre bâtiments, équipements.
+    *   Tickets : vision manager vs technicien, cycle start→stop avec rapport, endpoint mobile.
+    *   OpenAPI : schema et Swagger UI accessibles.
+
+### Prochaines étapes
+*   Phase 5 App Mobile : Formulaire rapport d'intervention + signature numérique (via l'API `/stop/`).
+*   Notifications push (Phase 6).
+*   Tests d'intégration supplémentaires (permissions croisées).

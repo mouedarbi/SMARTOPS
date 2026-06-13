@@ -17,6 +17,9 @@ urlpatterns = [
     path('maintenance/', include('maintenance.urls')),
     path('licensing/', include('licensing.urls')),
     path('inventory/', include('inventory.urls')),
+    path('technician/', include('technician.urls')),
+    # REST API v0.2.0
+    path('api/v1/', include('api.urls')),
     path('', lambda request: redirect('dashboard')),
 ]
 

@@ -1,0 +1,81 @@
+{% extends 'technician/base_technician.html' %}
+
+{% block content %}
+<div class="px-4 py-6">
+    
+    <!-- Tab Switcher -->
+    <div class="flex border-b border-slate-200 mb-6 bg-white rounded-2xl p-1 shadow-sm">
+        <button onclick="showTab('today')" id="btn-today" class="flex-1 py-3 text-sm font-bold transition-all rounded-xl tab-active">
+            AUJOURD'HUI <span class="ml-1 text-[10px] opacity-60">({{ tickets_today|length }})</span>
+        </button>
+        <button onclick="showTab('week')" id="btn-week" class="flex-1 py-3 text-sm font-bold transition-all text-slate-400 rounded-xl">
+            CETTE SEMAINE <span class="ml-1 text-[10px] opacity-60">({{ tickets_week|length }})</span>
+        </button>
+    </div>
+
+    <!-- Today's List -->
+    <div id="tab-today" class="space-y-4">
+        {% if tickets_today %}
+            {% for ticket in tickets_today %}
+            {% include 'technician/components/ticket_card.html' with ticket=ticket %}
+            {% endfor %}
+        {% else %}
+            <div class="py-20 text-center">
+                <div class="inline-flex h-20 w-20 bg-slate-100 text-slate-300 rounded-full items-center justify-center text-3xl mb-4">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <p class="text-slate-400 font-bold">Aucune intervention prévue</p>
+                <p class="text-slate-300 text-xs mt-1">Profitez-en pour réviser votre stock !</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Week's List -->
+    <div id="tab-week" class="hidden space-y-4">
+        {% if tickets_week %}
+            {% regroup tickets_week by planned_start|date:"l d F" as tickets_by_day %}
+            {% for day in tickets_by_day %}
+                <div class="pt-2">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ day.grouper }}</span>
+                    <div class="mt-2 space-y-3">
+                        {% for ticket in day.list %}
+                            {% include 'technician/components/ticket_card.html' with ticket=ticket %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="py-20 text-center">
+                <p class="text-slate-400 font-bold">Planning vide pour la semaine</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function showTab(tab) {
+        const btnToday = document.getElementById('btn-today');
+        const btnWeek = document.getElementById('btn-week');
+        const tabToday = document.getElementById('tab-today');
+        const tabWeek = document.getElementById('tab-week');
+
+        if (tab === 'today') {
+            btnToday.classList.add('tab-active', 'bg-blue-50');
+            btnToday.classList.remove('text-slate-400');
+            btnWeek.classList.remove('tab-active', 'bg-blue-50');
+            btnWeek.classList.add('text-slate-400');
+            tabToday.classList.remove('hidden');
+            tabWeek.classList.add('hidden');
+        } else {
+            btnWeek.classList.add('tab-active', 'bg-blue-50');
+            btnWeek.classList.remove('text-slate-400');
+            btnToday.classList.remove('tab-active', 'bg-blue-50');
+            btnToday.classList.add('text-slate-400');
+            tabWeek.classList.remove('hidden');
+            tabToday.classList.add('hidden');
+        }
+    }
+    // Set initial state
+    showTab('today');
+</script>
+{% endblock %}

@@ -32,22 +32,41 @@ def ticket_list(request):
 @user_passes_test(is_management_staff)
 def ticket_detail(request, pk):
     """
-    Détail et édition d'un ticket de maintenance.
+    Vue en lecture seule d'un ticket avec onglets.
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    context = {
+        'ticket': ticket,
+        'page_title': f"Intervention #{ticket.id}"
+    }
+    return render(request, 'maintenance/ticket_detail.html', context)
+
+@login_required
+@user_passes_test(is_management_staff)
+def ticket_update(request, pk):
+    """
+    Vue d'édition (Planification) du ticket.
+    """
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    
+    # Sécurité : Pas d'édition si déjà commencé/fini
+    if ticket.status in ['in_progress', 'done', 'canceled']:
+        messages.warning(request, "Cette intervention ne peut plus être modifiée car elle est déjà en cours ou clôturée.")
+        return redirect('ticket_detail', pk=ticket.id)
+
     if request.method == 'POST':
         form = MaintenanceTicketForm(request.POST, instance=ticket)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Ticket #{ticket.id} mis à jour avec succès.")
-            return redirect('ticket_list')
+            messages.success(request, f"Intervention #{ticket.id} reprogrammée.")
+            return redirect('ticket_detail', pk=ticket.id)
     else:
         form = MaintenanceTicketForm(instance=ticket)
     
     context = {
         'ticket': ticket,
         'form': form,
-        'page_title': f"Ticket #{ticket.id}"
+        'page_title': f"Planification #{ticket.id}"
     }
     return render(request, 'maintenance/ticket_form.html', context)
 
@@ -71,6 +90,18 @@ def ticket_create(request):
         'page_title': "Nouveau Ticket"
     }
     return render(request, 'maintenance/ticket_form.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def ticket_delete(request, pk):
+    """
+    Suppression d'un ticket (réservé aux SuperAdmins).
+    """
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    ticket_id = ticket.id
+    ticket.delete()
+    messages.success(request, f"Intervention #{ticket_id} supprimée définitivement.")
+    return redirect('ticket_list')
 
 @login_required
 @user_passes_test(is_management_staff)
@@ -174,23 +205,45 @@ def api_get_equipments(request):
 def api_events(request):
     """
     Retourne les événements de maintenance au format JSON pour FullCalendar.
+    Priorise les temps réels pour un affichage "Live".
     """
-    start = request.GET.get('start')
-    end = request.GET.get('end')
-    
-    tickets = MaintenanceTicket.objects.select_related('equipment', 'technician')
-    
-    # On pourrait filtrer par date ici si besoin
+    tickets = MaintenanceTicket.objects.select_related('equipment', 'technician', 'equipment__building')
     
     events = []
     for ticket in tickets:
+        # Détermination des heures à afficher (Réel si dispo, sinon Prévu)
+        display_start = ticket.effective_start if ticket.effective_start else ticket.planned_start
+        display_end = ticket.effective_end if ticket.effective_end else ticket.planned_end
+
+        # Titre dynamique avec statut
+        status_label = ticket.get_status_display().upper()
+        
+        # Détermination de la couleur basée sur le statut
+        color = '#64748b' # Default (Slate 500)
+        if ticket.status == 'in_progress':
+            color = '#3b82f6' # Blue 500
+        elif ticket.status == 'done':
+            color = '#10b981' # Emerald 500
+        elif ticket.status == 'to_reschedule':
+            color = '#f59e0b' # Amber 500
+        elif ticket.status == 'pending':
+            color = '#f59e0b' # Amber 500 (orange)
+        elif ticket.type == 'emergency':
+            color = '#ef4444' # Red 500
+
         events.append({
             'id': ticket.id,
-            'title': f"INT-{ticket.id}: {ticket.equipment.name}",
-            'start': ticket.planned_start.isoformat(),
-            'end': ticket.planned_end.isoformat(),
-            'description': f"Technicien: {ticket.technician}",
-            'color': '#3b82f6' if ticket.status != 'emergency' else '#ef4444',
+            'title': f"[{status_label}] {ticket.equipment.name}",
+            'start': display_start.isoformat(),
+            'end': display_end.isoformat(),
+            'extendedProps': {
+                'technician': str(ticket.technician),
+                'client': ticket.equipment.building.client.name,
+                'building': ticket.equipment.building.name,
+                'status': ticket.get_status_display(),
+            },
+            'backgroundColor': color,
+            'borderColor': color,
         })
     
     return JsonResponse(events, safe=False)

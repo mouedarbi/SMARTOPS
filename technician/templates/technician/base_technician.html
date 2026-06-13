@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}{{ page_title }}{% endblock %} - SMARTOPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-900">
+
+    {% if user.is_authenticated %}
+    <!-- Header / Navbar Mobile -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 h-8 w-8 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                    <i class="fas fa-tools text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm leading-none text-slate-800">SMARTOPS</h1>
+                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Field Tech</span>
+                </div>
+            </div>
+            
+            <button onclick="toggleMenu()" class="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Dynamic Date/Time Bar -->
+        <div class="bg-slate-900 px-4 py-1.5 flex justify-between items-center">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {{ now|date:"l d F"|upper }}
+            </span>
+            <span class="text-[10px] font-mono text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700" id="live-clock">
+                {{ now|date:"H:i" }}
+            </span>
+        </div>
+    </header>
+
+    <!-- Side/Overlay Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleMenu()"></div>
+        <nav class="absolute top-0 right-0 bottom-0 w-64 bg-white shadow-2xl flex flex-col p-6 translate-x-full transition-transform duration-300" id="menu-content">
+            <div class="flex justify-between items-center mb-8">
+                <span class="font-bold text-slate-400 uppercase text-xs">Menu</span>
+                <button onclick="toggleMenu()" class="text-slate-400"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-4 flex-1">
+                <a href="{% url 'technician_dashboard' %}" class="flex items-center gap-4 p-3 rounded-xl bg-blue-50 text-blue-600 font-bold">
+                    <i class="fas fa-calendar-alt"></i> Planning
+                </a>
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                    <i class="fas fa-history"></i> Historique
+                </a>
+                <a href="#" class="flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                    <i class="fas fa-user-circle"></i> Mon Profil
+                </a>
+            </div>
+
+            <div class="pt-6 border-t border-slate-100">
+                <p class="text-xs text-slate-400 mb-2">Connecté en tant que</p>
+                <p class="font-bold text-sm text-slate-800 truncate mb-4">{{ user.get_full_name|default:user.username }}</p>
+                <a href="{% url 'technician_logout' %}" class="flex items-center gap-4 p-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors font-bold">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+        </nav>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="{% if user.is_authenticated %}pb-20{% endif %}">
+        {% if messages %}
+        <div class="p-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl text-sm font-bold {% if message.tags == 'error' %}bg-rose-50 text-rose-600 border border-rose-100{% else %}bg-emerald-50 text-emerald-600 border border-emerald-100{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const content = document.getElementById('menu-content');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                setTimeout(() => content.classList.remove('translate-x-full'), 10);
+            } else {
+                content.classList.add('translate-x-full');
+                setTimeout(() => menu.classList.add('hidden'), 300);
+            }
+        }
+
+        // Simple Live Clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('live-clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

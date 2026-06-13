@@ -77,6 +77,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Third-party
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
     # SMARTOPS Core Applications
     'accounts.apps.AccountsConfig',
     'system.apps.SystemConfig',
@@ -84,6 +88,8 @@ INSTALLED_APPS = [
     'inventory.apps.InventoryConfig',
     'maintenance.apps.MaintenanceConfig',
     'schedule',
+    'technician',
+    'api',
 ]
 
 # Injection automatique des plugins depuis la base de données
@@ -145,6 +151,26 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+# --- REST FRAMEWORK ---
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SMARTOPS API',
+    'DESCRIPTION': 'API REST de la plateforme de maintenance SMARTOPS (GMAO).',
+    'VERSION': '0.2.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'Europe/Paris'
