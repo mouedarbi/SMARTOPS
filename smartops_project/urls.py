@@ -6,6 +6,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
+from django.views.generic import TemplateView
 from django.apps import apps
 import importlib.util
 
@@ -20,6 +21,8 @@ urlpatterns = [
     path('technician/', include('technician.urls')),
     # REST API v0.2.0
     path('api/v1/', include('api.urls')),
+    # SEO — application privée, indexation interdite
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     path('', lambda request: redirect('dashboard')),
 ]
 
