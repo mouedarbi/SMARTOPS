@@ -27,7 +27,7 @@ SMARTOPS est une solution de gestion de maintenance (GMAO) de niveau entreprise,
 | **Maintenance** | Création et suivi des tickets d'intervention | ✅ Opérationnel |
 | **Maintenance** | Workflow complet : Ouvert → En cours → Résolu → Clôturé | ✅ Opérationnel |
 | **Planning** | Calendrier des interventions (FullCalendar) | ✅ Opérationnel |
-| **Planning** | Récurrences automatiques (hebdo, mensuel, trimestriel) | ✅ Opérationnel |
+| **Planning** | Récurrences automatiques (hebdo, mensuel, trimestriel) | 🔜 v0.2.0 |
 | **Technicien** | Interface mobile-first pour les techniciens terrain | ✅ Opérationnel |
 | **Licensing** | Système de plugins avec Hardware Binding (UUID machine) | ✅ Opérationnel |
 | **REST API** | Endpoints pour application mobile | 🔜 v0.2.0 |
@@ -52,7 +52,7 @@ SMARTOPS repose sur une architecture **hybride** :
 
 - **Gestion du Patrimoine** : Inventaire dynamique des Clients, Bâtiments et Équipements avec champs personnalisés (JSON).
 - **Maintenance Avancée** : Workflow complet de tickets (Priorités, Types, État), historisation technique et traçabilité des interventions.
-- **Planning Pro** : Gestion automatique des récurrences et des contrats de maintenance.
+- **Planning** : Calendrier des interventions avec intégration FullCalendar. Récurrences prévues en v0.2.0.
 - **Interface Technicien** : Dashboard mobile-first avec vue journalière/hebdomadaire et intégration maps.
 - **Moteur de Plugins** : Système `Pluggy` permettant d'injecter de la logique métier sans modifier le cœur du système.
 - **Licensing Intelligent** : Verrouillage par UUID machine pour la protection de la propriété intellectuelle.
@@ -131,7 +131,7 @@ python manage.py runserver 0.0.0.0:8000
 - Gestion des utilisateurs avec suppression logique
 - Inventaire : Clients, Bâtiments, Équipements avec champs dynamiques
 - Tickets de maintenance avec workflow complet
-- Calendrier des interventions avec récurrences (FullCalendar)
+- Calendrier des interventions (FullCalendar)
 - Interface technicien mobile-first (dashboard journalier/hebdomadaire)
 - Système de licensing avec Hardware Binding
 - Moteur de plugins hot-plug
