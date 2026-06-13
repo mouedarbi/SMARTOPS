@@ -5,8 +5,17 @@ Description : Sérialiseurs DRF pour tous les modèles SMARTOPS.
 """
 
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_spectacular.utils import extend_schema_field
 from accounts.models import CustomUser
+
+
+class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['role'] = user.role
+        return token
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
 from maintenance.models import Technician, MaintenanceTicket
 
