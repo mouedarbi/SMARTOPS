@@ -136,9 +136,26 @@ DATABASES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Security: Isolate cookies
+# --- SÉCURITÉ COOKIES ---
 SESSION_COOKIE_NAME = 'smartops_sessionid'
 CSRF_COOKIE_NAME = 'smartops_csrftoken'
+
+# En production (DEBUG=False), on renforce les protections HTTPS.
+# Le Core étant auto-hébergé, ces paramètres ne s'activent qu'une fois
+# le serveur déployé avec un certificat SSL (accès API mobile + synchro Portal).
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Actifs en dev et en prod
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # Auth redirects
 LOGIN_URL = 'login'
@@ -170,6 +187,51 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API REST de la plateforme de maintenance SMARTOPS (GMAO).',
     'VERSION': '0.2.0',
     'SERVE_INCLUDE_SCHEMA': False,
+}
+
+# --- JWT ---
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+}
+
+# --- LOGGING ---
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file_errors': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'errors.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_errors', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['file_errors', 'console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
 }
 
 LANGUAGE_CODE = 'fr-fr'
