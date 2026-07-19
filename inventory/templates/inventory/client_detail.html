@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Détails Client - {{ client.name }} | SMARTOPS{% endblock %}
+{% block page_title %}Fiche Client{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+
+    <!-- En-tête de la fiche client -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <div class="flex items-center gap-3">
+                <h2 class="text-3xl font-black text-slate-800">{{ client.name }}</h2>
+                {% if client.is_active %}
+                    <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-100">Actif</span>
+                {% else %}
+                    <span class="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-wider rounded-full border border-rose-100">Inactif</span>
+                {% endif %}
+            </div>
+            <p class="text-sm text-slate-500 font-semibold mt-1">Créé le {{ client.created_at|date:"d F Y" }}</p>
+        </div>
+        <div class="flex gap-4">
+            <a href="{% url 'client_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-6 rounded-2xl transition duration-200">
+                <i class="las la-arrow-left text-lg mr-2"></i>Retour
+            </a>
+            <a href="{% url 'client_update' client.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-2xl transition duration-200">
+                <i class="las la-edit text-lg mr-2"></i>Modifier
+            </a>
+        </div>
+    </div>
+
+    <!-- Sélecteur d'onglets (Tabs) -->
+    <div class="border-b border-slate-200 flex gap-8">
+        <button onclick="switchTab('details-tab', 'details-content')" id="details-tab" class="tab-button border-b-4 border-blue-600 text-blue-600 font-black text-sm pb-4 transition tracking-wider uppercase">
+            <i class="las la-id-card text-lg mr-2"></i>Informations Générales
+        </button>
+        <button onclick="switchTab('sites-tab', 'sites-content')" id="sites-tab" class="tab-button border-b-4 border-transparent text-slate-400 hover:text-slate-600 font-black text-sm pb-4 transition tracking-wider uppercase">
+            <i class="las la-city text-lg mr-2"></i>Sites & Bâtiments ({{ buildings.count }})
+        </button>
+    </div>
+
+    <!-- Contenu des onglets -->
+    <div class="space-y-6">
+
+        <!-- Onglet 1 : Informations Générales -->
+        <div id="details-content" class="tab-content bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
+            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                <i class="las la-info-circle text-2xl text-blue-600"></i>
+                Fiche de Contact
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Responsable de contact</label>
+                        <p class="text-base font-bold text-slate-700 mt-1">{{ client.contact_name }}</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse E-mail</label>
+                        <p class="text-base font-bold text-slate-700 mt-1">
+                            <a href="mailto:{{ client.email }}" class="text-blue-600 hover:underline">{{ client.email }}</a>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Téléphone</label>
+                        <p class="text-base font-bold text-slate-700 mt-1">{{ client.phone|default:"Non renseigné" }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse Principale</label>
+                        <p class="text-base font-bold text-slate-700 mt-1 whitespace-pre-line">{{ client.address }}</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Numéro de TVA</label>
+                        <p class="text-base font-bold text-slate-700 mt-1 font-mono">{{ client.vat_number|default:"Non renseigné" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Onglet 2 : Sites et Bâtiments -->
+        <div id="sites-content" class="tab-content hidden bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
+                    <i class="las la-city text-2xl text-blue-600"></i>
+                    Sites d'interventions associés
+                </h3>
+                <a href="{% url 'building_create' %}?client={{ client.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
+                    + Nouveau Site
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest pl-8">Nom du Site</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Adresse</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-center">Appareils</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for building in buildings %}
+                        <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                            <td class="p-4 pl-8 font-bold text-slate-800">
+                                <a href="{% url 'building_detail' building.pk %}" class="text-blue-600 hover:underline">
+                                    {{ building.name }}
+                                </a>
+                            </td>
+                            <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}</td>
+                            <td class="p-4 text-center text-sm font-bold text-slate-500">{{ building.equipments.count }}</td>
+                            <td class="p-4 text-right pr-8">
+                                <a href="{% url 'building_detail' building.pk %}" class="bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-bold py-1.5 px-3 rounded-lg text-xs border border-slate-100 transition mr-2">
+                                    Voir appareils
+                                </a>
+                                <a href="{% url 'building_update' building.pk %}" class="text-blue-600 hover:text-blue-800 text-xs font-bold hover:underline">
+                                    Modifier
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="p-12 text-center text-slate-400 font-bold italic">
+                                Aucun bâtiment ou site enregistré pour ce client.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function switchTab(activeTabId, activeContentId) {
+    // Désélectionne tous les onglets
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-slate-400');
+    });
+    // Sélectionne l'onglet cliqué
+    const activeBtn = document.getElementById(activeTabId);
+    activeBtn.classList.remove('border-transparent', 'text-slate-400');
+    activeBtn.classList.add('border-blue-600', 'text-blue-600');
+
+    // Cache tous les contenus
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    // Affiche le contenu sélectionné
+    document.getElementById(activeContentId).classList.remove('hidden');
+}
+</script>
+{% endblock %}

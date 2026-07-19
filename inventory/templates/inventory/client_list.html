@@ -24,11 +24,16 @@
             <tbody>
                 {% for client in clients %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 font-medium">{{ client.name }}</td>
+                    <td class="p-4 font-bold text-slate-800">
+                        <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline">
+                            {{ client.name }}
+                        </a>
+                    </td>
                     <td class="p-4 text-slate-600">{{ client.email }}</td>
                     <td class="p-4 text-slate-600">{{ client.phone }}</td>
                     <td class="p-4">
-                        <a href="{% url 'client_update' client.pk %}" class="text-blue-600 hover:underline">Modifier</a>
+                        <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline mr-4">Détails</a>
+                        <a href="{% url 'client_update' client.pk %}" class="text-slate-400 hover:text-blue-600 transition">Modifier</a>
                     </td>
                 </tr>
                 {% empty %}

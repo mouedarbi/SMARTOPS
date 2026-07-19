@@ -52,6 +52,18 @@ def client_update_view(request, pk):
         form = ClientForm(instance=client)
     return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Modifier Client'})
 
+@login_required
+@user_passes_test(is_management_staff)
+def client_detail_view(request, pk):
+    """Affiche les détails d'un client et ses sites associés."""
+    client = get_object_or_404(Client, pk=pk)
+    buildings = client.buildings.all().order_by('name')
+    return render(request, 'inventory/client_detail.html', {
+        'client': client,
+        'buildings': buildings,
+        'page_title': f"Détails Client - {client.name}"
+    })
+
 # --- VUES BÂTIMENT ---
 
 @login_required
@@ -145,3 +157,17 @@ def equipment_type_detail_view(request, pk):
     else:
         form = EquipmentTypeFieldForm()
     return render(request, 'inventory/equipment_type_detail.html', {'type': etype, 'form': form})
+
+@login_required
+@user_passes_test(is_management_staff)
+def building_detail_view(request, pk):
+    """Placeholder pour le détail d'un site."""
+    building = get_object_or_404(Building, pk=pk)
+    return render(request, 'inventory/building_detail.html', {'building': building})
+
+@login_required
+@user_passes_test(is_management_staff)
+def equipment_detail_view(request, pk):
+    """Placeholder pour le détail d'un équipement."""
+    equipment = get_object_or_404(Equipment, pk=pk)
+    return render(request, 'inventory/equipment_detail.html', {'equipment': equipment})
