@@ -1,55 +1,194 @@
 {% extends "base.html" %}
 
+{% block title %}Gestion des Équipements | SMARTOPS{% endblock %}
 {% block page_title %}Gestion des Équipements{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Liste des Équipements</h2>
-        <a href="{% url 'equipment_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
-            + Nouvel Équipement
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- En-tête et Recherche -->
+    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+        <form method="get" class="flex-grow max-w-lg flex gap-2">
+            <!-- Conserver les paramètres de tri lors de la recherche -->
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            
+            <div class="relative flex-grow">
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un appareil (nom, S/N, type, site, client)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <i class="las la-search absolute left-3 top-3.5 text-slate-400 text-lg"></i>
+            </div>
+            
+            {% if q or sort != 'name' or order != 'asc' %}
+                <a href="{% url 'equipment_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-500 font-bold p-2.5 rounded-xl text-sm flex items-center justify-center transition" title="Réinitialiser les filtres">
+                    <i class="las la-times text-lg"></i>
+                </a>
+            {% endif %}
+            
+            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
+                Rechercher
+            </button>
+        </form>
+        
+        <a href="{% url 'equipment_create' %}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 text-sm flex items-center gap-2 shadow-sm transition">
+            <i class="las la-plus text-base"></i> Nouvel Équipement
         </a>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-left">
-            <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                    <th class="p-4 font-bold text-slate-700">Nom</th>
-                    <th class="p-4 font-bold text-slate-700">Type</th>
-                    <th class="p-4 font-bold text-slate-700">Bâtiment</th>
-                    <th class="p-4 font-bold text-slate-700">Actions</th>
+    <!-- Tableau des Équipements -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="p-4 pl-8 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Nom de l'appareil
+                            {% if sort == 'name' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=serial_number&order={% if sort == 'serial_number' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Numéro de série
+                            {% if sort == 'serial_number' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=equipment_type__name&order={% if sort == 'equipment_type__name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Type / Catégorie
+                            {% if sort == 'equipment_type__name' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Site & Client</th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=installed_at&order={% if sort == 'installed_at' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Installation
+                            {% if sort == 'installed_at' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for equipment in equipments %}
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 font-bold text-slate-800">
+                {% for equipment in page_obj %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                    <!-- Nom -->
+                    <td class="p-4 pl-8 font-bold text-slate-800">
                         <a href="{% url 'equipment_detail' equipment.pk %}" class="text-blue-600 hover:underline">
                             {{ equipment.name }}
                         </a>
                     </td>
-                    <td class="p-4 text-slate-600">
-                        <span class="px-2 py-1 bg-slate-100 rounded-lg text-slate-700 text-[10px] font-bold">
+                    <!-- Numéro de série -->
+                    <td class="p-4 text-sm font-mono text-slate-500">{{ equipment.serial_number }}</td>
+                    <!-- Catégorie -->
+                    <td class="p-4 text-sm">
+                        <span class="px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700 text-[10px] font-bold">
                             {{ equipment.equipment_type.name }}
                         </span>
                     </td>
-                    <td class="p-4 text-slate-600">
-                        <a href="{% url 'building_detail' equipment.building.pk %}" class="text-blue-600 hover:underline">
-                            {{ equipment.building.name }}
-                        </a>
+                    <!-- Localisation (Site + Client) -->
+                    <td class="p-4 text-xs font-semibold text-slate-500">
+                        <div class="text-slate-700 font-bold">
+                            <a href="{% url 'building_detail' equipment.building.pk %}" class="hover:underline">
+                                {{ equipment.building.name }}
+                            </a>
+                        </div>
+                        <div class="text-slate-400 mt-0.5">
+                            <a href="{% url 'client_detail' equipment.building.client.pk %}" class="hover:underline">
+                                {{ equipment.building.client.name }}
+                            </a>
+                        </div>
                     </td>
-                    <td class="p-4">
-                        <a href="{% url 'equipment_detail' equipment.pk %}" class="text-blue-600 hover:underline font-bold text-sm">Détails</a>
+                    <!-- Date d'installation -->
+                    <td class="p-4 text-xs text-slate-600 font-bold">{{ equipment.installed_at|date:"d/m/Y" }}</td>
+                    <!-- Actions -->
+                    <td class="p-4 text-right pr-8 text-sm">
+                        <a href="{% url 'equipment_detail' equipment.pk %}" class="bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-bold py-1.5 px-3 rounded-lg text-xs border border-slate-100 transition">
+                            Détails
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="p-8 text-center text-slate-400">Aucun équipement trouvé.</td>
+                    <td colspan="6" class="p-12 text-center text-slate-400 font-bold italic">
+                        Aucun appareil trouvé.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500">
+            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        <div class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Première page">
+                    «
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                    Précédent
+                </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-black">
+                        {{ num }}
+                    </span>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                    <a href="?page={{ num }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                        {{ num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                    Suivant
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Dernière page">
+                    »
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

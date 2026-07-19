@@ -175,9 +175,45 @@ def building_update_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def equipment_list_view(request):
-    """Liste les équipements enregistrés."""
-    equipments = Equipment.objects.all().order_by('name')
-    return render(request, 'inventory/equipment_list.html', {'equipments': equipments})
+    """Liste les équipements enregistrés avec recherche, tri et pagination."""
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+    
+    equipments = Equipment.objects.all()
+    
+    # Recherche
+    q = request.GET.get('q', '').strip()
+    if q:
+        equipments = equipments.filter(
+            Q(name__icontains=q) |
+            Q(serial_number__icontains=q) |
+            Q(equipment_type__name__icontains=q) |
+            Q(building__name__icontains=q) |
+            Q(building__client__name__icontains=q)
+        )
+        
+    # Tri
+    sort_by = request.GET.get('sort', 'name')
+    order = request.GET.get('order', 'asc')
+    
+    allowed_sorts = ['name', 'serial_number', 'equipment_type__name', 'installed_at']
+    if sort_by in allowed_sorts:
+        prefix = '-' if order == 'desc' else ''
+        equipments = equipments.select_related('equipment_type', 'building', 'building__client').order_by(f"{prefix}{sort_by}")
+    else:
+        equipments = equipments.select_related('equipment_type', 'building', 'building__client').order_by('name')
+        
+    # Pagination
+    paginator = Paginator(equipments, 20)  # 20 équipements par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'inventory/equipment_list.html', {
+        'page_obj': page_obj,
+        'q': q,
+        'sort': sort_by,
+        'order': order
+    })
 
 @login_required
 @user_passes_test(is_management_staff)
