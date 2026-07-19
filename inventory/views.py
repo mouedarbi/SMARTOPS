@@ -173,6 +173,11 @@ def building_detail_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def equipment_detail_view(request, pk):
-    """Placeholder pour le détail d'un équipement."""
+    """Affiche les détails d'un équipement, ses attributs et ses tickets d'intervention."""
     equipment = get_object_or_404(Equipment, pk=pk)
-    return render(request, 'inventory/equipment_detail.html', {'equipment': equipment})
+    tickets = equipment.maintenance_tickets.all().order_by('-planned_start')[:10]
+    return render(request, 'inventory/equipment_detail.html', {
+        'equipment': equipment,
+        'tickets': tickets,
+        'page_title': f"Détails Équipement - {equipment.name}"
+    })

@@ -24,11 +24,23 @@
             <tbody>
                 {% for equipment in equipments %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 font-medium">{{ equipment.name }}</td>
-                    <td class="p-4 text-slate-600">{{ equipment.equipment_type.name }}</td>
-                    <td class="p-4 text-slate-600">{{ equipment.building.name }}</td>
+                    <td class="p-4 font-bold text-slate-800">
+                        <a href="{% url 'equipment_detail' equipment.pk %}" class="text-blue-600 hover:underline">
+                            {{ equipment.name }}
+                        </a>
+                    </td>
+                    <td class="p-4 text-slate-600">
+                        <span class="px-2 py-1 bg-slate-100 rounded-lg text-slate-700 text-[10px] font-bold">
+                            {{ equipment.equipment_type.name }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-600">
+                        <a href="{% url 'building_detail' equipment.building.pk %}" class="text-blue-600 hover:underline">
+                            {{ equipment.building.name }}
+                        </a>
+                    </td>
                     <td class="p-4">
-                        <span class="text-slate-400 italic text-sm">Gestion des champs dynamiques à venir</span>
+                        <a href="{% url 'equipment_detail' equipment.pk %}" class="text-blue-600 hover:underline font-bold text-sm">Détails</a>
                     </td>
                 </tr>
                 {% empty %}
