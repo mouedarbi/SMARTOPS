@@ -33,7 +33,7 @@ class SystemConfiguration(models.Model):
     company_address = models.TextField(verbose_name="Adresse du Siège")
     company_phone = models.CharField(max_length=50, blank=True, verbose_name="Téléphone")
     company_email = models.EmailField(blank=True, verbose_name="Email de Contact")
-    company_website = models.URLField(blank=True, verbose_name="Site Web")
+    company_website = models.CharField(max_length=255, blank=True, verbose_name="Site Web")
     company_vat = models.CharField(max_length=50, blank=True, verbose_name="Numéro de TVA")
     company_logo = models.ImageField(upload_to='system/logos/', blank=True, null=True, verbose_name="Logo Entreprise")
 
