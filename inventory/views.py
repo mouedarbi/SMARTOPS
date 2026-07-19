@@ -103,9 +103,43 @@ def client_detail_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def building_list_view(request):
-    """Liste les bâtiments enregistrés."""
-    buildings = Building.objects.all().order_by('name')
-    return render(request, 'inventory/building_list.html', {'buildings': buildings})
+    """Liste les bâtiments enregistrés avec recherche, tri et pagination."""
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+    
+    buildings = Building.objects.all()
+    
+    # Recherche
+    q = request.GET.get('q', '').strip()
+    if q:
+        buildings = buildings.filter(
+            Q(name__icontains=q) |
+            Q(address__icontains=q) |
+            Q(client__name__icontains=q)
+        )
+        
+    # Tri
+    sort_by = request.GET.get('sort', 'name')
+    order = request.GET.get('order', 'asc')
+    
+    if sort_by in ['name', 'client__name']:
+        prefix = '-' if order == 'desc' else ''
+        # select_related pour optimiser les performances de requete
+        buildings = buildings.select_related('client').order_by(f"{prefix}{sort_by}")
+    else:
+        buildings = buildings.select_related('client').order_by('name')
+        
+    # Pagination
+    paginator = Paginator(buildings, 10)  # 10 sites par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'inventory/building_list.html', {
+        'page_obj': page_obj,
+        'q': q,
+        'sort': sort_by,
+        'order': order
+    })
 
 @login_required
 @user_passes_test(is_management_staff)
