@@ -1,48 +1,148 @@
 {% extends "base.html" %}
 
+{% block title %}Gestion des Clients | SMARTOPS{% endblock %}
 {% block page_title %}Gestion des Clients{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Liste des Clients</h2>
-        <a href="{% url 'client_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">
-            + Nouveau Client
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- En-tête et Recherche -->
+    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+        <form method="get" class="flex-grow max-w-lg flex gap-2">
+            <!-- Conserver les paramètres de tri lors de la recherche -->
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            
+            <div class="relative flex-grow">
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un client (nom, email, tel, tva)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <i class="las la-search absolute left-3 top-3.5 text-slate-400 text-lg"></i>
+            </div>
+            
+            {% if q or sort != 'created_at' or order != 'desc' %}
+                <a href="{% url 'client_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-500 font-bold p-2.5 rounded-xl text-sm flex items-center justify-center transition" title="Réinitialiser les filtres">
+                    <i class="las la-times text-lg"></i>
+                </a>
+            {% endif %}
+            
+            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
+                Rechercher
+            </button>
+        </form>
+        
+        <a href="{% url 'client_create' %}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 text-sm flex items-center gap-2 shadow-sm transition">
+            <i class="las la-plus text-base"></i> Nouveau Client
         </a>
     </div>
 
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-left">
-            <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                    <th class="p-4 font-bold text-slate-700">Nom</th>
-                    <th class="p-4 font-bold text-slate-700">Email</th>
-                    <th class="p-4 font-bold text-slate-700">Téléphone</th>
-                    <th class="p-4 font-bold text-slate-700">Actions</th>
+    <!-- Tableau des Clients -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="p-4 pl-8 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Nom du Client
+                            {% if sort == 'name' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Email</th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Téléphone</th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
+                        <a href="?q={{ q }}&sort=created_at&order={% if sort == 'created_at' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                            Date d'Ajout
+                            {% if sort == 'created_at' %}
+                                {% if order == 'asc' %}
+                                    <i class="las la-arrow-up text-blue-600 text-sm"></i>
+                                {% else %}
+                                    <i class="las la-arrow-down text-blue-600 text-sm"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="las la-sort text-slate-300 text-sm"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for client in clients %}
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 font-bold text-slate-800">
+                {% for client in page_obj %}
+                <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                    <td class="p-4 pl-8 font-bold text-slate-800">
                         <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline">
                             {{ client.name }}
                         </a>
                     </td>
-                    <td class="p-4 text-slate-600">{{ client.email }}</td>
-                    <td class="p-4 text-slate-600">{{ client.phone }}</td>
-                    <td class="p-4">
-                        <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline mr-4">Détails</a>
-                        <a href="{% url 'client_update' client.pk %}" class="text-slate-400 hover:text-blue-600 transition">Modifier</a>
+                    <td class="p-4 text-sm text-slate-600">{{ client.email }}</td>
+                    <td class="p-4 text-sm text-slate-600">{{ client.phone }}</td>
+                    <td class="p-4 text-xs font-semibold text-slate-500">{{ client.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="p-4 text-right pr-8 text-sm">
+                        <a href="{% url 'client_detail' client.pk %}" class="bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-bold py-1.5 px-3 rounded-lg text-xs border border-slate-100 transition mr-2">
+                            Détails
+                        </a>
+                        <a href="{% url 'client_update' client.pk %}" class="text-slate-400 hover:text-blue-600 transition text-xs font-bold">
+                            Modifier
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="p-8 text-center text-slate-400">Aucun client trouvé.</td>
+                    <td colspan="5" class="p-12 text-center text-slate-400 font-bold italic">
+                        Aucun client trouvé.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500">
+            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        <div class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Première page">
+                    «
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                    Précédent
+                </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-black">
+                        {{ num }}
+                    </span>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                    <a href="?page={{ num }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                        {{ num }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                    Suivant
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Dernière page">
+                    »
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

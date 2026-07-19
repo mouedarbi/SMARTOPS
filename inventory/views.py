@@ -19,9 +19,43 @@ from .forms import ClientForm, BuildingForm, EquipmentForm, EquipmentTypeForm, E
 @login_required
 @user_passes_test(is_management_staff)
 def client_list_view(request):
-    """Liste les clients enregistrés."""
-    clients = Client.objects.all().order_by('-created_at')
-    return render(request, 'inventory/client_list.html', {'clients': clients})
+    """Liste les clients enregistrés avec recherche, tri et pagination."""
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+    
+    clients = Client.objects.all()
+    
+    # Recherche
+    q = request.GET.get('q', '').strip()
+    if q:
+        clients = clients.filter(
+            Q(name__icontains=q) |
+            Q(email__icontains=q) |
+            Q(phone__icontains=q) |
+            Q(vat_number__icontains=q)
+        )
+    
+    # Tri
+    sort_by = request.GET.get('sort', 'created_at')
+    order = request.GET.get('order', 'desc')
+    
+    if sort_by in ['name', 'created_at']:
+        prefix = '-' if order == 'desc' else ''
+        clients = clients.order_by(f"{prefix}{sort_by}")
+    else:
+        clients = clients.order_by('-created_at')
+        
+    # Pagination
+    paginator = Paginator(clients, 10)  # 10 clients par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'inventory/client_list.html', {
+        'page_obj': page_obj,
+        'q': q,
+        'sort': sort_by,
+        'order': order
+    })
 
 @login_required
 @user_passes_test(is_management_staff)
