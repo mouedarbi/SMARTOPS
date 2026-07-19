@@ -23,10 +23,19 @@
             <tbody>
                 {% for building in buildings %}
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 font-medium">{{ building.name }}</td>
-                    <td class="p-4 text-slate-600">{{ building.client.name }}</td>
+                    <td class="p-4 font-bold text-slate-800">
+                        <a href="{% url 'building_detail' building.pk %}" class="text-blue-600 hover:underline">
+                            {{ building.name }}
+                        </a>
+                    </td>
+                    <td class="p-4 text-slate-600">
+                        <a href="{% url 'client_detail' building.client.pk %}" class="text-blue-600 hover:underline">
+                            {{ building.client.name }}
+                        </a>
+                    </td>
                     <td class="p-4">
-                        <a href="{% url 'building_update' building.pk %}" class="text-blue-600 hover:underline">Modifier</a>
+                        <a href="{% url 'building_detail' building.pk %}" class="text-blue-600 hover:underline mr-4">Détails</a>
+                        <a href="{% url 'building_update' building.pk %}" class="text-slate-400 hover:text-blue-600 transition">Modifier</a>
                     </td>
                 </tr>
                 {% empty %}

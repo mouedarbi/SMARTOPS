@@ -161,9 +161,14 @@ def equipment_type_detail_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def building_detail_view(request, pk):
-    """Placeholder pour le détail d'un site."""
+    """Affiche les détails d'un site et la liste de ses équipements."""
     building = get_object_or_404(Building, pk=pk)
-    return render(request, 'inventory/building_detail.html', {'building': building})
+    equipments = building.equipments.all().order_by('name')
+    return render(request, 'inventory/building_detail.html', {
+        'building': building,
+        'equipments': equipments,
+        'page_title': f"Détails Site - {building.name}"
+    })
 
 @login_required
 @user_passes_test(is_management_staff)
