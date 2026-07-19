@@ -9,8 +9,11 @@
         <div class="space-y-4">
             {{ form.as_p }}
         </div>
-        <div class="mt-6 flex justify-end">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700">
+        <div class="mt-6 flex justify-end items-center gap-3">
+            <a href="javascript:window.history.back()" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-2 px-6 rounded-xl transition duration-200">
+                Annuler
+            </a>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition duration-200">
                 Enregistrer
             </button>
         </div>
