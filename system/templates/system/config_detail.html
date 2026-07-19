@@ -77,26 +77,31 @@
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Adresse du Siège</label>
                                 {{ form.company_address }}
+                                {% if form.company_address.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_address.errors }}</p>{% endif %}
                             </div>
 
                             <div>
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Téléphone</label>
                                 {{ form.company_phone }}
+                                {% if form.company_phone.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_phone.errors }}</p>{% endif %}
                             </div>
 
                             <div>
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Email de Contact</label>
                                 {{ form.company_email }}
+                                {% if form.company_email.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_email.errors }}</p>{% endif %}
                             </div>
 
                             <div>
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Site Web</label>
                                 {{ form.company_website }}
+                                {% if form.company_website.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_website.errors }}</p>{% endif %}
                             </div>
 
                             <div>
                                 <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Numéro de TVA</label>
                                 {{ form.company_vat }}
+                                {% if form.company_vat.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_vat.errors }}</p>{% endif %}
                             </div>
 
                             <div class="md:col-span-2 pt-4">
@@ -111,6 +116,7 @@
                                             </label>
                                         </div>
                                         <p class="text-xs text-slate-500">PNG, JPG jusqu'à 2Mo</p>
+                                        {% if form.company_logo.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_logo.errors }}</p>{% endif %}
                                     </div>
                                 </div>
                             </div>

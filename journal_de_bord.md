@@ -280,3 +280,35 @@ La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (envi
 *   Phase 5 App Mobile : Formulaire rapport d'intervention + signature numérique (via l'API `/stop/`).
 *   Notifications push (Phase 6).
 *   Tests d'intégration supplémentaires (permissions croisées).
+
+---
+
+## [19/07/2026] - Phase 5 : Déploiement en Production et Cohabitation Nginx
+
+### Avancement : Mise en service de l'application cliente (Core)
+- **Description** : Installation physique de la branche de production de l'application cliente sur le serveur à côté du portail commercial, utilisant les règles de cohabitation par sous-domaine.
+- **Implementation** :
+    - **Python 3.13** : Installation de Python 3.13 sur le serveur (mise à niveau depuis Python 3.10) pour satisfaire les prérequis de Django 6.0.4.
+    - **Environnement Virtuel** : Création de la structure `venv` et installation des dépendances (y compris l'ajout manuel de `gunicorn` manquant dans les requirements d'origine).
+    - **Configuration .env** : Paramétrage du fichier `.env` pour utiliser SQLite (`db.sqlite3`) et pointage de l'interconnexion `MARKETPLACE_URL` vers `https://opensmartops.org`.
+    - **Correction Bug Statiques** : Ajout du paramètre `STATIC_ROOT` manquant dans `settings.py` pour permettre le bon fonctionnement de `collectstatic`.
+    - **Routage Nginx & HTTPS** :
+        - Déploiement du fichier de configuration Nginx `/etc/nginx/sites-available/smartops-core` pointant sur le socket Unix `/root/smartops_portal/SMARTOPS/smartops.sock` avec le serveur virtuel `app.opensmartops.org`.
+        - Sécurisation du trafic par la génération d'un certificat SSL Certbot (Let's Encrypt) avec redirection automatique HTTP -> HTTPS.
+    - **Service Systemd** : Création du daemon systemd `/etc/systemd/system/smartops-core.service` pour automatiser le démarrage et la gestion des processus Gunicorn.
+    - **Initialisation Métier** :
+        - Application des migrations Django et compilation des fichiers statiques.
+        - Génération de l'UUID unique d'installation (Hardware Binding) : `271fb6e1-1492-4e6c-99d4-ae566b814275`.
+        - Création d'un administrateur par défaut (`admin` / `AdminPassword123!`).
+- **Outcome** : Les deux applications cohabitent parfaitement sur la même adresse IP et le même domaine en HTTPS :
+    - Portail commercial (Marketplace) : `https://opensmartops.org`
+    - Application Core (Client GMAO) : `https://app.opensmartops.org`
+
+### Amélioration : Messages d'erreur explicites sur la route `system/config`
+- **Problème** : L'affichage d'un message d'erreur générique ("Une erreur est survenue lors de la mise à jour") sans détails lors de la soumission de formulaires invalides masquait les causes réelles (ex: URL invalide pour le site web, e-mail mal formaté).
+- **Solution** :
+    - Modification de la vue `system_config_view` dans [views.py](file:///root/smartops_portal/SMARTOPS/system/views.py) pour parcourir `form.errors` et générer un message d'alerte global détaillé listant précisément chaque champ erroné.
+    - Mise à jour du template [config_detail.html](file:///root/smartops_portal/SMARTOPS/system/templates/system/config_detail.html) pour insérer des balises de rendu d'erreurs individuelles sous chaque champ (Adresse, Téléphone, E-mail, Site Web, TVA, Logo).
+- **Outcome** : Les utilisateurs disposent maintenant de retours précis en temps réel en cas d'erreurs de saisie sur l'ensemble de la page de configuration de la société.
+
+

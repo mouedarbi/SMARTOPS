@@ -64,7 +64,13 @@ def system_config_view(request):
             messages.success(request, "Les paramètres système ont été mis à jour avec succès.")
             return redirect('system_config')
         else:
-            messages.error(request, "Une erreur est survenue lors de la mise à jour.")
+            error_msgs = []
+            for field, errors in form.errors.items():
+                field_label = form.fields[field].label if field in form.fields else field
+                for error in errors:
+                    error_msgs.append(f"'{field_label}' : {error}")
+            detailed_error = " | ".join(error_msgs)
+            messages.error(request, f"Une erreur est survenue lors de la mise à jour : {detailed_error}")
     else:
         form = SystemConfigurationForm(instance=config)
         
