@@ -5,7 +5,8 @@ Auteur : Mohamed Ouedarbi
 Description : Tests unitaires du modèle MaintenanceTicket et des contraintes d'intégrité temporelle.
 """
 
-from django.test import TestCase, override_settings
+from django.test import TestCase, Client as HttpClient, override_settings
+from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -134,3 +135,124 @@ class MaintenanceTicketModelTestCase(TestCase):
                 effective_end=now - timedelta(minutes=5),
                 status='in_progress'
             )
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class MaintenanceWebViewsTestCase(TestCase):
+    def setUp(self):
+        self.manager = CustomUser.objects.create_user(
+            username='manager_maint',
+            password='Password123!',
+            role='manager'
+        )
+        self.tech1_user = CustomUser.objects.create_user(
+            username='tech_1',
+            password='Password123!',
+            role='technician'
+        )
+        self.tech1 = self.tech1_user.technician_profile
+
+        self.tech2_user = CustomUser.objects.create_user(
+            username='tech_2',
+            password='Password123!',
+            role='technician'
+        )
+        self.tech2 = self.tech2_user.technician_profile
+
+        self.client_obj = Client.objects.create(name='Client Test SA', address='1 rue Test')
+        self.building = Building.objects.create(client=self.client_obj, name='Batiment A', address='1 rue Test')
+        self.eq_type = EquipmentType.objects.create(name='Pompe à chaleur')
+        self.equipment = Equipment.objects.create(
+            building=self.building,
+            name='PAC 01',
+            equipment_type=self.eq_type,
+            serial_number='PAC-999',
+            installed_at=date(2025, 2, 1)
+        )
+        self.http_client = HttpClient()
+        self.http_client.login(username='manager_maint', password='Password123!')
+
+    def test_ticket_create_view_post_by_manager(self):
+        """F5 : Test de création réelle d'un ticket par un gestionnaire via le formulaire Web."""
+        url = reverse('ticket_create')
+        data = {
+            'client': self.client_obj.id,
+            'building': self.building.id,
+            'equipment': self.equipment.id,
+            'technician': self.tech1.id,
+            'type': 'maintenance',
+            'status': 'planned',
+            'planned_date': '2026-09-15',
+            'start_time_slot': '10:00',
+            'duration_seconds': 7200,
+            'description': 'Maintenance préventive semestrielle.'
+        }
+        response = self.http_client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Vérification en base
+        ticket = MaintenanceTicket.objects.filter(description__contains='Maintenance préventive semestrielle').first()
+        self.assertIsNotNone(ticket)
+        self.assertEqual(ticket.equipment, self.equipment)
+        self.assertEqual(ticket.technician, self.tech1)
+        self.assertEqual(ticket.status, 'planned')
+        local_start = timezone.localtime(ticket.planned_start)
+        local_end = timezone.localtime(ticket.planned_end)
+        self.assertEqual(local_start.strftime('%Y-%m-%d %H:%M'), '2026-09-15 10:00')
+        self.assertEqual(local_end.strftime('%Y-%m-%d %H:%M'), '2026-09-15 12:00')
+
+    def test_ticket_update_view_reassign_technician_and_reschedule(self):
+        """F6 : Test de réaffectation d'un technicien et replanification d'un ticket existant."""
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment,
+            technician=self.tech1,
+            type='repair',
+            status='pending',
+            planned_start=now,
+            planned_end=now + timedelta(hours=1),
+            description='Dépannage PAC'
+        )
+
+        url = reverse('ticket_update', kwargs={'pk': ticket.id})
+        data = {
+            'client': self.client_obj.id,
+            'building': self.building.id,
+            'equipment': self.equipment.id,
+            'technician': self.tech2.id,  # Réaffectation à tech2
+            'type': 'repair',
+            'status': 'planned',
+            'planned_date': '2026-09-20',
+            'start_time_slot': '14:00',
+            'duration_seconds': 3600,
+            'description': 'Dépannage PAC réaffecté.'
+        }
+        response = self.http_client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.technician, self.tech2)  # Nouveau technicien bien affecté
+        self.assertEqual(ticket.status, 'planned')
+        local_start = timezone.localtime(ticket.planned_start)
+        self.assertEqual(local_start.strftime('%Y-%m-%d %H:%M'), '2026-09-20 14:00')
+
+    def test_ticket_update_locked_when_in_progress(self):
+        """Sécurité : Vérifie le verrouillage d'édition si l'intervention est en cours."""
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment,
+            technician=self.tech1,
+            type='repair',
+            status='in_progress',
+            planned_start=now,
+            planned_end=now + timedelta(hours=1),
+            effective_start=now,
+            description='En cours'
+        )
+        url = reverse('ticket_update', kwargs={'pk': ticket.id})
+        response = self.http_client.get(url, follow=True)
+        self.assertRedirects(response, reverse('ticket_detail', kwargs={'pk': ticket.id}))
+
