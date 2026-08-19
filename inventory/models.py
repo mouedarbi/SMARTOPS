@@ -79,6 +79,10 @@ class EquipmentTypeField(models.Model):
     def __str__(self):
         return f"{self.field_name} ({self.equipment_type.name})"
 
+from django.core.exceptions import ValidationError
+from django.utils.dateparse import parse_date
+import datetime
+
 class Equipment(models.Model):
     """
     Entité principale d'équipement avec des attributs communs et dynamiques.
@@ -92,9 +96,56 @@ class Equipment(models.Model):
     # Stockage des valeurs des champs personnalisés
     custom_fields = models.JSONField(default=dict, blank=True, verbose_name=_("Champs personnalisés"))
 
+    def clean(self):
+        """
+        Valide la structure et les types des données dans custom_fields
+        selon la définition des EquipmentTypeField associés.
+        """
+        super().clean()
+        if not hasattr(self, 'equipment_type') or not self.equipment_type:
+            return
+
+        if self.custom_fields is None:
+            self.custom_fields = {}
+        elif not isinstance(self.custom_fields, dict):
+            raise ValidationError({
+                'custom_fields': _("Les champs personnalisés doivent être un objet JSON valide.")
+            })
+
+        expected_fields = self.equipment_type.fields.all()
+        errors = {}
+
+        for f in expected_fields:
+            value = self.custom_fields.get(f.field_name)
+            
+            # 1. Vérification de l'obligation
+            if f.required and (value is None or value == ""):
+                errors[f.field_name] = _("Le champ personnalisé '%(name)s' est requis pour ce type d'équipement.") % {'name': f.field_name}
+            elif value is not None and value != "":
+                # 2. Validation des types
+                if f.field_type == "number":
+                    if not isinstance(value, (int, float)):
+                        try:
+                            float(value)
+                        except (ValueError, TypeError):
+                            errors[f.field_name] = _("Le champ '%(name)s' doit être numérique.") % {'name': f.field_name}
+                elif f.field_type == "date":
+                    if isinstance(value, (datetime.date, datetime.datetime)):
+                        pass
+                    elif isinstance(value, str):
+                        parsed = parse_date(value)
+                        if not parsed:
+                            errors[f.field_name] = _("Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ.") % {'name': f.field_name}
+                    else:
+                        errors[f.field_name] = _("Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ.") % {'name': f.field_name}
+
+        if errors:
+            raise ValidationError(errors)
+
     class Meta:
         verbose_name = _("Équipement")
         verbose_name_plural = _("Équipements")
 
     def __str__(self):
         return f"{self.name} ({self.serial_number})"
+
