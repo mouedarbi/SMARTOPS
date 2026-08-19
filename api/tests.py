@@ -102,6 +102,35 @@ class InventoryAPITestCase(TestCase):
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertEqual(r.data['count'], 1)
 
+    def test_patch_client(self):
+        """Vérifie la mise à jour partielle (PATCH) d'un client."""
+        r = self.api.patch(f'/api/v1/clients/{self.client_obj.id}/', {
+            'phone': '+32 2 123 45 67',
+            'contact_name': 'Jean Dupont (Modifié)'
+        })
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.client_obj.refresh_from_db()
+        self.assertEqual(self.client_obj.phone, '+32 2 123 45 67')
+        self.assertEqual(self.client_obj.contact_name, 'Jean Dupont (Modifié)')
+
+    def test_create_building(self):
+        """Vérifie la création d'un bâtiment rattaché à un client existant."""
+        r = self.api.post('/api/v1/buildings/', {
+            'client': self.client_obj.id,
+            'name': 'Entrepôt Logistique Sud',
+            'address': 'Zone Industrielle 4, 1000 Bruxelles'
+        })
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Building.objects.filter(name='Entrepôt Logistique Sud').count(), 1)
+
+    def test_create_equipment_type(self):
+        """Vérifie la création d'un type d'équipement."""
+        r = self.api.post('/api/v1/equipment-types/', {
+            'name': 'Centrale Traitement Air'
+        })
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(EquipmentType.objects.filter(name='Centrale Traitement Air').count(), 1)
+
 
 @override_settings(
     SECURE_SSL_REDIRECT=False,
