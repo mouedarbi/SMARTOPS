@@ -214,6 +214,35 @@ class TicketAPITestCase(TestCase):
         r = self.api.get('/api/v1/my/interventions/')
         self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_create_ticket_by_manager(self):
+        """Vérifie la création et planification d'un ticket par un gestionnaire."""
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.mgr_token}')
+        tech_profile = Technician.objects.get(user=self.tech_user)
+        now = timezone.now()
+        r = self.api.post('/api/v1/tickets/', {
+            'equipment': self.ticket.equipment.id,
+            'technician': tech_profile.id,
+            'type': 'repair',
+            'planned_start': now.isoformat(),
+            'planned_end': (now + timedelta(hours=3)).isoformat(),
+            'description': 'Panne de climatisation signalée au 2ème étage.'
+        })
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(MaintenanceTicket.objects.filter(description__contains='Panne de climatisation').count(), 1)
+
+    def test_start_intervention_with_geolocation(self):
+        """Vérifie le démarrage d'intervention avec enregistrement des coordonnées GPS."""
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        r = self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {
+            'latitude': 50.850346,
+            'longitude': 4.351710
+        })
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')
+        self.assertAlmostEqual(float(self.ticket.start_latitude), 50.850346, places=5)
+        self.assertAlmostEqual(float(self.ticket.start_longitude), 4.351710, places=5)
+
 
 @override_settings(
     SECURE_SSL_REDIRECT=False,
