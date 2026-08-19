@@ -17,6 +17,9 @@ from inventory.models import Equipment
 from datetime import timedelta
 from django.utils import timezone
 
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
 class Technician(models.Model):
     """
     Profil étendu pour les techniciens, lié au CustomUser.
@@ -25,17 +28,18 @@ class Technician(models.Model):
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
         related_name='technician_profile',
-        limit_choices_to={'role': 'technician'}
+        limit_choices_to={'role': 'technician'},
+        verbose_name=_("Utilisateur")
     )
-    specialties = models.JSONField(default=list, blank=True, help_text="Liste des compétences (ex: Electrique, Hydraulique)")
-    is_active = models.BooleanField(default=True, verbose_name="Actif")
+    specialties = models.JSONField(default=list, blank=True, help_text=_("Liste des compétences (ex: Electrique, Hydraulique)"), verbose_name=_("Spécialités"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Actif"))
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username}"
 
     class Meta:
-        verbose_name = "Technicien"
-        verbose_name_plural = "Techniciens"
+        verbose_name = _("Technicien")
+        verbose_name_plural = _("Techniciens")
 
 
 class MaintenanceTicket(models.Model):
@@ -44,52 +48,80 @@ class MaintenanceTicket(models.Model):
     Synchronisé avec django-scheduler.
     """
     STATUS_CHOICES = [
-        ("pending", "En attente"),
-        ("planned", "Planifié"),
-        ("in_progress", "En cours"),
-        ("to_reschedule", "À replanifier"),
-        ("done", "Terminé"),
-        ("canceled", "Annulé"),
+        ("pending", _("En attente")),
+        ("planned", _("Planifié")),
+        ("in_progress", _("En cours")),
+        ("to_reschedule", _("À replanifier")),
+        ("done", _("Terminé")),
+        ("canceled", _("Annulé")),
     ]
 
     TYPE_CHOICES = [
-        ("maintenance", "Maintenance Préventive"),
-        ("repair", "Dépannage / Réparation"),
-        ("emergency", "Urgence"),
+        ("maintenance", _("Maintenance Préventive")),
+        ("repair", _("Dépannage / Réparation")),
+        ("emergency", _("Urgence")),
     ]
 
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="maintenance_tickets")
-    technician = models.ForeignKey(Technician, null=True, blank=True, on_delete=models.SET_NULL, related_name="tickets")
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="maintenance")
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="maintenance_tickets", verbose_name=_("Équipement"))
+    technician = models.ForeignKey(Technician, null=True, blank=True, on_delete=models.SET_NULL, related_name="tickets", verbose_name=_("Technicien"))
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="maintenance", verbose_name=_("Type d'intervention"))
 
     # Planification
-    planned_start = models.DateTimeField(verbose_name="Début prévu")
-    planned_end = models.DateTimeField(verbose_name="Fin prévue")
+    planned_start = models.DateTimeField(verbose_name=_("Début prévu"))
+    planned_end = models.DateTimeField(verbose_name=_("Fin prévue"))
 
     # Réalisation (Terrain)
-    effective_start = models.DateTimeField(null=True, blank=True, verbose_name="Début réel")
-    effective_end = models.DateTimeField(null=True, blank=True, verbose_name="Fin réelle")
+    effective_start = models.DateTimeField(null=True, blank=True, verbose_name=_("Début réel"))
+    effective_end = models.DateTimeField(null=True, blank=True, verbose_name=_("Fin réelle"))
 
     # Géolocalisation
-    start_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    start_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    start_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_("Latitude de début"))
+    start_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_("Longitude de début"))
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    description = models.TextField(blank=True, verbose_name="Description du problème / travail")
-    intervention_report = models.TextField(blank=True, verbose_name="Rapport d'intervention")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", verbose_name=_("Statut"))
+    description = models.TextField(blank=True, verbose_name=_("Description du problème / travail"))
+    intervention_report = models.TextField(blank=True, verbose_name=_("Rapport d'intervention"))
     
     # Lien avec django-scheduler
-    event = models.OneToOneField(Event, null=True, blank=True, on_delete=models.SET_NULL, related_name="maintenance_ticket")
+    event = models.OneToOneField(Event, null=True, blank=True, on_delete=models.SET_NULL, related_name="maintenance_ticket", verbose_name=_("Événement calendrier"))
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Date de création"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Date de mise à jour"))
+
+    def clean(self):
+        super().clean()
+        errors = {}
+        if self.planned_start and self.planned_end:
+            if self.planned_end <= self.planned_start:
+                errors['planned_end'] = _("La date de fin prévue doit être postérieure à la date de début prévue.")
+
+        if self.effective_start and self.effective_end:
+            if self.effective_end <= self.effective_start:
+                errors['effective_end'] = _("La date de fin réelle doit être postérieure à la date de début réelle.")
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return f"Ticket #{self.id} - {self.equipment.name} ({self.get_status_display()})"
 
     class Meta:
-        verbose_name = "Ticket de Maintenance"
-        verbose_name_plural = "Tickets de Maintenance"
+        verbose_name = _("Ticket de Maintenance")
+        verbose_name_plural = _("Tickets de Maintenance")
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(planned_end__gt=models.F("planned_start")),
+                name="ticket_planned_end_after_planned_start",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(effective_start__isnull=True)
+                    | models.Q(effective_end__isnull=True)
+                    | models.Q(effective_end__gt=models.F("effective_start"))
+                ),
+                name="ticket_effective_end_after_effective_start",
+            ),
+        ]
 
 
 # --- SIGNALS POUR SYNCHRONISATION CALENDRIER ---
