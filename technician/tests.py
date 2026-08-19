@@ -1,4 +1,4 @@
-from django.test import TestCase, Client as HttpClient
+from django.test import TestCase, Client as HttpClient, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -8,6 +8,10 @@ from datetime import timedelta
 
 User = get_user_model()
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class TechnicianInterventionTests(TestCase):
     def setUp(self):
         # 1. Create Technician User

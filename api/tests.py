@@ -3,7 +3,7 @@ Tests de l'API REST SMARTOPS v0.2.0.
 Couvre : Auth JWT, Inventaire, Maintenance (start/stop), accès technicien.
 """
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -15,6 +15,10 @@ from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class JWTAuthTestCase(TestCase):
     def setUp(self):
         self.client_http = APIClient()
@@ -45,6 +49,10 @@ class JWTAuthTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class InventoryAPITestCase(TestCase):
     def setUp(self):
         self.api = APIClient()
@@ -95,6 +103,10 @@ class InventoryAPITestCase(TestCase):
         self.assertEqual(r.data['count'], 1)
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class TicketAPITestCase(TestCase):
     def setUp(self):
         self.api = APIClient()
@@ -174,6 +186,10 @@ class TicketAPITestCase(TestCase):
         self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class OpenAPISchemaTestCase(TestCase):
     def setUp(self):
         self.api = APIClient()
