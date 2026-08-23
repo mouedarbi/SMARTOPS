@@ -11,3 +11,6 @@ rebuild_plugin/
 run_bench.py
 *.log
 logs/
+*.bak
+*.backup*
+*dump*.json
