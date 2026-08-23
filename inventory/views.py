@@ -346,3 +346,31 @@ def equipment_public_report_view(request, serial_number):
         'is_compliant': is_compliant,
         'has_active_issue': has_active_issue,
     })
+
+
+def equipment_qrcode_svg_view(request, serial_number):
+    """
+    Génère dynamiquement le QR Code vectoriel SVG d'un équipement.
+    L'URL encodée pointe directement sur la page du rapport public.
+    """
+    import qrcode
+    import qrcode.image.svg
+    import io
+    from django.http import HttpResponse
+    from django.urls import reverse
+
+    equipment = get_object_or_404(Equipment, serial_number=serial_number)
+    
+    # URL absolue du rapport
+    report_path = reverse('equipment_public_report', kwargs={'serial_number': equipment.serial_number})
+    report_url = request.build_absolute_uri(report_path)
+    
+    # Génération SVG vectoriel (haute définition pour impression)
+    factory = qrcode.image.svg.SvgPathImage
+    qr_img = qrcode.make(report_url, image_factory=factory, box_size=10, border=1)
+    
+    stream = io.BytesIO()
+    qr_img.save(stream)
+    svg_data = stream.getvalue()
+    
+    return HttpResponse(svg_data, content_type='image/svg+xml')

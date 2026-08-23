@@ -75,14 +75,17 @@
                 </div>
             </div>
 
-            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-blue-100 pl-4 sm:pl-0">
-                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Procès-Verbal de Visite Technique</div>
-                <div class="text-sm font-mono font-bold text-blue-700">
-                    CERT-{{ equipment.serial_number }}
+            <div class="flex items-center gap-4 text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-blue-100 pl-4 sm:pl-0">
+                <div>
+                    <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Procès-Verbal de Visite Technique</div>
+                    <div class="text-sm font-mono font-bold text-blue-700">
+                        CERT-{{ equipment.serial_number }}
+                    </div>
+                    <div class="text-[11px] text-slate-500 font-medium">
+                        Édité le {% now "d/m/Y à H:i" %}
+                    </div>
                 </div>
-                <div class="text-[11px] text-slate-500 font-medium">
-                    Édité le {% now "d/m/Y à H:i" %}
-                </div>
+                <img src="{% url 'equipment_qrcode_svg' equipment.serial_number %}" alt="QR Code d'Authenticité" class="h-16 w-16 border border-slate-200 rounded p-0.5 bg-white shadow-sm">
             </div>
         </div>
 

@@ -4,7 +4,7 @@ from .views import (
     building_list_view, building_create_view, building_update_view, building_detail_view,
     equipment_list_view, equipment_create_view, equipment_detail_view,
     equipment_type_list_view, equipment_type_detail_view,
-    equipment_public_report_view
+    equipment_public_report_view, equipment_qrcode_svg_view
 )
 
 urlpatterns = [
@@ -20,6 +20,7 @@ urlpatterns = [
     path('equipments/new/', equipment_create_view, name='equipment_create'),
     path('equipments/<int:pk>/', equipment_detail_view, name='equipment_detail'),
     path('equipment/<str:serial_number>/report/', equipment_public_report_view, name='equipment_public_report'),
+    path('equipment/<str:serial_number>/qrcode.svg', equipment_qrcode_svg_view, name='equipment_qrcode_svg'),
     path('public/equipment/<str:serial_number>/', equipment_public_report_view, name='equipment_public_report_alt'),
     path('types/', equipment_type_list_view, name='equipment_type_list'),
     path('types/<int:pk>/', equipment_type_detail_view, name='equipment_type_detail'),
