@@ -3,7 +3,8 @@ from .views import (
     client_list_view, client_create_view, client_update_view, client_detail_view,
     building_list_view, building_create_view, building_update_view, building_detail_view,
     equipment_list_view, equipment_create_view, equipment_detail_view,
-    equipment_type_list_view, equipment_type_detail_view
+    equipment_type_list_view, equipment_type_detail_view,
+    equipment_public_report_view
 )
 
 urlpatterns = [
@@ -18,6 +19,8 @@ urlpatterns = [
     path('equipments/', equipment_list_view, name='equipment_list'),
     path('equipments/new/', equipment_create_view, name='equipment_create'),
     path('equipments/<int:pk>/', equipment_detail_view, name='equipment_detail'),
+    path('equipment/<str:serial_number>/report/', equipment_public_report_view, name='equipment_public_report'),
+    path('public/equipment/<str:serial_number>/', equipment_public_report_view, name='equipment_public_report_alt'),
     path('types/', equipment_type_list_view, name='equipment_type_list'),
     path('types/<int:pk>/', equipment_type_detail_view, name='equipment_type_detail'),
 ]

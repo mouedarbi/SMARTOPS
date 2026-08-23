@@ -285,3 +285,64 @@ def equipment_detail_view(request, pk):
         'tickets': tickets,
         'page_title': f"Détails Équipement - {equipment.name}"
     })
+
+
+# --- VUE PUBLIQUE / CONSULTANT (SCAN QR CODE) ---
+
+def equipment_public_report_view(request, serial_number):
+    """
+    Vue publique / consultation d'audit (F12) accessible via scan QR Code.
+    Permet au consultant, auditeur ou client de vérifier l'état de conformité
+    et le dernier rapport d'intervention de l'appareil sans authentification requise.
+    """
+    from datetime import timedelta
+    from django.utils import timezone
+
+    equipment = get_object_or_404(
+        Equipment.objects.select_related('equipment_type', 'building', 'building__client'),
+        serial_number=serial_number
+    )
+
+    # Récupération du dernier ticket de maintenance préventive validé
+    latest_maintenance = equipment.maintenance_tickets.filter(
+        type='maintenance',
+        status='done'
+    ).select_related('technician', 'technician__user').order_by('-effective_end', '-planned_end', '-created_at').first()
+
+    # Dernier ticket toutes interventions confondues
+    latest_ticket = equipment.maintenance_tickets.filter(
+        status='done'
+    ).select_related('technician', 'technician__user').order_by('-effective_end', '-planned_end', '-created_at').first()
+
+    # Historique des 5 dernières interventions
+    history_tickets = equipment.maintenance_tickets.filter(
+        status='done'
+    ).select_related('technician', 'technician__user').order_by('-effective_end', '-planned_end', '-created_at')[:5]
+
+    # Vérification de la conformité (visite dans les 12 derniers mois)
+    is_compliant = False
+    next_due_date = None
+    last_visit_date = None
+
+    reference_ticket = latest_maintenance or latest_ticket
+    if reference_ticket:
+        last_visit_date = reference_ticket.effective_end or reference_ticket.planned_end or reference_ticket.created_at
+        if last_visit_date:
+            next_due_date = last_visit_date + timedelta(days=365)
+            is_compliant = next_due_date > timezone.now()
+
+    # Vérifier s'il y a une intervention en cours
+    has_active_issue = equipment.maintenance_tickets.filter(
+        status__in=['pending', 'planned', 'in_progress', 'to_reschedule']
+    ).exists()
+
+    return render(request, 'inventory/equipment_public_report.html', {
+        'equipment': equipment,
+        'latest_maintenance': latest_maintenance,
+        'latest_ticket': latest_ticket,
+        'history_tickets': history_tickets,
+        'last_visit_date': last_visit_date,
+        'next_due_date': next_due_date,
+        'is_compliant': is_compliant,
+        'has_active_issue': has_active_issue,
+    })
