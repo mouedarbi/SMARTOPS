@@ -18,11 +18,14 @@
                 </a>
             </p>
         </div>
-        <div class="flex gap-4">
-            <a href="{% url 'client_detail' building.client.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-6 rounded-2xl transition duration-200">
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'building_labels' building.pk %}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center shadow-md shadow-blue-600/20">
+                <i class="las la-qrcode text-xl mr-2"></i>Planche QR Codes du Site
+            </a>
+            <a href="{% url 'client_detail' building.client.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-arrow-left text-lg mr-2"></i>Fiche Client
             </a>
-            <a href="{% url 'building_update' building.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-2xl transition duration-200">
+            <a href="{% url 'building_update' building.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-edit text-lg mr-2"></i>Modifier
             </a>
         </div>

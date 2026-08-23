@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planche Étiquettes QR Codes - {{ building.name }} | SMARTOPS</title>
+    <!-- Indexation interdite -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <style>
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                padding: 0 !important;
+            }
+            .label-card {
+                box-shadow: none !important;
+                border: 1.5px solid #000 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-6 text-slate-800 font-sans">
+
+    <!-- Barre d'actions (masquée à l'impression) -->
+    <div class="max-w-5xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4 no-print bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h1 class="text-base font-black text-slate-800 flex items-center gap-2">
+                <i class="las la-qrcode text-blue-600 text-xl"></i>
+                Planche d'Étiquettes QR Codes — {{ building.name }}
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Client : <strong>{{ building.client.name }}</strong> — Total : <strong>{{ equipments.count }} appareil(s)</strong>
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded shadow transition cursor-pointer flex items-center gap-2">
+                <i class="las la-print text-lg"></i> Imprimer la Planche A4
+            </button>
+            <a href="{% url 'building_detail' building.pk %}" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider rounded transition flex items-center gap-2">
+                <i class="las la-arrow-left text-lg"></i> Retour Bâtiment
+            </a>
+        </div>
+    </div>
+
+    <!-- GRILLE D'IMPRESSION EN LOT (2 colonnes pour A4) -->
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 print-grid">
+        {% for equipment in equipments %}
+            <div class="label-card bg-white border-2 border-slate-900 rounded-lg p-3.5 shadow-sm flex flex-col justify-between space-y-2.5">
+                
+                <!-- En-tête Étiquette -->
+                <div class="flex items-center justify-between border-b-2 border-slate-900 pb-1.5">
+                    <div class="flex items-center gap-2">
+                        <div class="h-6 w-6 bg-blue-600 rounded flex items-center justify-center text-white font-black text-xs">
+                            <i class="las la-tools"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-black tracking-tight text-slate-900 leading-none">SMARTOPS</div>
+                            <div class="text-[7px] font-bold text-blue-600 uppercase tracking-widest">Contrôle & Traçabilité</div>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-mono font-bold bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded">
+                        {{ equipment.equipment_type.name }}
+                    </span>
+                </div>
+
+                <!-- Corps de l'étiquette : QR Code + Métadonnées -->
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 border border-slate-300 p-1 rounded bg-white">
+                        <img src="{% url 'equipment_qrcode_svg' equipment.serial_number %}" alt="QR Code" class="h-20 w-20">
+                    </div>
+
+                    <div class="flex-grow space-y-1 text-left min-w-0">
+                        <div class="font-black text-slate-900 text-xs truncate leading-tight">{{ equipment.name }}</div>
+                        <div class="text-[9px] text-slate-600 truncate">
+                            <i class="las la-building text-slate-400"></i> {{ building.name }}
+                        </div>
+                        <div class="text-[9px] text-slate-600 truncate">
+                            <i class="las la-user text-slate-400"></i> {{ building.client.name }}
+                        </div>
+                        <div class="pt-0.5">
+                            <div class="text-[7px] font-bold uppercase text-slate-400">N° DE SÉRIE :</div>
+                            <div class="font-mono text-[9px] font-black text-blue-800 bg-blue-50 border border-blue-100 px-1 py-0.5 rounded inline-block truncate max-w-full">
+                                {{ equipment.serial_number }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bas de l'étiquette -->
+                <div class="border-t border-slate-200 pt-1 flex items-center justify-between text-[7px] text-slate-500 font-medium">
+                    <span><i class="las la-camera text-blue-600 mr-0.5"></i> Scanner pour certificat</span>
+                    <span class="font-mono">Pose : {{ equipment.installed_at|date:"m/Y" }}</span>
+                </div>
+
+            </div>
+        {% empty %}
+            <div class="col-span-2 bg-white p-8 rounded-xl text-center text-slate-500 border border-dashed border-slate-300">
+                Aucun équipement enregistré pour ce bâtiment.
+            </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

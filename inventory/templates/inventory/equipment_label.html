@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étiquette QR Code - {{ equipment.serial_number }} | SMARTOPS</title>
+    <!-- Indexation interdite -->
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    <style>
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .label-card {
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+                margin: 0 auto !important;
+                page-break-inside: avoid !important;
+            }
+            @page {
+                size: auto;
+                margin: 5mm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-6 text-slate-800 font-sans">
+
+    <!-- Actions no-print -->
+    <div class="mb-6 flex gap-3 no-print">
+        <button onclick="window.print()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded shadow transition cursor-pointer flex items-center gap-2">
+            <i class="las la-print text-lg"></i> Imprimer l'Étiquette
+        </button>
+        <a href="{% url 'equipment_detail' equipment.pk %}" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs uppercase tracking-wider rounded shadow-sm transition flex items-center gap-2">
+            <i class="las la-arrow-left text-lg"></i> Retour Appareil
+        </a>
+    </div>
+
+    <!-- ÉTIQUETTE INDUSTRIELLE DE CONTRÔLE (Format Standard 90x60mm) -->
+    <div class="label-card w-[380px] bg-white border-2 border-slate-900 rounded-lg p-4 shadow-xl flex flex-col justify-between space-y-3">
+        
+        <!-- En-tête Étiquette -->
+        <div class="flex items-center justify-between border-b-2 border-slate-900 pb-2">
+            <div class="flex items-center gap-2">
+                <div class="h-7 w-7 bg-blue-600 rounded flex items-center justify-center text-white font-black text-sm">
+                    <i class="las la-tools"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-black tracking-tight text-slate-900 leading-none">SMARTOPS</div>
+                    <div class="text-[8px] font-bold text-blue-600 uppercase tracking-widest">Contrôle & Traçabilité</div>
+                </div>
+            </div>
+            <span class="text-[9px] font-mono font-bold bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded">
+                {{ equipment.equipment_type.name }}
+            </span>
+        </div>
+
+        <!-- Corps de l'étiquette : QR Code + Métadonnées -->
+        <div class="flex items-center gap-3">
+            <!-- QR Code vectoriel haute netteté -->
+            <div class="flex-shrink-0 border border-slate-300 p-1 rounded bg-white">
+                <img src="{% url 'equipment_qrcode_svg' equipment.serial_number %}" alt="QR Code" class="h-24 w-24">
+            </div>
+
+            <!-- Infos de l'appareil -->
+            <div class="flex-grow space-y-1 text-left min-w-0">
+                <div class="font-black text-slate-900 text-sm truncate leading-tight">{{ equipment.name }}</div>
+                <div class="text-[10px] text-slate-600 truncate">
+                    <i class="las la-building text-slate-400"></i> {{ equipment.building.name }}
+                </div>
+                <div class="text-[10px] text-slate-600 truncate">
+                    <i class="las la-user text-slate-400"></i> {{ equipment.building.client.name }}
+                </div>
+                <div class="pt-1">
+                    <div class="text-[8px] font-bold uppercase text-slate-400">N° DE SÉRIE :</div>
+                    <div class="font-mono text-[10px] font-black text-blue-800 bg-blue-50 border border-blue-100 px-1 py-0.5 rounded inline-block truncate max-w-full">
+                        {{ equipment.serial_number }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bas de l'étiquette -->
+        <div class="border-t border-slate-200 pt-1.5 flex items-center justify-between text-[8px] text-slate-500 font-medium">
+            <span><i class="las la-camera text-blue-600 mr-0.5"></i> Scanner pour certificat</span>
+            <span class="font-mono">Pose : {{ equipment.installed_at|date:"m/Y" }}</span>
+        </div>
+
+    </div>
+
+</body>
+</html>

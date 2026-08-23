@@ -374,3 +374,37 @@ def equipment_qrcode_svg_view(request, serial_number):
     svg_data = stream.getvalue()
     
     return HttpResponse(svg_data, content_type='image/svg+xml')
+
+
+@login_required
+@user_passes_test(is_management_staff)
+def equipment_label_view(request, pk):
+    """
+    Affiche une étiquette industrielle unitaire prête à imprimer
+    pour un équipement avec son QR code de traçabilité.
+    """
+    equipment = get_object_or_404(
+        Equipment.objects.select_related('equipment_type', 'building', 'building__client'),
+        pk=pk
+    )
+    return render(request, 'inventory/equipment_label.html', {
+        'equipment': equipment,
+        'page_title': f"Étiquette QR - {equipment.name}"
+    })
+
+
+@login_required
+@user_passes_test(is_management_staff)
+def building_labels_view(request, pk):
+    """
+    Affiche la planche d'étiquettes A4 (impression en lot / bulk)
+    de tous les équipements installés dans un bâtiment.
+    """
+    building = get_object_or_404(Building.objects.select_related('client'), pk=pk)
+    equipments = building.equipments.select_related('equipment_type').order_by('name')
+    return render(request, 'inventory/building_labels.html', {
+        'building': building,
+        'equipments': equipments,
+        'page_title': f"Planche QR Codes - {building.name}"
+    })
+
