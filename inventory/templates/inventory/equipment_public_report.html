@@ -17,6 +17,8 @@
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
@@ -31,51 +33,54 @@
             }
             @page {
                 size: A4;
-                margin: 12mm;
+                margin: 10mm;
             }
         }
     </style>
 </head>
-<body class="bg-slate-200 text-slate-900 font-sans antialiased min-h-screen py-8 px-4 sm:px-6">
+<body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen py-8 px-4 sm:px-6">
 
     <!-- Barre d'actions (masquée à l'impression) -->
     <div class="max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4 no-print">
-        <div class="flex items-center gap-2">
-            <span class="inline-flex items-center px-3 py-1 bg-slate-800 text-slate-200 text-xs font-semibold rounded">
-                <i class="las la-shield-alt mr-1.5 text-blue-400"></i> Registre de Contrôle Technique
-            </span>
-            <span class="text-xs text-slate-500 font-mono">ID : {{ equipment.serial_number }}</span>
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/30">
+                <i class="las la-tools text-lg"></i>
+            </div>
+            <div>
+                <span class="text-xs font-black tracking-wider text-slate-800 uppercase">SMARTOPS</span>
+                <span class="text-[11px] text-slate-500 font-mono ml-2">RÉF : {{ equipment.serial_number }}</span>
+            </div>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold uppercase tracking-wider rounded shadow transition cursor-pointer">
+            <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded shadow-md shadow-blue-600/20 transition cursor-pointer">
                 <i class="las la-print text-lg"></i> Imprimer / Télécharger en PDF
             </button>
         </div>
     </div>
 
-    <!-- DOCUMENT CERTIFICAT OFFICIEL (Format Rapport A4) -->
-    <div class="max-w-4xl mx-auto bg-white border border-slate-300 shadow-md p-8 sm:p-12 print-container text-slate-800 space-y-8">
+    <!-- DOCUMENT CERTIFICAT OFFICIEL (Format Rapport A4 - Charte SMARTOPS) -->
+    <div class="max-w-4xl mx-auto bg-white border-2 border-slate-200 shadow-lg p-8 sm:p-12 print-container text-slate-800 space-y-8">
 
-        <!-- 1. En-tête officiel de certificat -->
-        <div class="border-b-2 border-slate-900 pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <!-- 1. En-tête officiel avec l'identité de marque SMARTOPS -->
+        <div class="border-b-2 border-blue-600 pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div class="space-y-1">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 bg-slate-900 text-white flex items-center justify-center font-black text-xl rounded">
-                        <i class="las la-tools"></i>
+                    <div class="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+                        <i class="las la-tools text-3xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-black tracking-tight text-slate-900">SMARTOPS GMAO</h1>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Plateforme de Gestion de Maintenance Assistée par Ordinateur</p>
+                        <h1 class="text-2xl font-black tracking-tight text-slate-900">SMARTOPS</h1>
+                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Plateforme de Gestion & Suivi Technique</p>
                     </div>
                 </div>
             </div>
 
-            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-slate-200 pl-4 sm:pl-0">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Procès-Verbal de Visite Technique</div>
-                <div class="text-sm font-mono font-bold text-slate-800">
-                    RÉF : CERT-{{ equipment.serial_number }}
+            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-blue-100 pl-4 sm:pl-0">
+                <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Procès-Verbal de Visite Technique</div>
+                <div class="text-sm font-mono font-bold text-blue-700">
+                    CERT-{{ equipment.serial_number }}
                 </div>
-                <div class="text-[11px] text-slate-500">
+                <div class="text-[11px] text-slate-500 font-medium">
                     Édité le {% now "d/m/Y à H:i" %}
                 </div>
             </div>
@@ -84,30 +89,33 @@
         <!-- 2. Titre du document & Statut d'homologation -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <div class="md:col-span-2">
+                <div class="inline-block px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-wider rounded mb-1">
+                    Contrôle Technique Périodique
+                </div>
                 <h2 class="text-xl font-black text-slate-900 uppercase tracking-wide">
-                    Certificat de Conformité & Visite Périodique
+                    Certificat de Conformité & Visite Technique
                 </h2>
                 <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Attestation officielle de vérification technique réglementaire délivrée suite à l'intervention de maintenance réalisée sur l'équipement désigné ci-après.
+                    Attestation officielle de contrôle et de vérification technique délivrée suite à l'intervention réalisée sur l'équipement désigné ci-après.
                 </p>
             </div>
 
             <!-- Bloc tampon / Homologation -->
-            <div class="border-2 {% if is_compliant and not has_active_issue %}border-emerald-700 bg-emerald-50/60{% elif has_active_issue %}border-amber-600 bg-amber-50/60{% else %}border-rose-700 bg-rose-50/60{% endif %} p-4 text-center">
-                <div class="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-0.5">Statut Réglementaire</div>
+            <div class="border-2 {% if is_compliant and not has_active_issue %}border-emerald-600 bg-emerald-50/70{% elif has_active_issue %}border-amber-500 bg-amber-50/70{% else %}border-rose-600 bg-rose-50/70{% endif %} p-4 text-center rounded">
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Statut de l'Appareil</div>
                 {% if is_compliant and not has_active_issue %}
                     <div class="text-base font-black text-emerald-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-check-circle text-xl"></i> APPAREIL CONFORME
+                        <i class="las la-check-circle text-xl text-emerald-600"></i> APPAREIL CONFORME
                     </div>
                     <div class="text-[11px] font-bold text-emerald-700 mt-0.5">Visite technique validée</div>
                 {% elif has_active_issue %}
                     <div class="text-base font-black text-amber-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-exclamation-circle text-xl"></i> INTERVENTION EN COURS
+                        <i class="las la-tools text-xl text-amber-600"></i> INTERVENTION EN COURS
                     </div>
-                    <div class="text-[11px] font-bold text-amber-700 mt-0.5">Ticket de maintenance actif</div>
+                    <div class="text-[11px] font-bold text-amber-700 mt-0.5">Ticket de travail actif</div>
                 {% else %}
                     <div class="text-base font-black text-rose-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-times-circle text-xl"></i> CONTRÔLE REQUIS
+                        <i class="las la-times-circle text-xl text-rose-600"></i> VISITE REQUISE
                     </div>
                     <div class="text-[11px] font-bold text-rose-700 mt-0.5">Périodicité dépassée</div>
                 {% endif %}
@@ -116,8 +124,8 @@
 
         <!-- 3. Identification de l'Équipement & Localisation (Tableau formel) -->
         <div class="space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1">
-                1. Identification de l'Équipement & Localisation
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
+                <i class="las la-cube text-blue-600"></i> 1. Identification de l'Équipement & Emplacement
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-xs pt-2">
@@ -127,7 +135,7 @@
                 </div>
                 <div class="flex justify-between border-b border-slate-100 py-1.5">
                     <span class="font-bold text-slate-500 uppercase text-[11px]">Numéro de Série (S/N)</span>
-                    <span class="font-mono font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{{ equipment.serial_number }}</span>
+                    <span class="font-mono font-bold text-blue-800 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded">{{ equipment.serial_number }}</span>
                 </div>
                 <div class="flex justify-between border-b border-slate-100 py-1.5">
                     <span class="font-bold text-slate-500 uppercase text-[11px]">Catégorie / Type</span>
@@ -142,24 +150,27 @@
                     <span class="font-semibold text-slate-800">{{ equipment.building.client.name }}</span>
                 </div>
                 <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Site / Bâtiment d'Implantation</span>
+                    <span class="font-bold text-slate-500 uppercase text-[11px]">Site / Bâtiment</span>
                     <span class="font-semibold text-slate-800">{{ equipment.building.name }}</span>
                 </div>
             </div>
 
-            <div class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">
-                <strong>Adresse du site :</strong> {{ equipment.building.address }}
+            <div class="text-[11px] text-slate-600 bg-blue-50/50 p-3 rounded border border-blue-100 mt-2 flex items-start gap-2">
+                <i class="las la-map-marker text-blue-600 text-base mt-0.5"></i>
+                <div>
+                    <strong>Adresse d'implantation :</strong> {{ equipment.building.address }}
+                </div>
             </div>
         </div>
 
         <!-- 4. Périodicité & Échéances de Contrôle -->
         <div class="space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1">
-                2. Périodicité & Échéances Réglementaires
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
+                <i class="las la-calendar-alt text-blue-600"></i> 2. Périodicité & Échéances de Contrôle
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-center">
-                <div class="border border-slate-200 bg-slate-50 p-3">
+                <div class="border border-slate-200 bg-slate-50 p-3 rounded">
                     <span class="text-[10px] font-bold text-slate-500 uppercase block">Date du Dernier Contrôle</span>
                     <span class="text-sm font-black text-slate-900 block mt-1">
                         {% if last_visit_date %}{{ last_visit_date|date:"d F Y" }}{% else %}Non renseigné{% endif %}
@@ -167,13 +178,13 @@
                     <span class="text-[10px] text-slate-500">Heure : {{ last_visit_date|date:"H:i"|default:"--" }}</span>
                 </div>
 
-                <div class="border border-slate-200 bg-slate-50 p-3">
+                <div class="border border-slate-200 bg-slate-50 p-3 rounded">
                     <span class="text-[10px] font-bold text-slate-500 uppercase block">Fréquence de Vérification</span>
                     <span class="text-sm font-black text-slate-900 block mt-1">Annuelle (12 mois)</span>
-                    <span class="text-[10px] text-slate-500">Contrôle préventif obligatoire</span>
+                    <span class="text-[10px] text-slate-500">Contrôle préventif périodique</span>
                 </div>
 
-                <div class="border {% if is_compliant %}border-emerald-300 bg-emerald-50/50{% else %}border-rose-300 bg-rose-50/50{% endif %} p-3">
+                <div class="border-2 {% if is_compliant %}border-emerald-400 bg-emerald-50/50{% else %}border-rose-400 bg-rose-50/50{% endif %} p-3 rounded">
                     <span class="text-[10px] font-bold text-slate-500 uppercase block">Prochaine Échéance Limite</span>
                     <span class="text-sm font-black {% if is_compliant %}text-emerald-800{% else %}text-rose-800{% endif %} block mt-1">
                         {% if next_due_date %}{{ next_due_date|date:"d F Y" }}{% else %}À planifier{% endif %}
@@ -185,36 +196,36 @@
 
         <!-- 5. Rapport Technique & Constats de l'Intervenant -->
         <div class="space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1">
-                3. Dernier Rapport d'Intervention & Constatations Techniques
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
+                <i class="las la-file-signature text-blue-600"></i> 3. Dernier Rapport d'Intervention & Constats
             </h3>
 
             {% if latest_maintenance or latest_ticket %}
                 {% with ticket=latest_maintenance|default:latest_ticket %}
-                    <div class="border border-slate-200 p-4 space-y-3 bg-white text-xs">
+                    <div class="border border-slate-200 p-4 space-y-3 bg-white text-xs rounded">
                         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
                             <div>
-                                <span class="font-bold text-slate-700">Réf. Ticket d'intervention :</span>
-                                <span class="font-mono font-bold text-slate-900">INT-{{ ticket.id }}</span>
-                                <span class="text-slate-400 mx-1.5">|</span>
-                                <span class="font-semibold text-slate-600">Type : {{ ticket.get_type_display }}</span>
+                                <span class="font-bold text-slate-700">Réf. Intervention :</span>
+                                <span class="font-mono font-bold text-blue-700">INT-{{ ticket.id }}</span>
+                                <span class="text-slate-300 mx-1.5">|</span>
+                                <span class="font-semibold text-slate-600">Nature : {{ ticket.get_type_display }}</span>
                             </div>
                             <div>
-                                <span class="font-bold text-slate-700">Opérateur :</span>
-                                <span class="font-semibold text-slate-900">{{ ticket.technician|default:"Technicien agréé SmartOps" }}</span>
+                                <span class="font-bold text-slate-700">Technicien intervenant :</span>
+                                <span class="font-semibold text-slate-900">{{ ticket.technician|default:"Technicien certifié SmartOps" }}</span>
                             </div>
                         </div>
 
                         <div>
-                            <span class="font-bold text-slate-700 block mb-1">Conclusions & Observations de visite :</span>
-                            <div class="bg-slate-50 p-3 border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-line font-mono text-[11px]">
-{% if ticket.intervention_report %}{{ ticket.intervention_report }}{% else %}Contrôle préventif périodique standard exécuté conformément aux spécifications constructeur et aux normes de sécurité en vigueur. Aucun dysfonctionnement constaté lors de l'inspection.{% endif %}
+                            <span class="font-bold text-slate-700 block mb-1">Conclusions & Observations techniques :</span>
+                            <div class="bg-slate-50 p-3.5 rounded border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-line font-mono text-[11px]">
+{% if ticket.intervention_report %}{{ ticket.intervention_report }}{% else %}Contrôle technique préventif standard exécuté conformément aux procédures de maintenance et aux spécifications du fabricant. Aucun dysfonctionnement constaté lors de l'inspection.{% endif %}
                             </div>
                         </div>
                     </div>
                 {% endwith %}
             {% else %}
-                <p class="text-xs text-slate-500 italic p-4 border border-dashed border-slate-300 text-center">
+                <p class="text-xs text-slate-500 italic p-4 border border-dashed border-slate-300 text-center rounded">
                     Aucun historique d'intervention enregistré pour cet équipement.
                 </p>
             {% endif %}
@@ -223,27 +234,27 @@
         <!-- 6. Historique Réglementaire des Interventions (Tableau) -->
         {% if history_tickets %}
             <div class="space-y-2">
-                <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 border-b border-slate-200 pb-1">
-                    4. Registre Historique des 5 Dernières Interventions
+                <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <i class="las la-history text-blue-600"></i> 4. Registre des 5 Dernières Visites Validées
                 </h3>
 
-                <table class="w-full text-left text-xs border border-slate-200 border-collapse">
+                <table class="w-full text-left text-xs border border-slate-200 border-collapse rounded overflow-hidden">
                     <thead>
-                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
-                            <th class="py-2 px-3 border-r border-slate-200">Ticket N°</th>
-                            <th class="py-2 px-3 border-r border-slate-200">Date d'intervention</th>
-                            <th class="py-2 px-3 border-r border-slate-200">Nature de l'acte</th>
-                            <th class="py-2 px-3 border-r border-slate-200">Intervenant</th>
-                            <th class="py-2 px-3 text-center">Résultat</th>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+                            <th class="py-2.5 px-3 border-r border-slate-200">Réf. Ticket</th>
+                            <th class="py-2.5 px-3 border-r border-slate-200">Date d'intervention</th>
+                            <th class="py-2.5 px-3 border-r border-slate-200">Nature de l'acte</th>
+                            <th class="py-2.5 px-3 border-r border-slate-200">Intervenant</th>
+                            <th class="py-2.5 px-3 text-center">Résultat</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 text-slate-700 text-[11px]">
                         {% for t in history_tickets %}
-                            <tr>
-                                <td class="py-2 px-3 font-mono font-bold border-r border-slate-200">INT-{{ t.id }}</td>
+                            <tr class="hover:bg-slate-50/50">
+                                <td class="py-2 px-3 font-mono font-bold text-blue-700 border-r border-slate-200">INT-{{ t.id }}</td>
                                 <td class="py-2 px-3 border-r border-slate-200">{{ t.effective_end|default:t.planned_end|date:"d/m/Y H:i" }}</td>
                                 <td class="py-2 px-3 border-r border-slate-200 font-medium">{{ t.get_type_display }}</td>
-                                <td class="py-2 px-3 border-r border-slate-200">{{ t.technician|default:"SmartOps Tech" }}</td>
+                                <td class="py-2 px-3 border-r border-slate-200">{{ t.technician|default:"Technicien SmartOps" }}</td>
                                 <td class="py-2 px-3 text-center font-bold text-emerald-700">VALIDE</td>
                             </tr>
                         {% endfor %}
@@ -254,34 +265,35 @@
 
         <!-- 7. Blocs d'émargement & Signatures officielles -->
         <div class="grid grid-cols-2 gap-6 pt-4 border-t-2 border-slate-200 text-xs">
-            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between">
+            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between rounded bg-slate-50/30">
                 <div>
-                    <span class="font-bold text-slate-700 uppercase text-[10px] block">Visa du Responsable Technique</span>
-                    <span class="text-[11px] text-slate-500">Validation numérique GMAO SmartOps</span>
+                    <span class="font-bold text-slate-800 uppercase text-[10px] block">Visa du Responsable Technique</span>
+                    <span class="text-[11px] text-slate-500">Validation numérique SmartOps Platform</span>
                 </div>
-                <div class="text-[10px] font-mono text-slate-400 mt-4">
-                    Signature électronique certifiée
+                <div class="text-[10px] font-mono text-slate-400 mt-4 flex items-center gap-1">
+                    <i class="las la-check text-blue-600"></i> Signature électronique certifiée
                 </div>
             </div>
 
-            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between">
+            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between rounded bg-slate-50/30">
                 <div>
-                    <span class="font-bold text-slate-700 uppercase text-[10px] block">Visa du Consultant / Auditeur</span>
-                    <span class="text-[11px] text-slate-500">Pour consultation & prise de connaissance</span>
+                    <span class="font-bold text-slate-800 uppercase text-[10px] block">Visa du Consultant / Auditeur</span>
+                    <span class="text-[11px] text-slate-500">Pour consultation & contrôle de conformité</span>
                 </div>
                 <div class="text-[10px] font-mono text-slate-400 mt-4">
-                    Date du scan : {% now "d/m/Y" %}
+                    Date du contrôle : {% now "d/m/Y" %}
                 </div>
             </div>
         </div>
 
         <!-- 8. Bas de page certifié -->
         <div class="border-t border-slate-200 pt-4 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 gap-2">
-            <div>
-                Document généré automatiquement par le serveur <strong>SMARTOPS Core GMAO</strong>.
+            <div class="flex items-center gap-1.5">
+                <div class="h-2 w-2 rounded-full bg-blue-600"></div>
+                Document officiel certifié généré par la plateforme <strong>SMARTOPS</strong>.
             </div>
             <div class="font-mono text-slate-400">
-                Code Authenticité : SHA256-{{ equipment.serial_number|slugify }}
+                Identifiant : SHA256-{{ equipment.serial_number|slugify }}
             </div>
         </div>
 
