@@ -17,7 +17,6 @@ class CustomUser(AbstractUser):
         ('admin', _('Administrateur')),
         ('manager', _('Gestionnaire')),
         ('technician', _('Technicien')),
-        ('consultant', _('Consultant')),
     )
     role = models.CharField(
         max_length=20, 
@@ -54,10 +53,6 @@ class CustomUser(AbstractUser):
     @property
     def is_technician(self):
         return self.role == 'technician'
-
-    @property
-    def is_consultant(self):
-        return self.role == 'consultant'
 
     class Meta:
         verbose_name = _("Utilisateur")

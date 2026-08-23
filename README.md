@@ -20,7 +20,7 @@ SMARTOPS est une solution de gestion de maintenance (GMAO) de niveau entreprise,
 |---|---|---|
 | **Authentification** | Connexion / Déconnexion | ✅ Opérationnel |
 | **Comptes** | Gestion des utilisateurs (création, édition, suppression logique) | ✅ Opérationnel |
-| **Comptes** | Rôles : Admin, Manager, Technicien, Consultant | ✅ Opérationnel |
+| **Comptes** | Rôles : Admin, Manager, Technicien | ✅ Opérationnel |
 | **Inventaire** | Gestion des Clients B2B | ✅ Opérationnel |
 | **Inventaire** | Gestion des Bâtiments par client | ✅ Opérationnel |
 | **Inventaire** | Gestion des Équipements avec champs personnalisés (JSON) | ✅ Opérationnel |
