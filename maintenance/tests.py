@@ -256,3 +256,76 @@ class MaintenanceWebViewsTestCase(TestCase):
         response = self.http_client.get(url, follow=True)
         self.assertRedirects(response, reverse('ticket_detail', kwargs={'pk': ticket.id}))
 
+
+def _tiny_png(name='photo.png'):
+    """Retourne un fichier PNG 1x1 valide pour les tests d'upload."""
+    import io
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    try:
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new('RGB', (1, 1), '#3b82f6').save(buf, format='PNG')
+        content = buf.getvalue()
+    except Exception:
+        content = (b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01'
+                   b'\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc```\x00\x00'
+                   b'\x00\x04\x00\x01\xf6\x178U\x00\x00\x00\x00IEND\xaeB`\x82')
+    return SimpleUploadedFile(name, content, content_type='image/png')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'],
+    MEDIA_ROOT='/tmp/smartops_test_media',
+)
+class InterventionPhotoTestCase(TestCase):
+    def setUp(self):
+        from accounts.models import CustomUser
+        self.manager = CustomUser.objects.create_user(username='mgr_photo', password='Password123!', role='manager')
+        self.tech_user = CustomUser.objects.create_user(username='tech_photo', password='Password123!', role='technician')
+        self.tech = self.tech_user.technician_profile
+        self.client_obj = Client.objects.create(name='Client Photo', address='1 rue')
+        self.building = Building.objects.create(client=self.client_obj, name='Bat P', address='1 rue')
+        self.eq_type = EquipmentType.objects.create(name='Chaudière')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='CH 1', equipment_type=self.eq_type,
+            serial_number='CH-1', installed_at=date(2025, 1, 1),
+        )
+        now = timezone.now()
+        self.ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='maintenance',
+            status='in_progress', planned_start=now, planned_end=now + timedelta(hours=2),
+            effective_start=now,
+        )
+
+    def test_manager_can_upload_and_delete_photo(self):
+        http = HttpClient()
+        http.login(username='mgr_photo', password='Password123!')
+        url = reverse('ticket_detail', kwargs={'pk': self.ticket.id})
+
+        resp = http.post(url, {'action': 'add_photo', 'phase': 'after', 'caption': 'Test',
+                               'image': _tiny_png()})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.ticket.photos.count(), 1)
+        photo = self.ticket.photos.first()
+        self.assertEqual(photo.phase, 'after')
+        self.assertEqual(photo.uploaded_by, self.manager)
+
+        resp = http.post(url, {'action': 'delete_photo', 'photo_id': photo.id})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.ticket.photos.count(), 0)
+
+    def test_technician_uploads_photo_on_own_ticket(self):
+        http = HttpClient()
+        http.login(username='tech_photo', password='Password123!')
+        url = reverse('technician_ticket_detail', kwargs={'pk': self.ticket.id})
+
+        resp = http.post(url, {'action': 'add_photo', 'phase': 'during', 'image': _tiny_png()})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.ticket.photos.count(), 1)
+        self.assertEqual(self.ticket.photos.first().uploaded_by, self.tech_user)
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree('/tmp/smartops_test_media', ignore_errors=True)
+

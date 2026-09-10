@@ -17,7 +17,7 @@ class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['role'] = user.role
         return token
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
-from maintenance.models import Technician, MaintenanceTicket
+from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -80,11 +80,29 @@ class TechnicianSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'specialties', 'is_active']
 
 
+class InterventionPhotoSerializer(serializers.ModelSerializer):
+    phase_display = serializers.CharField(source='get_phase_display', read_only=True)
+    uploaded_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InterventionPhoto
+        fields = ['id', 'ticket', 'image', 'caption', 'phase', 'phase_display',
+                  'uploaded_by', 'uploaded_by_name', 'uploaded_at']
+        read_only_fields = ['id', 'ticket', 'uploaded_by', 'uploaded_at']
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_uploaded_by_name(self, obj):
+        if obj.uploaded_by:
+            return obj.uploaded_by.get_full_name() or obj.uploaded_by.username
+        return None
+
+
 class MaintenanceTicketSerializer(serializers.ModelSerializer):
     equipment_name = serializers.CharField(source='equipment.name', read_only=True)
     technician_name = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     type_display = serializers.CharField(source='get_type_display', read_only=True)
+    photos = InterventionPhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = MaintenanceTicket
@@ -97,6 +115,7 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
             'start_latitude', 'start_longitude',
             'status', 'status_display',
             'description', 'intervention_report',
+            'photos',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'effective_start', 'effective_end', 'created_at', 'updated_at']

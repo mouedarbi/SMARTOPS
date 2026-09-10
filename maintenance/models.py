@@ -124,6 +124,51 @@ class MaintenanceTicket(models.Model):
         ]
 
 
+class InterventionPhoto(models.Model):
+    """
+    Photo rattachée à une intervention (preuve terrain : avant / pendant / après).
+    Alimentée par le technicien depuis le terrain ou par un gestionnaire.
+    """
+    PHASE_CHOICES = [
+        ("before", _("Avant intervention")),
+        ("during", _("Pendant intervention")),
+        ("after", _("Après intervention")),
+    ]
+
+    ticket = models.ForeignKey(
+        MaintenanceTicket,
+        on_delete=models.CASCADE,
+        related_name="photos",
+        verbose_name=_("Intervention"),
+    )
+    image = models.ImageField(upload_to="interventions/%Y/%m/", verbose_name=_("Photo"))
+    caption = models.CharField(max_length=255, blank=True, verbose_name=_("Légende"))
+    phase = models.CharField(max_length=20, choices=PHASE_CHOICES, default="during", verbose_name=_("Moment"))
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="intervention_photos",
+        verbose_name=_("Ajoutée par"),
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Date d'ajout"))
+
+    def __str__(self):
+        return f"Photo #{self.id} - Intervention #{self.ticket_id}"
+
+    class Meta:
+        verbose_name = _("Photo d'intervention")
+        verbose_name_plural = _("Photos d'intervention")
+        ordering = ["uploaded_at"]
+
+
+@receiver(post_delete, sender=InterventionPhoto)
+def delete_intervention_photo_file(sender, instance, **kwargs):
+    """Supprime le fichier physique lorsque la photo est retirée."""
+    if instance.image:
+        instance.image.delete(save=False)
+
+
 # --- SIGNALS POUR SYNCHRONISATION CALENDRIER ---
 
 @receiver(post_save, sender=MaintenanceTicket)

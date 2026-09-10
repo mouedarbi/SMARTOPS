@@ -8,9 +8,10 @@ Description : Vues pour la gestion de la maintenance dans l'admin custom.
 """
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import MaintenanceTicket, Technician
+from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm
 from schedule.models import Calendar
 from accounts.views import is_management_staff
@@ -35,10 +36,36 @@ def ticket_detail(request, pk):
     Vue en lecture seule d'un ticket avec onglets.
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add_photo' and request.FILES.get('image'):
+            phase = request.POST.get('phase', 'during')
+            if phase not in dict(InterventionPhoto.PHASE_CHOICES):
+                phase = 'during'
+            InterventionPhoto.objects.create(
+                ticket=ticket,
+                image=request.FILES['image'],
+                caption=(request.POST.get('caption') or '').strip(),
+                phase=phase,
+                uploaded_by=request.user,
+            )
+            messages.success(request, "Photo ajoutée à l'intervention.")
+
+        elif action == 'delete_photo':
+            photo = ticket.photos.filter(pk=request.POST.get('photo_id')).first()
+            if photo:
+                photo.delete()
+                messages.success(request, "Photo supprimée.")
+
+        return redirect(reverse('ticket_detail', kwargs={'pk': ticket.id}) + '#photos')
+
     context = {
         'ticket': ticket,
         'page_title': f"Intervention #{ticket.id}",
         'closure': _build_closure_summary(ticket),
+        'photos': ticket.photos.select_related('uploaded_by').all(),
     }
     return render(request, 'maintenance/ticket_detail.html', context)
 

@@ -8,6 +8,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from django.utils import timezone
 from datetime import timedelta
@@ -15,7 +16,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from accounts.models import CustomUser
 from inventory.models import Client, Building, EquipmentType, Equipment
-from maintenance.models import Technician, MaintenanceTicket
+from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
 
 from .serializers import (
     UserSerializer,
@@ -27,6 +28,7 @@ from .serializers import (
     MaintenanceTicketSerializer,
     TicketStartSerializer,
     TicketStopSerializer,
+    InterventionPhotoSerializer,
 )
 from .permissions import IsAdminOrManager, IsAdminOnly, IsTechnicianOwner
 
@@ -200,6 +202,33 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         ticket.save()
 
         return Response(MaintenanceTicketSerializer(ticket).data)
+
+    @extend_schema(
+        request=InterventionPhotoSerializer,
+        responses=InterventionPhotoSerializer(many=True),
+        summary="Lister ou ajouter des photos d'intervention",
+    )
+    @action(detail=True, methods=['get', 'post'], url_path='photos',
+            parser_classes=[MultiPartParser, FormParser])
+    def photos(self, request, pk=None):
+        """GET : photos du ticket. POST (multipart) : ajoute une photo."""
+        ticket = self.get_object()
+
+        if request.method == 'GET':
+            qs = ticket.photos.select_related('uploaded_by').all()
+            return Response(InterventionPhotoSerializer(qs, many=True).data)
+
+        if request.user.role == 'technician':
+            try:
+                if ticket.technician != request.user.technician_profile:
+                    return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
+            except Exception:
+                return Response({'detail': 'Profil technicien introuvable.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = InterventionPhotoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(ticket=ticket, uploaded_by=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=['Technicien Mobile'])

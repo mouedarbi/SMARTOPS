@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from maintenance.models import MaintenanceTicket
+from maintenance.models import MaintenanceTicket, InterventionPhoto
 
 def is_technician(user):
     return user.is_authenticated and user.role == 'technician'
@@ -86,11 +86,33 @@ def technician_ticket_detail(request, pk):
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
-    
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'add_photo' and request.FILES.get('image'):
+            phase = request.POST.get('phase', 'during')
+            if phase not in dict(InterventionPhoto.PHASE_CHOICES):
+                phase = 'during'
+            InterventionPhoto.objects.create(
+                ticket=ticket,
+                image=request.FILES['image'],
+                caption=(request.POST.get('caption') or '').strip(),
+                phase=phase,
+                uploaded_by=request.user,
+            )
+            messages.success(request, "Photo ajoutée.")
+        elif action == 'delete_photo':
+            photo = ticket.photos.filter(pk=request.POST.get('photo_id'), uploaded_by=request.user).first()
+            if photo:
+                photo.delete()
+                messages.success(request, "Photo supprimée.")
+        return redirect('technician_ticket_detail', pk=ticket.id)
+
     context = {
         'page_title': f"Intervention #{ticket.id}",
         'ticket': ticket,
         'now': timezone.now(),
+        'photos': ticket.photos.all(),
     }
     return render(request, 'technician/ticket_detail.html', context)
 

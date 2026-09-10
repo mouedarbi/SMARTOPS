@@ -251,9 +251,72 @@
 
             <!-- ======================= ONGLET : PHOTOS ======================= -->
             <div class="ticket-panel hidden" data-panel="photos">
-                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8 text-center text-slate-400">
-                    <i class="las la-images text-4xl mb-3 block"></i>
-                    <p class="text-sm font-bold">Contenu de l'onglet Photos (Lot C).</p>
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-8">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                            <i class="las la-images text-lg"></i> Photos de l'intervention
+                            <span class="text-slate-300">({{ photos|length }})</span>
+                        </h4>
+
+                        {% if photos %}
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                            {% for photo in photos %}
+                            <figure class="group relative rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
+                                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" loading="lazy"
+                                     class="h-36 w-full object-cover cursor-zoom-in js-lightbox-trigger"
+                                     data-full="{{ photo.image.url }}" data-caption="{{ photo.caption }}">
+                                <figcaption class="absolute inset-x-0 bottom-0 bg-slate-900/70 text-white text-[10px] font-bold px-2 py-1 flex items-center justify-between">
+                                    <span class="uppercase tracking-widest">{{ photo.get_phase_display }}</span>
+                                    <form method="post" onsubmit="return confirm('Supprimer cette photo ?')">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_photo">
+                                        <input type="hidden" name="photo_id" value="{{ photo.id }}">
+                                        <button type="submit" class="opacity-0 group-hover:opacity-100 transition text-rose-300 hover:text-rose-100">
+                                            <i class="las la-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </figcaption>
+                                {% if photo.caption %}
+                                <div class="px-2 py-1 text-[11px] text-slate-500 bg-white">{{ photo.caption }}</div>
+                                {% endif %}
+                            </figure>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="p-6 mb-8 text-center">
+                            <i class="las la-camera text-4xl text-slate-300 mb-3 block"></i>
+                            <p class="text-sm font-bold text-slate-400">Aucune photo n'a encore été ajoutée à cette intervention.</p>
+                        </div>
+                        {% endif %}
+
+                        <form method="post" enctype="multipart/form-data" class="border-t border-slate-100 pt-6 space-y-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_photo">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-1">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Fichier</label>
+                                    <input type="file" name="image" accept="image/*" required
+                                           class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-900 file:text-white file:font-bold file:text-xs">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Moment</label>
+                                    <select name="phase" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                                        <option value="before">Avant intervention</option>
+                                        <option value="during" selected>Pendant intervention</option>
+                                        <option value="after">Après intervention</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Légende</label>
+                                    <input type="text" name="caption" maxlength="255" placeholder="Optionnel"
+                                           class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2 text-sm">
+                                <i class="las la-upload text-lg"></i> Ajouter la photo
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -269,7 +332,30 @@
     </div>
 </div>
 
+<!-- Lightbox photos -->
+<div id="photo-lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/90 p-6" onclick="this.classList.add('hidden');this.classList.remove('flex')">
+    <figure class="max-w-4xl w-full text-center">
+        <img id="photo-lightbox-img" src="" alt="" class="max-h-[80vh] w-auto mx-auto rounded-2xl shadow-2xl">
+        <figcaption id="photo-lightbox-caption" class="mt-4 text-white text-sm font-bold"></figcaption>
+        <p class="mt-2 text-slate-400 text-xs">Cliquer n'importe où pour fermer</p>
+    </figure>
+</div>
+
 <script>
+(function () {
+    const lb = document.getElementById('photo-lightbox');
+    const lbImg = document.getElementById('photo-lightbox-img');
+    const lbCap = document.getElementById('photo-lightbox-caption');
+    document.querySelectorAll('.js-lightbox-trigger').forEach(function (img) {
+        img.addEventListener('click', function () {
+            lbImg.src = img.dataset.full;
+            lbCap.textContent = img.dataset.caption || '';
+            lb.classList.remove('hidden');
+            lb.classList.add('flex');
+        });
+    });
+})();
+
 (function () {
     const container = document.getElementById('ticket-tabs');
     if (!container) return;

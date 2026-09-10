@@ -8,7 +8,7 @@ Description : Configuration de l'interface d'administration pour la maintenance.
 """
 
 from django.contrib import admin
-from .models import Technician, MaintenanceTicket
+from .models import Technician, MaintenanceTicket, InterventionPhoto
 
 @admin.register(Technician)
 class TechnicianAdmin(admin.ModelAdmin):
@@ -28,6 +28,21 @@ class TechnicianAdmin(admin.ModelAdmin):
     get_email.short_description = "Email"
 
 
+class InterventionPhotoInline(admin.TabularInline):
+    model = InterventionPhoto
+    extra = 0
+    fields = ('image', 'phase', 'caption', 'uploaded_by', 'uploaded_at')
+    readonly_fields = ('uploaded_at',)
+
+
+@admin.register(InterventionPhoto)
+class InterventionPhotoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'ticket', 'phase', 'caption', 'uploaded_by', 'uploaded_at')
+    list_filter = ('phase',)
+    search_fields = ('ticket__id', 'caption')
+    readonly_fields = ('uploaded_at',)
+
+
 @admin.register(MaintenanceTicket)
 class MaintenanceTicketAdmin(admin.ModelAdmin):
     """
@@ -37,6 +52,7 @@ class MaintenanceTicketAdmin(admin.ModelAdmin):
     list_filter = ('status', 'type', 'technician')
     search_fields = ('equipment__nom', 'description', 'id')
     readonly_fields = ('event', 'created_at', 'updated_at')
+    inlines = [InterventionPhotoInline]
     
     fieldsets = (
         ('Informations Générales', {

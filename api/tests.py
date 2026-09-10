@@ -243,6 +243,32 @@ class TicketAPITestCase(TestCase):
         self.assertAlmostEqual(float(self.ticket.start_latitude), 50.850346, places=5)
         self.assertAlmostEqual(float(self.ticket.start_longitude), 4.351710, places=5)
 
+    def test_technician_uploads_and_lists_intervention_photos(self):
+        """L'endpoint photos accepte l'ajout (multipart) et renvoie la liste."""
+        import io
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new('RGB', (2, 2), '#10b981').save(buf, format='PNG')
+        img = SimpleUploadedFile('field.png', buf.getvalue(), content_type='image/png')
+
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        with override_settings(MEDIA_ROOT='/tmp/smartops_api_test_media'):
+            r = self.api.post(
+                f'/api/v1/tickets/{self.ticket.id}/photos/',
+                {'image': img, 'phase': 'after', 'caption': 'Résultat'},
+                format='multipart',
+            )
+            self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(r.data['phase'], 'after')
+
+            r = self.api.get(f'/api/v1/tickets/{self.ticket.id}/photos/')
+            self.assertEqual(r.status_code, status.HTTP_200_OK)
+            self.assertEqual(len(r.data), 1)
+
+        import shutil
+        shutil.rmtree('/tmp/smartops_api_test_media', ignore_errors=True)
+
 
 @override_settings(
     SECURE_SSL_REDIRECT=False,
