@@ -353,3 +353,33 @@ Travaux livrés en 4 lots, un commit par lot.
   journal d'audit (changements de statut, réaffectations, replanifications).
 - Signature numérique du client à la clôture (canvas) — nécessitera une migration.
 - Bouton « Exporter PDF » du détail d'intervention toujours inactif.
+## [10/09/2026] - Refonte du menu latéral + terminologie « Lieu »
+
+### Refonte du menu latéral (base.html)
+Le menu partait de la configuration (référentiel, types) avant les opérations.
+Nouvel ordre, orienté exploitation :
+- Tableau de bord (isolé, sans en-tête)
+- **Opérations** : Interventions, Planning, Techniciens
+- **Extensions** : modules dynamiques (inchangé)
+- **Référentiel** : Clients, Lieux, Équipements
+- **Paramètres** (bas, séparateur) : Types d'équipement, Société & identité,
+  Utilisateurs & rôles, Modules premium, Mises à jour
+« Types d'équipement » redescendu du haut vers Paramètres ; icône « Mises à jour »
+corrigée ; « Système » renommé « Société & identité ».
+
+### Renommage « Bâtiment » → « Lieu » (toute l'interface)
+Un collègue comprenait « Bâtiment » comme « intervenir à l'intérieur du bâtiment ».
+- Modèle `Building` conservé en interne ; `verbose_name` = Lieu/Lieux + migration `0004` (métadonnées).
+- Vues, messages flash, titres de pages, templates (listes, fiches, formulaires,
+  rapport public QR, détail intervention, formulaires de ticket), tuile dashboard,
+  docstring Swagger du `BuildingViewSet`.
+- Terminologie « Site » / « Site (Bâtiment) » unifiée sur « Lieu ».
+
+### Vérification production
+- 56 tests OK. `migrate inventory` appliqué sur MySQL, `smartops-core` redémarré.
+- Smoke test authentifié : dashboard, interventions, lieux, équipements, fiche client,
+  détail intervention, rapport public — tous 200, plus aucune occurrence de « Bâtiment ».
+
+### En attente de décision
+- Nom de la section « Référentiel » (alternatives : « Parc & Clients », « Patrimoine »).
+- « Équipements » → « Matériel » ? (le libellé actuel est conservé).
