@@ -116,64 +116,144 @@
             </div>
         </div>
 
+
         <!-- Main Panel : Intervention & Tabs -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Tabs Header -->
-            <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 inline-flex gap-1">
-                <button class="px-6 py-2 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl">Intervention</button>
-                <button class="px-6 py-2 text-slate-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50">Rapport (Phase 5)</button>
-                <button class="px-6 py-2 text-slate-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50">Photos</button>
-                <button class="px-6 py-2 text-slate-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-50">Historique</button>
+            <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 inline-flex flex-wrap gap-1" id="ticket-tabs">
+                <button type="button" data-tab="intervention"
+                        class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition bg-slate-900 text-white">
+                    Intervention
+                </button>
+                <button type="button" data-tab="rapport"
+                        class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
+                    Rapport
+                </button>
+                <button type="button" data-tab="photos"
+                        class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
+                    Photos
+                </button>
+                <button type="button" data-tab="historique"
+                        class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
+                    Historique
+                </button>
             </div>
 
-            <!-- Content Card -->
-            <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-8 border-b border-slate-50">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-info-circle text-lg"></i> Détails de la Planification
-                    </h4>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-6">
-                            <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Technicien assigné</span>
-                                <div class="flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black">
-                                        {{ ticket.technician.user.username|slice:":1"|upper }}
+            <!-- ======================= ONGLET : INTERVENTION ======================= -->
+            <div class="ticket-panel" data-panel="intervention">
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-8 border-b border-slate-50">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                            <i class="las la-info-circle text-lg"></i> Détails de la Planification
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Technicien assigné</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black">
+                                            {{ ticket.technician.user.username|slice:":1"|upper }}
+                                        </div>
+                                        <span class="font-bold text-slate-800">{{ ticket.technician }}</span>
                                     </div>
-                                    <span class="font-bold text-slate-800">{{ ticket.technician }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Statut actuel</span>
+                                    <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        {{ ticket.get_status_display }}
+                                    </span>
                                 </div>
                             </div>
-                            <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Statut actuel</span>
-                                <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                    {{ ticket.get_status_display }}
-                                </span>
+                            <div class="space-y-6">
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Horaire prévu</span>
+                                    <p class="text-lg font-black text-slate-800">{{ ticket.planned_start|date:"d F Y" }}</p>
+                                    <p class="text-sm font-bold text-slate-400">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="space-y-6">
-                            <div>
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Horaire prévu</span>
-                                <p class="text-lg font-black text-slate-800">{{ ticket.planned_start|date:"d F Y" }}</p>
-                                <p class="text-sm font-bold text-slate-400">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</p>
-                            </div>
+                    </div>
+
+                    <div class="p-8 bg-slate-50/50">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-3">Consignes & Description</span>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic">
+                            {% if ticket.description %}
+                                "{{ ticket.description }}"
+                            {% else %}
+                                Aucune consigne spécifique n'a été renseignée pour cette intervention.
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="p-8 bg-slate-50/50">
-                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-3">Consignes & Description</span>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic">
-                        {% if ticket.description %}
-                            "{{ ticket.description }}"
-                        {% else %}
-                            Aucune consigne spécifique n'a été renseignée pour cette intervention.
-                        {% endif %}
-                    </div>
+            <!-- ======================= ONGLET : RAPPORT ======================= -->
+            <div class="ticket-panel hidden" data-panel="rapport">
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8 text-center text-slate-400">
+                    <i class="las la-file-alt text-4xl mb-3 block"></i>
+                    <p class="text-sm font-bold">Contenu de l'onglet Rapport (Lot B).</p>
+                </div>
+            </div>
+
+            <!-- ======================= ONGLET : PHOTOS ======================= -->
+            <div class="ticket-panel hidden" data-panel="photos">
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8 text-center text-slate-400">
+                    <i class="las la-images text-4xl mb-3 block"></i>
+                    <p class="text-sm font-bold">Contenu de l'onglet Photos (Lot C).</p>
+                </div>
+            </div>
+
+            <!-- ======================= ONGLET : HISTORIQUE ======================= -->
+            <div class="ticket-panel hidden" data-panel="historique">
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8 text-center text-slate-400">
+                    <i class="las la-history text-4xl mb-3 block"></i>
+                    <p class="text-sm font-bold">Contenu de l'onglet Historique (Lot D).</p>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
+
+<script>
+(function () {
+    const container = document.getElementById('ticket-tabs');
+    if (!container) return;
+
+    const tabs = Array.from(document.querySelectorAll('.ticket-tab'));
+    const panels = Array.from(document.querySelectorAll('.ticket-panel'));
+    const VALID = tabs.map(t => t.dataset.tab);
+
+    function activate(name, updateHash) {
+        if (!VALID.includes(name)) name = VALID[0];
+
+        tabs.forEach(function (tab) {
+            const on = tab.dataset.tab === name;
+            tab.classList.toggle('bg-slate-900', on);
+            tab.classList.toggle('text-white', on);
+            tab.classList.toggle('text-slate-400', !on);
+            tab.classList.toggle('hover:bg-slate-50', !on);
+        });
+
+        panels.forEach(function (panel) {
+            panel.classList.toggle('hidden', panel.dataset.panel !== name);
+        });
+
+        if (updateHash) {
+            history.replaceState(null, '', '#' + name);
+        }
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            activate(tab.dataset.tab, true);
+        });
+    });
+
+    // Deep-link : #rapport, #photos, #historique (utile après un POST/redirect)
+    const initial = (window.location.hash || '').replace('#', '');
+    activate(initial || VALID[0], false);
+})();
+</script>
 {% endblock %}
