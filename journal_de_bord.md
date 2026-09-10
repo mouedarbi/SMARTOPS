@@ -383,3 +383,28 @@ Un collègue comprenait « Bâtiment » comme « intervenir à l'intérieur du b
 ### En attente de décision
 - Nom de la section « Référentiel » (alternatives : « Parc & Clients », « Patrimoine »).
 - « Équipements » → « Matériel » ? (le libellé actuel est conservé).
+## [10/09/2026] - Rechargement à chaud des modules premium
+
+### Problème
+Après désinstallation d'un module premium, ses entrées restaient affichées dans
+le menu latéral tant que les workers gunicorn n'étaient pas redémarrés :
+`plugin_manager` (Pluggy) est instancié une seule fois au démarrage du worker et
+conserve en mémoire l'état des plugins chargés via les entry points pip.
+
+### Solution
+- **Menu piloté par la base** : le context processor `plugin_menus` vérifie
+  désormais `licensing_plugin` (source de vérité). Aucun module actif → aucune
+  entrée injectée, dès le rafraîchissement suivant, sans redémarrage.
+- **Section « Extensions » masquée** quand il n'y a aucun module actif
+  (suppression du placeholder « Aucun module actif »).
+- **Rechargement gracieux** : `licensing.views._hot_reload` envoie un `SIGHUP`
+  au master gunicorn après installation/désinstallation → reload des workers sans
+  coupure (INSTALLED_APPS, routes dynamiques, plugin_manager reconstruits).
+  Détecté via `SERVER_SOFTWARE` ; hors gunicorn (runserver) : simple message.
+- Flux de streaming install/désinstall + vue POST d'activation câblés dessus ;
+  les messages « redémarrez le serveur » sont remplacés.
+
+### Tests / déploiement
+- 59 tests OK (menu masqué sans module, SIGHUP sous gunicorn, no-op sinon).
+- Déployé + `smartops-core` redémarré : les entrées fantômes « Flotte Véhicules »
+  et « Stock & Pièces » ont disparu du menu.
