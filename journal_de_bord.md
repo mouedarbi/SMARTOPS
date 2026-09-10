@@ -312,3 +312,44 @@ La CI passe désormais 7/7 tests avec succès sur une base SQLite fraîche (envi
 - **Outcome** : Les utilisateurs disposent maintenant de retours précis en temps réel en cas d'erreurs de saisie sur l'ensemble de la page de configuration de la société.
 
 
+## [10/09/2026] - Activation des onglets du détail d'intervention (Core)
+
+### Contexte
+Le template `maintenance/ticket_detail.html` affichait 4 onglets purement décoratifs
+(Intervention, Rapport, Photos, Historique) sans mécanique de bascule ni contenu.
+Travaux livrés en 4 lots, un commit par lot.
+
+### Lot A — Mécanique des onglets
+- Conversion des boutons en onglets fonctionnels pilotés par JavaScript vanilla (aucune dépendance).
+- Deep-linking par ancre d'URL (`#rapport`, `#photos`, `#historique`) pour survivre aux redirections POST.
+
+### Lot B — Onglet Rapport + clôture terrain (Phase 5)
+- Onglet Rapport (gestionnaire) : rendu de `intervention_report`, synthèse de clôture
+  (durée planifiée vs réelle, écart coloré), états vides selon le statut.
+- Application technicien : `stop_intervention` devient un vrai formulaire de clôture
+  (rapport obligatoire, choix « terminé » / « à replanifier »), nouveau template
+  `technician/intervention_report.html`.
+
+### Lot C — Onglet Photos
+- Nouveau modèle `InterventionPhoto` (image, légende, moment avant/pendant/après, auteur) + migration `0003`.
+- Gestionnaire : galerie en grille + lightbox + ajout/suppression.
+- Technicien : capture mobile (`capture="environment"`) et suppression de ses propres photos.
+- API : sérialiseur dédié, photos imbriquées en lecture sur le ticket, endpoint
+  `GET/POST /api/v1/tickets/{id}/photos/` (multipart).
+- Suppression automatique du fichier physique via signal `post_delete`.
+
+### Lot D — Onglet Historique
+- Chronologie reconstituée à partir des horodatages du ticket et des photos
+  (création, planification, démarrage, photos, clôture, dernière modification).
+- Aucune migration : timeline dérivée, pas de table d'audit dédiée (piste d'évolution).
+
+### Qualité & Déploiement
+- Suite de tests : 55 → 63 tests, tous OK (nouveaux cas sur la clôture avec rapport,
+  l'upload de photos web + API, et la chronologie).
+- Production : `migrate maintenance` appliqué sur MySQL, redémarrage du service `smartops-core`.
+
+### Piste d'évolution
+- Lot D étape 2 : modèle `TicketActivity` alimenté par signaux pour un véritable
+  journal d'audit (changements de statut, réaffectations, replanifications).
+- Signature numérique du client à la clôture (canvas) — nécessitera une migration.
+- Bouton « Exporter PDF » du détail d'intervention toujours inactif.
