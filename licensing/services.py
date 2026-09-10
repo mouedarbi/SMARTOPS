@@ -141,6 +141,6 @@ class LicenseService:
         
         return {
             "success": True,
-            "message": f"Module '{plugin.name}' activé et installé ! Veuillez redémarrer le serveur.",
+            "message": f"Module '{plugin.name}' activé et installé. Rechargement de l'application en cours…",
             "plugin": plugin
         }

@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import os
+import signal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -23,6 +24,44 @@ from django.core.management import call_command
 from .services import LicenseService
 from .models import Plugin
 from system.models import SystemConfiguration
+
+
+def _hot_reload(request):
+    """
+    Recharge l'application « à chaud » après l'ajout ou le retrait d'un module,
+    pour prendre en compte le nouveau jeu d'apps (INSTALLED_APPS), de routes
+    et de plugins Pluggy sans intervention manuelle.
+
+    - Sous gunicorn : SIGHUP au process maître => reload gracieux des workers,
+      sans coupure de service ni des requêtes en cours.
+    - Sinon (runserver / autre) : redémarrage manuel requis pour les routes.
+
+    Retourne une liste de lignes de log à afficher à l'utilisateur.
+    """
+    server = request.META.get('SERVER_SOFTWARE', '')
+
+    if server.startswith('gunicorn'):
+        try:
+            os.kill(os.getppid(), signal.SIGHUP)
+            return [
+                ">>> Rechargement à chaud du serveur (gunicorn) déclenché.",
+                ">>> Menu, routes et modules à jour dans quelques secondes — aucune action requise.",
+            ]
+        except Exception as exc:
+            return [
+                f">>> [Avertissement] Rechargement automatique impossible : {exc}",
+                ">>> Redémarrez le service pour finaliser : sudo systemctl restart smartops-core",
+            ]
+
+    return [
+        ">>> Le menu se met à jour immédiatement ; redémarrez le serveur pour recharger les routes du module.",
+    ]
+
+
+def _reload_application_stream(request):
+    """Variante générateur de `_hot_reload`, pour les vues de streaming."""
+    for line in _hot_reload(request):
+        yield line + "\n"
 
 @login_required
 def plugin_list_view(request):
@@ -35,6 +74,7 @@ def plugin_list_view(request):
             result = LicenseService.activate_plugin(license_key)
             if result.get('success'):
                 messages.success(request, result.get('message'))
+                _hot_reload(request)
             else:
                 messages.error(request, result.get('error', "Une erreur est survenue lors de l'activation."))
         else:
@@ -110,8 +150,7 @@ def plugin_install_stream_view(request):
             yield ">>> Lancement des migrations de base de données...\n"
             call_command('migrate', interactive=False)
             yield "\n🎉 MODULE ACTIVÉ ET INSTALLÉ AVEC SUCCÈS !\n"
-            yield ">>> IMPORTANT : Veuillez REDÉMARRER le serveur Django pour charger le nouveau module.\n"
-            yield ">>> (Appuyez sur Ctrl+C dans votre terminal puis relancez runserver)\n"
+            yield from _reload_application_stream(request)
 
         except Exception as e:
             yield f"!!! ERREUR FATALE : {str(e)}\n"
@@ -166,7 +205,7 @@ def plugin_uninstall_stream_view(request):
             plugin.delete()
             yield "\n✅ MODULE DESINSTALLE AVEC SUCCÈS !\n"
             yield ">>> La licence a été libérée sur le Portail.\n"
-            yield ">>> IMPORTANT : Veuillez REDÉMARRER le serveur pour finaliser le retrait du menu.\n"
+            yield from _reload_application_stream(request)
 
         except Exception as e:
             yield f"!!! ERREUR LORS DE LA SUPPRESSION : {str(e)}\n"
