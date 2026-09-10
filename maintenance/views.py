@@ -37,9 +37,55 @@ def ticket_detail(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     context = {
         'ticket': ticket,
-        'page_title': f"Intervention #{ticket.id}"
+        'page_title': f"Intervention #{ticket.id}",
+        'closure': _build_closure_summary(ticket),
     }
     return render(request, 'maintenance/ticket_detail.html', context)
+
+
+def _fmt_duration(minutes):
+    """Formate une durée en minutes vers un libellé lisible (ex: '2 h 15')."""
+    if minutes is None:
+        return None
+    minutes = int(round(minutes))
+    sign = "-" if minutes < 0 else ""
+    minutes = abs(minutes)
+    hours, mins = divmod(minutes, 60)
+    if hours and mins:
+        return f"{sign}{hours} h {mins:02d}"
+    if hours:
+        return f"{sign}{hours} h"
+    return f"{sign}{mins} min"
+
+
+def _build_closure_summary(ticket):
+    """
+    Synthèse de clôture pour l'onglet Rapport : durée réelle, durée planifiée
+    et écart. Retourne None tant que l'intervention n'a pas démarré sur le terrain.
+    """
+    if not ticket.effective_start:
+        return None
+
+    planned_minutes = None
+    if ticket.planned_start and ticket.planned_end:
+        planned_minutes = (ticket.planned_end - ticket.planned_start).total_seconds() / 60
+
+    real_minutes = None
+    if ticket.effective_end:
+        real_minutes = (ticket.effective_end - ticket.effective_start).total_seconds() / 60
+
+    delta_minutes = None
+    if planned_minutes is not None and real_minutes is not None:
+        delta_minutes = real_minutes - planned_minutes
+
+    return {
+        'in_progress': ticket.effective_end is None,
+        'planned_label': _fmt_duration(planned_minutes),
+        'real_label': _fmt_duration(real_minutes),
+        'delta_label': _fmt_duration(delta_minutes),
+        'delta_minutes': None if delta_minutes is None else int(round(delta_minutes)),
+    }
+
 
 @login_required
 @user_passes_test(is_management_staff)

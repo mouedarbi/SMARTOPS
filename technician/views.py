@@ -122,8 +122,11 @@ def start_intervention(request, pk):
 @user_passes_test(is_technician)
 def stop_intervention(request, pk):
     """
-    Termine l'intervention : Change le statut et enregistre l'heure de fin.
-    Note : Sera enrichi en Phase 5 avec le rapport.
+    Clôture de l'intervention (Phase 5) : saisie du rapport terrain,
+    choix du statut final (terminé / à replanifier) puis horodatage de fin.
+
+    GET  : affiche le formulaire de rapport.
+    POST : enregistre le rapport et clôture l'intervention.
     """
     try:
         tech_profile = request.user.technician_profile
@@ -132,16 +135,45 @@ def stop_intervention(request, pk):
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
-    
-    if ticket.status == 'in_progress':
-        ticket.status = 'done'
+
+    if ticket.status != 'in_progress':
+        messages.warning(request, "Cette intervention n'est pas en cours.")
+        return redirect('technician_ticket_detail', pk=pk)
+
+    if request.method == 'POST':
+        report = (request.POST.get('intervention_report') or '').strip()
+        final_status = request.POST.get('final_status', 'done')
+        if final_status not in ('done', 'to_reschedule'):
+            final_status = 'done'
+
+        if not report:
+            messages.error(request, "Le rapport d'intervention est obligatoire pour clôturer.")
+            return render(request, 'technician/intervention_report.html', {
+                'page_title': f"Rapport #{ticket.id}",
+                'ticket': ticket,
+                'now': timezone.now(),
+                'report_value': report,
+                'final_status': final_status,
+            })
+
+        ticket.intervention_report = report
+        ticket.status = final_status
         ticket.effective_end = timezone.now()
         ticket.save()
-        messages.success(request, "Intervention terminée avec succès.")
-    else:
-        messages.warning(request, "Cette intervention n'est pas en cours.")
 
-    return redirect('technician_ticket_detail', pk=pk)
+        if final_status == 'to_reschedule':
+            messages.success(request, "Rapport enregistré. Intervention marquée « à replanifier ».")
+        else:
+            messages.success(request, "Intervention clôturée. Merci et bon travail !")
+        return redirect('technician_ticket_detail', pk=pk)
+
+    return render(request, 'technician/intervention_report.html', {
+        'page_title': f"Rapport #{ticket.id}",
+        'ticket': ticket,
+        'now': timezone.now(),
+        'report_value': ticket.intervention_report,
+        'final_status': 'done',
+    })
 
 def technician_logout(request):
     logout(request)

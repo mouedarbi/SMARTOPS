@@ -1,0 +1,67 @@
+{% extends 'technician/base_technician.html' %}
+
+{% block content %}
+<div class="px-4 py-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <a href="{% url 'technician_ticket_detail' ticket.id %}" class="h-10 w-10 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+            <i class="fas fa-chevron-left text-xs"></i>
+        </a>
+        <div class="text-right">
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block leading-none mb-1">Clôture</span>
+            <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-600">RAPPORT D'INTERVENTION</span>
+        </div>
+    </div>
+
+    <!-- Equipment reminder -->
+    <div class="bg-white rounded-[32px] p-5 shadow-sm border border-slate-100 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="h-11 w-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-lg">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div>
+                <h2 class="font-black text-slate-800 leading-tight">{{ ticket.equipment.name }}</h2>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">{{ ticket.equipment.building.name }}</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'stop_intervention' ticket.id %}" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Rapport -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Compte rendu terrain <span class="text-rose-500">*</span></h3>
+            <textarea name="intervention_report" rows="8" required
+                placeholder="Travaux réalisés, pièces remplacées, observations, recommandations…"
+                class="w-full bg-white rounded-3xl p-5 shadow-sm border border-slate-100 text-sm text-slate-700 leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">{{ report_value }}</textarea>
+        </section>
+
+        <!-- Statut final -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Résultat</h3>
+            <div class="space-y-3">
+                <label class="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer">
+                    <input type="radio" name="final_status" value="done" {% if final_status != 'to_reschedule' %}checked{% endif %}
+                           class="h-4 w-4 text-emerald-600 focus:ring-emerald-500">
+                    <span class="text-sm font-bold text-slate-700">Intervention terminée</span>
+                </label>
+                <label class="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer">
+                    <input type="radio" name="final_status" value="to_reschedule" {% if final_status == 'to_reschedule' %}checked{% endif %}
+                           class="h-4 w-4 text-orange-600 focus:ring-orange-500">
+                    <span class="text-sm font-bold text-slate-700">À replanifier (travaux incomplets)</span>
+                </label>
+            </div>
+        </section>
+
+        <button type="submit"
+            class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-emerald-200 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+            <i class="fas fa-check text-xs"></i>
+            <span>VALIDER ET CLÔTURER</span>
+        </button>
+    </form>
+
+    <div class="h-10"></div>
+</div>
+{% endblock %}

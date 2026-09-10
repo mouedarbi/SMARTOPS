@@ -58,19 +58,65 @@ class TechnicianInterventionTests(TestCase):
         self.assertIsNotNone(self.ticket.effective_start)
         self.assertIsNone(self.ticket.effective_end)
 
-    def test_stop_intervention(self):
-        """Test stopping an intervention updates status and timestamp."""
-        # Set ticket to in_progress first
+    def test_stop_intervention_shows_report_form(self):
+        """Phase 5 : le GET sur la clôture affiche le formulaire de rapport (pas de transition)."""
         self.ticket.status = 'in_progress'
         self.ticket.effective_start = timezone.now()
         self.ticket.save()
 
         url = reverse('stop_intervention', args=[self.ticket.id])
         response = self.client_http.get(url)
-        
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'intervention_report')
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')  # Toujours pas clôturé
+
+    def test_stop_intervention_with_report(self):
+        """Phase 5 : le POST avec rapport clôture l'intervention et enregistre le compte rendu."""
+        self.ticket.status = 'in_progress'
+        self.ticket.effective_start = timezone.now()
+        self.ticket.save()
+
+        url = reverse('stop_intervention', args=[self.ticket.id])
+        response = self.client_http.post(url, {
+            'intervention_report': 'Remplacement du contacteur, test de fonctionnement OK.',
+            'final_status': 'done',
+        })
+
         self.ticket.refresh_from_db()
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.ticket.status, 'done')
+        self.assertIsNotNone(self.ticket.effective_end)
+        self.assertIn('contacteur', self.ticket.intervention_report)
+
+    def test_stop_intervention_requires_report(self):
+        """Phase 5 : un rapport vide n'autorise pas la clôture."""
+        self.ticket.status = 'in_progress'
+        self.ticket.effective_start = timezone.now()
+        self.ticket.save()
+
+        url = reverse('stop_intervention', args=[self.ticket.id])
+        response = self.client_http.post(url, {'intervention_report': '   ', 'final_status': 'done'})
+
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')
+
+    def test_stop_intervention_to_reschedule(self):
+        """Phase 5 : le technicien peut clôturer en « à replanifier »."""
+        self.ticket.status = 'in_progress'
+        self.ticket.effective_start = timezone.now()
+        self.ticket.save()
+
+        url = reverse('stop_intervention', args=[self.ticket.id])
+        self.client_http.post(url, {
+            'intervention_report': 'Pièce manquante, seconde visite nécessaire.',
+            'final_status': 'to_reschedule',
+        })
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'to_reschedule')
         self.assertIsNotNone(self.ticket.effective_end)
 
     def test_cannot_start_already_done_ticket(self):
