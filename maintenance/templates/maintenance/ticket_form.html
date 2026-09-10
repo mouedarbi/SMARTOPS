@@ -62,7 +62,7 @@
                             {{ form.client }}
                         </div>
                         <div id="building_container" class="hidden">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Choisir le Bâtiment</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Choisir le lieu</label>
                             {{ form.building }}
                         </div>
                         <div id="equipment_reference_container" class="space-y-2">
@@ -77,7 +77,7 @@
                         </div>
                         {% else %}
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Client & Site</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Client & Lieu</p>
                             <p class="font-black text-slate-800">{{ ticket.equipment.building.client.name }}</p>
                             <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
                         </div>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const equipmentSearch = document.getElementById('equipment_search');
     const searchResults = document.getElementById('search_results');
 
-    // 1. Client -> Bâtiment
+    // 1. Client -> Lieu
     clientSelect.addEventListener('change', function() {
         const clientId = this.value;
         if (!clientId) {
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`/maintenance/api/buildings/?client_id=${clientId}`)
             .then(res => res.json())
             .then(data => {
-                buildingSelect.innerHTML = '<option value="">--- Choisir un bâtiment ---</option>';
+                buildingSelect.innerHTML = '<option value="">--- Choisir un lieu ---</option>';
                 data.forEach(b => {
                     buildingSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
                 });
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // 2. Bâtiment -> Équipements
+    // 2. Lieu -> Équipements
     buildingSelect.addEventListener('change', function() {
         const buildingId = this.value;
         if (!buildingId) return;

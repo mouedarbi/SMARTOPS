@@ -28,7 +28,7 @@ class MaintenanceTicketForm(forms.ModelForm):
     building = forms.ModelChoiceField(
         queryset=Building.objects.none(),
         required=False,
-        label="Filtrer par Bâtiment",
+        label="Filtrer par lieu",
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
     )
 
@@ -94,7 +94,7 @@ class MaintenanceTicketForm(forms.ModelForm):
             # Client (Lecture seule dans template, mais on garde la logique)
             self.fields['client'].initial = client
             
-            # Peupler Bâtiments
+            # Peupler les lieux
             self.fields['building'].queryset = Building.objects.filter(client=client)
             self.fields['building'].initial = building
             

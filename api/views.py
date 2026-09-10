@@ -54,7 +54,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=['Inventaire'])
 class BuildingViewSet(viewsets.ModelViewSet):
-    """CRUD complet sur les bâtiments."""
+    """CRUD complet sur les lieux."""
     serializer_class = BuildingSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 

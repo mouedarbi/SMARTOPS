@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Gestion des Sites (Bâtiments) | SMARTOPS{% endblock %}
-{% block page_title %}Gestion des Sites{% endblock %}
+{% block title %}Gestion des lieux | SMARTOPS{% endblock %}
+{% block page_title %}Gestion des lieux{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
@@ -14,7 +14,7 @@
             <input type="hidden" name="order" value="{{ order }}">
             
             <div class="relative flex-grow">
-                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un site (nom, adresse, client)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un lieu (nom, adresse, client)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <i class="las la-search absolute left-3 top-3.5 text-slate-400 text-lg"></i>
             </div>
             
@@ -30,18 +30,18 @@
         </form>
         
         <a href="{% url 'building_create' %}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 text-sm flex items-center gap-2 shadow-sm transition">
-            <i class="las la-plus text-base"></i> Nouveau Site
+            <i class="las la-plus text-base"></i> Nouveau lieu
         </a>
     </div>
 
-    <!-- Tableau des Sites -->
+    <!-- Tableau des lieux -->
     <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200">
                     <th class="p-4 pl-8 font-bold text-slate-700 text-xs uppercase tracking-widest">
                         <a href="?q={{ q }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
-                            Nom du Site
+                            Nom du lieu
                             {% if sort == 'name' %}
                                 {% if order == 'asc' %}
                                     <i class="las la-arrow-up text-blue-600 text-sm"></i>
@@ -97,7 +97,7 @@
                 {% empty %}
                 <tr>
                     <td colspan="4" class="p-12 text-center text-slate-400 font-bold italic">
-                        Aucun site d'intervention trouvé.
+                        Aucun lieu trouvé.
                     </td>
                 </tr>
                 {% endfor %}

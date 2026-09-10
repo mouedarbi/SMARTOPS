@@ -4,7 +4,7 @@ Projet : SMARTOPS (Core Application)
 Application : inventory
 Auteur : Mohamed Ouedarbi
 Version : 1.2
-Description : Vues CRUD pour la gestion des clients, bâtiments, équipements et types.
+Description : Vues CRUD pour la gestion des clients, lieux, équipements et types.
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -89,7 +89,7 @@ def client_update_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def client_detail_view(request, pk):
-    """Affiche les détails d'un client et ses sites associés."""
+    """Affiche les détails d'un client et ses lieux associés."""
     client = get_object_or_404(Client, pk=pk)
     buildings = client.buildings.all().order_by('name')
     return render(request, 'inventory/client_detail.html', {
@@ -98,12 +98,12 @@ def client_detail_view(request, pk):
         'page_title': f"Détails Client - {client.name}"
     })
 
-# --- VUES BÂTIMENT ---
+# --- VUES LIEU ---
 
 @login_required
 @user_passes_test(is_management_staff)
 def building_list_view(request):
-    """Liste les bâtiments enregistrés avec recherche, tri et pagination."""
+    """Liste les lieux enregistrés avec recherche, tri et pagination."""
     from django.db.models import Q
     from django.core.paginator import Paginator
     
@@ -130,7 +130,7 @@ def building_list_view(request):
         buildings = buildings.select_related('client').order_by('name')
         
     # Pagination
-    paginator = Paginator(buildings, 10)  # 10 sites par page
+    paginator = Paginator(buildings, 10)  # 10 lieux par page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -144,31 +144,31 @@ def building_list_view(request):
 @login_required
 @user_passes_test(is_management_staff)
 def building_create_view(request):
-    """Crée un nouveau bâtiment."""
+    """Crée un nouveau lieu."""
     if request.method == 'POST':
         form = BuildingForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Bâtiment créé avec succès.")
+            messages.success(request, "Lieu créé avec succès.")
             return redirect('building_list')
     else:
         form = BuildingForm()
-    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Nouveau Bâtiment'})
+    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Nouveau lieu'})
 
 @login_required
 @user_passes_test(is_management_staff)
 def building_update_view(request, pk):
-    """Met à jour un bâtiment existant."""
+    """Met à jour un lieu existant."""
     building = get_object_or_404(Building, pk=pk)
     if request.method == 'POST':
         form = BuildingForm(request.POST, instance=building)
         if form.is_valid():
             form.save()
-            messages.success(request, "Informations bâtiment mises à jour.")
+            messages.success(request, "Informations du lieu mises à jour.")
             return redirect('building_list')
     else:
         form = BuildingForm(instance=building)
-    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Modifier Bâtiment'})
+    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Modifier le lieu'})
 
 # --- VUES ÉQUIPEMENT ---
 
@@ -265,13 +265,13 @@ def equipment_type_detail_view(request, pk):
 @login_required
 @user_passes_test(is_management_staff)
 def building_detail_view(request, pk):
-    """Affiche les détails d'un site et la liste de ses équipements."""
+    """Affiche les détails d'un lieu et la liste de ses équipements."""
     building = get_object_or_404(Building, pk=pk)
     equipments = building.equipments.all().order_by('name')
     return render(request, 'inventory/building_detail.html', {
         'building': building,
         'equipments': equipments,
-        'page_title': f"Détails Site - {building.name}"
+        'page_title': f"Détails du lieu - {building.name}"
     })
 
 @login_required
@@ -398,7 +398,7 @@ def equipment_label_view(request, pk):
 def building_labels_view(request, pk):
     """
     Affiche la planche d'étiquettes A4 (impression en lot / bulk)
-    de tous les équipements installés dans un bâtiment.
+    de tous les équipements installés dans un lieu.
     """
     building = get_object_or_404(Building.objects.select_related('client'), pk=pk)
     equipments = building.equipments.select_related('equipment_type').order_by('name')

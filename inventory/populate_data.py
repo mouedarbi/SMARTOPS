@@ -204,14 +204,14 @@ def run_population():
     print("Création de 10 appareils par client (500 au total)...")
     total_equipments = 0
     for client in clients:
-        # Pour chaque client, on crée un bâtiment par défaut (ou plus)
+        # Pour chaque client, on crée un lieu par défaut (ou plus)
         building, _ = Building.objects.get_or_create(
             client=client,
             name=f"Site principal - {client.name}",
             defaults={"address": client.address}
         )
         
-        # Création de 10 équipements de catégories aléatoires pour ce bâtiment
+        # Création de 10 équipements de catégories aléatoires pour ce lieu
         for eq_idx in range(1, 11):
             cat_name = random.choice(list(CATEGORIES.keys()))
             eq_type = types_map[cat_name]

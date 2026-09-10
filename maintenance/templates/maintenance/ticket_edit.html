@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const buildingSelect = document.getElementById('id_building');
     const equipmentSelect = document.getElementById('id_equipment');
 
-    // Bâtiment -> Équipements
+    // Lieu -> Équipements
     buildingSelect.addEventListener('change', function() {
         const buildingId = this.value;
         if (!buildingId) return;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const buildingSelect = document.getElementById('id_building');
     const equipmentSelect = document.getElementById('id_equipment');
 
-    // Bâtiment -> Équipements
+    // Lieu -> Équipements
     buildingSelect.addEventListener('change', function() {
         const buildingId = this.value;
         if (!buildingId) return;
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Bâtiment</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Lieu</label>
                             {{ form.building }}
                         </div>
                         <div>
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const buildingSelect = document.getElementById('id_building');
     const equipmentSelect = document.getElementById('id_equipment');
 
-    // Bâtiment -> Équipements
+    // Lieu -> Équipements
     buildingSelect.addEventListener('change', function() {
         const buildingId = this.value;
         if (!buildingId) return;

@@ -17,7 +17,7 @@ class ClientForm(forms.ModelForm):
         }
 
 class BuildingForm(forms.ModelForm):
-    """Formulaire pour la création et l'édition d'un bâtiment."""
+    """Formulaire pour la création et l'édition d'un lieu."""
     class Meta:
         model = Building
         fields = ['client', 'name', 'address']

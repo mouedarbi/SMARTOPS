@@ -35,7 +35,7 @@
             <i class="las la-id-card text-lg mr-2"></i>Informations Générales
         </button>
         <button onclick="switchTab('sites-tab', 'sites-content')" id="sites-tab" class="tab-button border-b-4 border-transparent text-slate-400 hover:text-slate-600 font-black text-sm pb-4 transition tracking-wider uppercase">
-            <i class="las la-city text-lg mr-2"></i>Sites & Bâtiments ({{ buildings.count }})
+            <i class="las la-city text-lg mr-2"></i>Lieux ({{ buildings.count }})
         </button>
     </div>
 
@@ -80,15 +80,15 @@
             </div>
         </div>
 
-        <!-- Onglet 2 : Sites et Bâtiments -->
+        <!-- Onglet 2 : Lieux -->
         <div id="sites-content" class="tab-content hidden bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
                 <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                     <i class="las la-city text-2xl text-blue-600"></i>
-                    Sites d'interventions associés
+                    Lieux associés
                 </h3>
                 <a href="{% url 'building_create' %}?client={{ client.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
-                    + Nouveau Site
+                    + Nouveau lieu
                 </a>
             </div>
             
@@ -96,7 +96,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest pl-8">Nom du Site</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest pl-8">Nom du lieu</th>
                             <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Adresse</th>
                             <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-center">Appareils</th>
                             <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Actions</th>
@@ -124,7 +124,7 @@
                         {% empty %}
                         <tr>
                             <td colspan="4" class="p-12 text-center text-slate-400 font-bold italic">
-                                Aucun bâtiment ou site enregistré pour ce client.
+                                Aucun lieu enregistré pour ce client.
                             </td>
                         </tr>
                         {% endfor %}

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Détails Site - {{ building.name }} | SMARTOPS{% endblock %}
-{% block page_title %}Fiche Site (Bâtiment){% endblock %}
+{% block title %}Détails du lieu - {{ building.name }} | SMARTOPS{% endblock %}
+{% block page_title %}Fiche du lieu{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-8">
 
-    <!-- En-tête de la fiche site -->
+    <!-- En-tête de la fiche du lieu -->
     <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Site d'intervention</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Lieu d'intervention</span>
             <h2 class="text-3xl font-black text-slate-800 mt-1">{{ building.name }}</h2>
             <p class="text-sm text-slate-500 font-semibold mt-2">
                 <i class="las la-user-tie mr-1 text-slate-400"></i> Client propriétaire : 
@@ -20,7 +20,7 @@
         </div>
         <div class="flex flex-wrap gap-3">
             <a href="{% url 'building_labels' building.pk %}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center shadow-md shadow-blue-600/20">
-                <i class="las la-qrcode text-xl mr-2"></i>Planche QR Codes du Site
+                <i class="las la-qrcode text-xl mr-2"></i>Planche QR Codes du lieu
             </a>
             <a href="{% url 'client_detail' building.client.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-arrow-left text-lg mr-2"></i>Fiche Client
@@ -42,7 +42,7 @@
             </h3>
             
             <div class="pt-4 border-t border-slate-50">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse du site</label>
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse du lieu</label>
                 <p class="text-sm font-bold text-slate-700 mt-1 whitespace-pre-line">{{ building.address }}</p>
             </div>
             
@@ -100,7 +100,7 @@
                         {% empty %}
                         <tr>
                             <td colspan="4" class="p-12 text-center text-slate-400 font-bold italic">
-                                Aucun appareil répertorié sur ce site d'intervention.
+                                Aucun appareil répertorié sur ce lieu.
                             </td>
                         </tr>
                         {% endfor %}

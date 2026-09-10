@@ -32,15 +32,15 @@ class Client(models.Model):
 
 class Building(models.Model):
     """
-    Représente un bâtiment associé à un client.
+    Représente un lieu (site / bâtiment) associé à un client.
     """
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='buildings', verbose_name=_("Client"))
-    name = models.CharField(max_length=255, verbose_name=_("Nom du Bâtiment"))
-    address = models.TextField(verbose_name=_("Adresse du Bâtiment"))
+    name = models.CharField(max_length=255, verbose_name=_("Nom du lieu"))
+    address = models.TextField(verbose_name=_("Adresse du lieu"))
 
     class Meta:
-        verbose_name = _("Bâtiment")
-        verbose_name_plural = _("Bâtiments")
+        verbose_name = _("Lieu")
+        verbose_name_plural = _("Lieux")
 
     def __str__(self):
         return f"{self.name} ({self.client.name})"
@@ -87,7 +87,7 @@ class Equipment(models.Model):
     """
     Entité principale d'équipement avec des attributs communs et dynamiques.
     """
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='equipments', verbose_name=_("Bâtiment"))
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='equipments', verbose_name=_("Lieu"))
     name = models.CharField(max_length=255, verbose_name=_("Nom de l'équipement"))
     equipment_type = models.ForeignKey(EquipmentType, on_delete=models.PROTECT, verbose_name=_("Type"))
     serial_number = models.CharField(max_length=100, unique=True, verbose_name=_("Numéro de série"))
