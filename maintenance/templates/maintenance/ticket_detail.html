@@ -322,9 +322,38 @@
 
             <!-- ======================= ONGLET : HISTORIQUE ======================= -->
             <div class="ticket-panel hidden" data-panel="historique">
-                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8 text-center text-slate-400">
-                    <i class="las la-history text-4xl mb-3 block"></i>
-                    <p class="text-sm font-bold">Contenu de l'onglet Historique (Lot D).</p>
+                <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-8 flex items-center gap-2">
+                        <i class="las la-history text-lg"></i> Chronologie de l'intervention
+                    </h4>
+
+                    <ol class="relative border-l-2 border-slate-100 ml-3 space-y-8">
+                        {% for event in timeline %}
+                        <li class="ml-8">
+                            <span class="absolute -left-[13px] flex h-6 w-6 items-center justify-center rounded-full
+                                {% if event.color == 'emerald' %}bg-emerald-100 text-emerald-600
+                                {% elif event.color == 'blue' %}bg-blue-100 text-blue-600
+                                {% else %}bg-slate-100 text-slate-500{% endif %}">
+                                <i class="las {{ event.icon }} text-sm"></i>
+                            </span>
+                            <div class="flex items-baseline justify-between gap-4">
+                                <p class="font-bold text-slate-800 text-sm">{{ event.label }}</p>
+                                <time class="text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                                    {{ event.at|date:"d/m/Y H:i" }}
+                                </time>
+                            </div>
+                            {% if event.detail %}
+                            <p class="text-xs text-slate-500 mt-1">{{ event.detail }}</p>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="ml-8 text-sm font-bold text-slate-400">Aucun évènement enregistré.</li>
+                        {% endfor %}
+                    </ol>
+
+                    <p class="mt-8 text-[10px] text-slate-300 italic">
+                        Chronologie reconstituée à partir des horodatages de l'intervention.
+                    </p>
                 </div>
             </div>
         </div>

@@ -315,6 +315,24 @@ class InterventionPhotoTestCase(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(self.ticket.photos.count(), 0)
 
+    def test_detail_timeline_reflects_lifecycle(self):
+        """L'onglet Historique liste les évènements clés dérivés des horodatages."""
+        self.ticket.effective_end = timezone.now() + timedelta(hours=1)
+        self.ticket.status = 'done'
+        self.ticket.save()
+
+        http = HttpClient()
+        http.login(username='mgr_photo', password='Password123!')
+        resp = http.get(reverse('ticket_detail', kwargs={'pk': self.ticket.id}))
+        self.assertEqual(resp.status_code, 200)
+        timeline = resp.context['timeline']
+        labels = [e['label'] for e in timeline]
+        self.assertIn("Ticket créé", labels)
+        self.assertIn("Démarrage terrain", labels)
+        self.assertIn("Clôture terrain", labels)
+        # Ordre chronologique
+        self.assertEqual([e['at'] for e in timeline], sorted(e['at'] for e in timeline))
+
     def test_technician_uploads_photo_on_own_ticket(self):
         http = HttpClient()
         http.login(username='tech_photo', password='Password123!')

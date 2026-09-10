@@ -66,8 +66,47 @@ def ticket_detail(request, pk):
         'page_title': f"Intervention #{ticket.id}",
         'closure': _build_closure_summary(ticket),
         'photos': ticket.photos.select_related('uploaded_by').all(),
+        'timeline': _build_ticket_timeline(ticket),
     }
     return render(request, 'maintenance/ticket_detail.html', context)
+
+
+def _build_ticket_timeline(ticket):
+    """
+    Reconstitue l'historique de l'intervention à partir de ses horodatages.
+    Aucune table d'audit dédiée : la chronologie est dérivée des champs du ticket
+    et des photos rattachées.
+    """
+    events = []
+
+    if ticket.created_at:
+        events.append({'at': ticket.created_at, 'icon': 'la-plus-circle', 'color': 'slate',
+                       'label': "Ticket créé", 'detail': ticket.get_type_display()})
+
+    if ticket.planned_start:
+        events.append({'at': ticket.planned_start, 'icon': 'la-calendar-check', 'color': 'blue',
+                       'label': "Intervention planifiée",
+                       'detail': str(ticket.technician) if ticket.technician else "Sans technicien assigné"})
+
+    if ticket.effective_start:
+        events.append({'at': ticket.effective_start, 'icon': 'la-play-circle', 'color': 'blue',
+                       'label': "Démarrage terrain", 'detail': "Pointage du technicien sur site"})
+
+    for photo in ticket.photos.all():
+        events.append({'at': photo.uploaded_at, 'icon': 'la-camera', 'color': 'slate',
+                       'label': "Photo ajoutée",
+                       'detail': f"{photo.get_phase_display()}"
+                                 + (f" — {photo.caption}" if photo.caption else "")})
+
+    if ticket.effective_end:
+        events.append({'at': ticket.effective_end, 'icon': 'la-check-circle', 'color': 'emerald',
+                       'label': "Clôture terrain", 'detail': ticket.get_status_display()})
+
+    if ticket.updated_at and ticket.created_at and (ticket.updated_at - ticket.created_at).total_seconds() > 1:
+        events.append({'at': ticket.updated_at, 'icon': 'la-edit', 'color': 'slate',
+                       'label': "Dernière modification de la fiche", 'detail': ""})
+
+    return sorted(events, key=lambda e: e['at'])
 
 
 def _fmt_duration(minutes):
