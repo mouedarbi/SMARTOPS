@@ -11,6 +11,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm
 from schedule.models import Calendar
@@ -20,12 +21,55 @@ from accounts.views import is_management_staff
 @user_passes_test(is_management_staff)
 def ticket_list(request):
     """
-    Liste des tickets de maintenance.
+    Liste des tickets de maintenance, avec filtrage par technicien, date,
+    statut, lieu et client.
     """
-    tickets = MaintenanceTicket.objects.all().order_by('-planned_start')
+    from inventory.models import Client, Building
+
+    tickets = MaintenanceTicket.objects.select_related(
+        'equipment', 'equipment__building', 'equipment__building__client', 'technician__user'
+    ).order_by('-planned_start')
+
+    technician_id = request.GET.get('technician') or ''
+    date_filter = request.GET.get('date') or ''
+    status_filter = request.GET.get('status') or ''
+    building_id = request.GET.get('building') or ''
+    client_id = request.GET.get('client') or ''
+
+    if technician_id:
+        tickets = tickets.filter(technician_id=technician_id)
+    if date_filter:
+        tickets = tickets.filter(planned_start__date=date_filter)
+    if status_filter:
+        tickets = tickets.filter(status=status_filter)
+    if building_id:
+        tickets = tickets.filter(equipment__building_id=building_id)
+    if client_id:
+        tickets = tickets.filter(equipment__building__client_id=client_id)
+
+    paginator = Paginator(tickets, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # Pour préserver les filtres actifs dans les liens de pagination.
+    querystring = request.GET.copy()
+    querystring.pop('page', None)
+
     context = {
-        'tickets': tickets,
-        'page_title': "Tickets de Maintenance"
+        'tickets': page_obj,
+        'page_obj': page_obj,
+        'querystring': querystring.urlencode(),
+        'page_title': "Tickets de Maintenance",
+        'technicians': Technician.objects.select_related('user').order_by('user__username'),
+        'clients': Client.objects.order_by('name'),
+        'buildings': Building.objects.select_related('client').order_by('name'),
+        'status_choices': MaintenanceTicket.STATUS_CHOICES,
+        'filters': {
+            'technician': technician_id,
+            'date': date_filter,
+            'status': status_filter,
+            'building': building_id,
+            'client': client_id,
+        },
     }
     return render(request, 'maintenance/ticket_list.html', context)
 
