@@ -158,7 +158,7 @@
                 <div class="flex flex-col gap-3">
                     <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
-                        Enregistrer les modifications
+                        {% if ticket %}Enregistrer les modifications{% else %}Ajouter le ticket{% endif %}
                     </button>
                     <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
                         Annuler
