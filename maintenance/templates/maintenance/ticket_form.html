@@ -218,8 +218,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                // Le backend renvoie déjà les équipements triés par type puis par nom (croissant) :
+                // on regroupe simplement dans des <optgroup> en préservant cet ordre.
+                let currentGroup = null;
+                let currentType = null;
                 data.forEach(e => {
-                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                    if (e.type !== currentType) {
+                        currentType = e.type;
+                        currentGroup = document.createElement('optgroup');
+                        currentGroup.label = currentType;
+                        equipmentSelect.appendChild(currentGroup);
+                    }
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.textContent = e.text;
+                    currentGroup.appendChild(opt);
                 });
             });
     });

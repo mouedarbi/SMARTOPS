@@ -1,51 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{{ page_title }} | SMARTOPS
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buildingSelect = document.getElementById('id_building');
-    const equipmentSelect = document.getElementById('id_equipment');
-
-    // Lieu -> Équipements
-    buildingSelect.addEventListener('change', function() {
-        const buildingId = this.value;
-        if (!buildingId) return;
-
-        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
-            .then(res => res.json())
-            .then(data => {
-                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
-                data.forEach(e => {
-                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
-                });
-            });
-    });
-});
-</script>
-{% endblock %}
-{% block page_title %}{{ page_title }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buildingSelect = document.getElementById('id_building');
-    const equipmentSelect = document.getElementById('id_equipment');
-
-    // Lieu -> Équipements
-    buildingSelect.addEventListener('change', function() {
-        const buildingId = this.value;
-        if (!buildingId) return;
-
-        fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
-            .then(res => res.json())
-            .then(data => {
-                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
-                data.forEach(e => {
-                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
-                });
-            });
-    });
-});
-</script>
-{% endblock %}
+{% block title %}{{ page_title }} | SMARTOPS{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
@@ -164,8 +120,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                // Le backend renvoie déjà les équipements triés par type puis par nom (croissant) :
+                // on regroupe simplement dans des <optgroup> en préservant cet ordre.
+                let currentGroup = null;
+                let currentType = null;
                 data.forEach(e => {
-                    equipmentSelect.innerHTML += `<option value="${e.id}">${e.text}</option>`;
+                    if (e.type !== currentType) {
+                        currentType = e.type;
+                        currentGroup = document.createElement('optgroup');
+                        currentGroup.label = currentType;
+                        equipmentSelect.appendChild(currentGroup);
+                    }
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.textContent = e.text;
+                    currentGroup.appendChild(opt);
                 });
             });
     });

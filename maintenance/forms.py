@@ -7,12 +7,24 @@ Version : 1.0
 Description : Formulaires pour la gestion de la maintenance.
 """
 
+from itertools import groupby
+
 from django import forms
 from django.utils import timezone
 from datetime import timedelta, time
 from .models import MaintenanceTicket, Technician
 
 from inventory.models import Client, Building, Equipment
+
+
+def _equipment_choices_by_type(queryset):
+    """Regroupe les équipements par type (optgroups), tri croissant sur le type puis le nom."""
+    queryset = queryset.select_related('equipment_type').order_by('equipment_type__name', 'name')
+    return [
+        (type_name, [(e.id, str(e)) for e in items])
+        for type_name, items in groupby(queryset, key=lambda e: e.equipment_type.name)
+    ]
+
 
 class MaintenanceTicketForm(forms.ModelForm):
     # Choix pour les créneaux horaires
@@ -98,9 +110,9 @@ class MaintenanceTicketForm(forms.ModelForm):
             self.fields['building'].queryset = Building.objects.filter(client=client)
             self.fields['building'].initial = building
             
-            # Peupler Équipements
+            # Peupler Équipements (groupés par type, tri croissant)
             self.fields['equipment'].queryset = Equipment.objects.filter(building=building)
-            self.fields['equipment'].choices = [(e.id, str(e)) for e in self.fields['equipment'].queryset]
+            self.fields['equipment'].choices = _equipment_choices_by_type(self.fields['equipment'].queryset)
             self.fields['equipment'].initial = self.instance.equipment
 
             if self.instance.planned_start:
@@ -117,7 +129,7 @@ class MaintenanceTicketForm(forms.ModelForm):
             try:
                 building_id = int(self.data.get('building'))
                 self.fields['equipment'].queryset = Equipment.objects.filter(building_id=building_id)
-                self.fields['equipment'].choices = [(e.id, str(e)) for e in self.fields['equipment'].queryset]
+                self.fields['equipment'].choices = _equipment_choices_by_type(self.fields['equipment'].queryset)
             except (ValueError, TypeError):
                 pass
         

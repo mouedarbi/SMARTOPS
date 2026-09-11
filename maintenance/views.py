@@ -302,14 +302,30 @@ def api_get_equipments(request):
     building_id = request.GET.get('building_id')
     search = request.GET.get('search')
     from inventory.models import Equipment
-    
-    equipments = Equipment.objects.all()
+
+    equipments = Equipment.objects.select_related('equipment_type', 'building').all()
     if building_id:
         equipments = equipments.filter(building_id=building_id)
     if search:
         equipments = equipments.filter(serial_number__icontains=search) | equipments.filter(name__icontains=search)
-        
-    data = [{'id': e.id, 'text': f"{e.name} ({e.serial_number}) - {e.building.name}"} for e in equipments[:20]]
+
+    # Tri croissant par type d'équipement puis par nom, pour un regroupement par type côté client.
+    equipments = equipments.order_by('equipment_type__name', 'name')
+    if search:
+        equipments = equipments[:20]
+
+    if search:
+        data = [{
+            'id': e.id,
+            'text': f"{e.name} ({e.serial_number}) - {e.building.name}",
+            'type': e.equipment_type.name,
+        } for e in equipments]
+    else:
+        data = [{
+            'id': e.id,
+            'text': f"{e.name} ({e.serial_number})",
+            'type': e.equipment_type.name,
+        } for e in equipments]
     return JsonResponse(data, safe=False)
 
 @login_required
