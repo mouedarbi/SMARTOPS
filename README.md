@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.13%2B-blue)
 ![Django](https://img.shields.io/badge/django-6.0%2B-green)
 ![Status](https://img.shields.io/badge/status-beta-yellow)
-![License](https://img.shields.io/badge/license-Proprietary-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 SMARTOPS est une solution de gestion de maintenance (GMAO) de niveau entreprise, conçue pour être transversale, hautement configurable et auto-hébergeable. Elle permet aux entreprises de piloter l'ensemble de leur cycle de vie technique, de l'inventaire des équipements jusqu'à la traçabilité des interventions.
 
@@ -156,4 +156,4 @@ python manage.py runserver 0.0.0.0:8000
 
 ## Licence
 
-Propriétaire — SMARTOPS © 2026 — Mohamed Ouedarbi
+MIT — SMARTOPS © 2026 — Mohamed Ouedarbi
