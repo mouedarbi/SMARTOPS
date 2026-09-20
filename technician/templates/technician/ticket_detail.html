@@ -4,10 +4,15 @@
 <!-- Floating Action Button (Démarrer) -->
 {% if ticket.status == 'pending' or ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
-    <a href="{% url 'start_intervention' ticket.id %}" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
-        <i class="fas fa-play text-xs"></i>
-        <span>DÉMARRER L'INTERVENTION</span>
-    </a>
+    <form id="start-intervention-form" method="post" action="{% url 'start_intervention' ticket.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="latitude" id="start-latitude">
+        <input type="hidden" name="longitude" id="start-longitude">
+        <button type="button" id="start-intervention-btn" onclick="startIntervention()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-70">
+            <i class="fas fa-play text-xs"></i>
+            <span>DÉMARRER L'INTERVENTION</span>
+        </button>
+    </form>
 </div>
 {% endif %}
 
@@ -185,4 +190,41 @@
     <!-- Padding for floating button -->
     <div class="h-24"></div>
 </div>
+
+<script>
+function startIntervention() {
+    const form = document.getElementById('start-intervention-form');
+    const btn = document.getElementById('start-intervention-btn');
+    const latField = document.getElementById('start-latitude');
+    const lonField = document.getElementById('start-longitude');
+
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'LOCALISATION...';
+
+    let submitted = false;
+    const submitOnce = () => {
+        if (submitted) return;
+        submitted = true;
+        form.submit();
+    };
+
+    if (!navigator.geolocation) {
+        submitOnce();
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            latField.value = position.coords.latitude;
+            lonField.value = position.coords.longitude;
+            submitOnce();
+        },
+        () => submitOnce(),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+
+    // Filet de sécurité si le navigateur ne répond jamais (bloqué, etc.)
+    setTimeout(submitOnce, 9000);
+}
+</script>
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
 
 def is_technician(user):
@@ -120,7 +121,8 @@ def technician_ticket_detail(request, pk):
 @user_passes_test(is_technician)
 def start_intervention(request, pk):
     """
-    Démarre l'intervention : Change le statut et enregistre l'heure de début.
+    Démarre l'intervention : Change le statut, enregistre l'heure de début
+    et, si le navigateur l'a fournie, la position GPS de départ.
     """
     try:
         tech_profile = request.user.technician_profile
@@ -129,10 +131,20 @@ def start_intervention(request, pk):
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
-    
+
     if ticket.status in ['pending', 'planned', 'to_reschedule']:
         ticket.status = 'in_progress'
         ticket.effective_start = timezone.now()
+
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        if latitude and longitude:
+            try:
+                ticket.start_latitude = Decimal(latitude)
+                ticket.start_longitude = Decimal(longitude)
+            except InvalidOperation:
+                pass
+
         ticket.save()
         messages.success(request, "Intervention démarrée. Bon travail !")
     else:
