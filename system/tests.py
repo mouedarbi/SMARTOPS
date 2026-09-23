@@ -95,3 +95,32 @@ class DashboardSyncBannerTests(TestCase):
         self.assertIn('id="sync-notification"', html)
         # Le script ne doit plus planter si le conteneur est absent.
         self.assertIn("&& notif)", html)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class MobileSidebarTests(TestCase):
+    """Barre latérale du bureau : tiroir avec burger sous lg (issue #9)."""
+
+    def setUp(self):
+        from system.models import SystemConfiguration
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Ma Société'
+        config.save()
+        get_user_model().objects.create_user(username='manager1', password='password123', role='manager')
+        self.client.login(username='manager1', password='password123')
+
+    def test_layout_provides_burger_drawer_and_overlay(self):
+        html = self.client.get(reverse('dashboard')).content.decode()
+        self.assertIn('id="sidebar-toggle"', html)
+        self.assertIn('onclick="toggleSidebar()"', html)
+        self.assertIn('id="sidebar-overlay"', html)
+        aside = html[html.index('<aside id="app-sidebar"'):]
+        aside = aside[:aside.index('>')]
+        # Masquée par défaut sous lg, fixe et toujours visible à partir de lg.
+        self.assertIn('-translate-x-full', aside)
+        self.assertIn('lg:translate-x-0', aside)
+        self.assertIn('function toggleSidebar()', html)
+
+    def test_burger_is_present_on_other_pages_too(self):
+        html = self.client.get(reverse('ticket_list')).content.decode()
+        self.assertIn('id="sidebar-toggle"', html)

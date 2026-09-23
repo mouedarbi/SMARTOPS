@@ -32,7 +32,7 @@
     <div class="app-shell flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
-        <aside class="app-sidebar w-72 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+        <aside id="app-sidebar" class="app-sidebar fixed inset-y-0 left-0 z-40 w-72 -translate-x-full transition-transform duration-300 lg:static lg:z-auto lg:translate-x-0 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
             <!-- Logo / Brand -->
             <div class="p-8 border-b border-slate-800">
                 <div class="flex items-center gap-3">
@@ -155,20 +155,29 @@
             </div>
         </aside>
 
+        <!-- Fond du tiroir mobile -->
+        <div id="sidebar-overlay" class="no-print fixed inset-0 z-30 hidden bg-slate-900/60 lg:hidden" onclick="closeSidebar()"></div>
+
         <!-- Main Content -->
         <main class="app-main flex-grow overflow-y-auto">
             <!-- Header -->
-            <header class="app-header h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-                <h2 class="text-lg font-bold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h2>
-                
-                <div class="flex items-center gap-6">
+            <header class="app-header h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+                <div class="flex items-center gap-2 min-w-0">
+                    <button type="button" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Ouvrir le menu" aria-controls="app-sidebar" aria-expanded="false"
+                            class="lg:hidden -ml-2 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition">
+                        <i class="las la-bars text-2xl"></i>
+                    </button>
+                    <h2 class="text-lg font-bold text-slate-800 truncate">{% block page_title %}Dashboard{% endblock %}</h2>
+                </div>
+
+                <div class="flex items-center gap-3 sm:gap-6">
                     {% if config.last_sync_portal %}
-                    <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
                         <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-sm"></span>
                         <span class="text-[10px] font-black uppercase tracking-wider text-emerald-600">Connecté au Portail</span>
                     </div>
                     {% else %}
-                    <div class="flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
                         <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
                         <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Pas de connexion portail</span>
                     </div>
@@ -183,7 +192,7 @@
             </header>
 
             <!-- Page Body -->
-            <div class="p-10">
+            <div class="p-4 sm:p-6 lg:p-10">
                 {% if messages %}
                 <div class="max-w-6xl mx-auto mb-8 space-y-4">
                     {% for message in messages %}
@@ -205,6 +214,30 @@
         </main>
 
     </div>
+
+    <script>
+        // Tiroir de navigation mobile (barre latérale masquée sous 1024 px)
+        function setSidebar(open) {
+            const sidebar = document.getElementById('app-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggle = document.getElementById('sidebar-toggle');
+            sidebar.classList.toggle('-translate-x-full', !open);
+            overlay.classList.toggle('hidden', !open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        function toggleSidebar() {
+            setSidebar(document.getElementById('app-sidebar').classList.contains('-translate-x-full'));
+        }
+        function closeSidebar() { setSidebar(false); }
+
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
+        document.querySelectorAll('#app-sidebar a').forEach(function (link) {
+            link.addEventListener('click', closeSidebar);
+        });
+        window.matchMedia('(min-width: 1024px)').addEventListener('change', function (e) {
+            if (e.matches) closeSidebar();
+        });
+    </script>
 
 </body>
 </html>
