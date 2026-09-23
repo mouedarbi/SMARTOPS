@@ -71,3 +71,27 @@ class SystemConfigurationFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors.as_text())
         self.assertEqual(form.cleaned_data['company_website'], 'https://www.btp_ops.be')
 
+
+
+from django.test import override_settings
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class DashboardSyncBannerTests(TestCase):
+    """La bannière « Mises à jour disponibles » a besoin de son conteneur (issue #6)."""
+
+    def test_dashboard_has_sync_notification_container_and_guarded_script(self):
+        from system.models import SystemConfiguration
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Ma Société'
+        config.save()
+        get_user_model().objects.create_user(username='manager1', password='password123', role='manager')
+        self.client.login(username='manager1', password='password123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('id="sync-notification"', html)
+        # Le script ne doit plus planter si le conteneur est absent.
+        self.assertIn("&& notif)", html)

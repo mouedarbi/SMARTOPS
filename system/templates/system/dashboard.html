@@ -5,7 +5,10 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
-    
+
+    <!-- Bannière de mises à jour (remplie par le script en bas de page) -->
+    <div id="sync-notification" class="hidden mb-8"></div>
+
     <!-- En-tête de bienvenue -->
     <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -170,8 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('{% url "api_check_sync" %}')
         .then(res => res.json())
         .then(data => {
-            if (data.success && data.updates_available) {
-                const notif = document.getElementById('sync-notification');
+            const notif = document.getElementById('sync-notification');
+            if (data.success && data.updates_available && notif) {
                 notif.innerHTML = `
                     <div class="p-6 bg-blue-600 border border-blue-500 rounded-3xl flex items-center justify-between shadow-xl shadow-blue-100 animate-pulse text-white">
                         <div class="flex items-center gap-4">
