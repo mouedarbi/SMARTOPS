@@ -9,7 +9,7 @@
     <!-- Header / Actions -->
     <div class="mb-8 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <a href="{% url 'ticket_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
+            <a href="{% url 'ticket_list' %}" class="no-print h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
                 <i class="las la-arrow-left text-xl"></i>
             </a>
             <div>
@@ -18,7 +18,7 @@
             </div>
         </div>
         
-        <div class="flex gap-3">
+        <div class="no-print flex gap-3">
             {% if request.user.is_superuser %}
             <a href="{% url 'ticket_delete' ticket.id %}" 
                onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette action est irréversible.')"
@@ -34,7 +34,7 @@
                 Modifier la planification
             </a>
             {% endif %}
-            <button class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2">
+            <button type="button" onclick="window.print()" title="Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2">
                 <i class="las la-print text-xl"></i>
                 Exporter PDF
             </button>

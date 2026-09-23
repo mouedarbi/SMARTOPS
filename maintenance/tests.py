@@ -298,6 +298,17 @@ class InterventionPhotoTestCase(TestCase):
             effective_start=now,
         )
 
+    def test_export_pdf_button_prints_and_layout_has_print_stylesheet(self):
+        """Le bouton « Exporter PDF » déclenche l'impression ; la mise en page masque menu et en-tête (issue #5)."""
+        http = HttpClient()
+        http.login(username='mgr_photo', password='Password123!')
+        html = http.get(reverse('ticket_detail', kwargs={'pk': self.ticket.id})).content.decode()
+        button = html[html.index('Exporter PDF') - 600:html.index('Exporter PDF')]
+        self.assertIn('window.print()', button)
+        self.assertIn('@media print', html)
+        self.assertIn('app-sidebar', html)
+        self.assertIn('no-print', html)
+
     def test_manager_can_upload_and_delete_photo(self):
         http = HttpClient()
         http.login(username='mgr_photo', password='Password123!')
