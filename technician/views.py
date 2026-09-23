@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
@@ -73,6 +75,57 @@ def technician_dashboard(request):
         'now': now,
     }
     return render(request, 'technician/dashboard.html', context)
+
+@login_required
+@user_passes_test(is_technician)
+def technician_history(request):
+    """
+    Historique des interventions du technicien (terminées, à replanifier ou annulées).
+    """
+    try:
+        tech_profile = request.user.technician_profile
+    except Exception:
+        messages.error(request, "Profil technicien introuvable.")
+        return redirect('technician_dashboard')
+
+    tickets = (
+        MaintenanceTicket.objects
+        .filter(technician=tech_profile, status__in=['done', 'to_reschedule', 'canceled'])
+        .select_related('equipment', 'equipment__building')
+        .order_by('-planned_start', '-id')
+    )
+    page = Paginator(tickets, 20).get_page(request.GET.get('page'))
+
+    return render(request, 'technician/history.html', {
+        'page_title': 'Historique',
+        'page': page,
+        'now': timezone.now(),
+    })
+
+@login_required
+@user_passes_test(is_technician)
+def technician_profile(request):
+    """
+    Profil du technicien : identité, spécialités et récapitulatif de son activité.
+    """
+    try:
+        tech_profile = request.user.technician_profile
+    except Exception:
+        messages.error(request, "Profil technicien introuvable.")
+        return redirect('technician_dashboard')
+
+    stats = MaintenanceTicket.objects.filter(technician=tech_profile).aggregate(
+        done=Count('id', filter=Q(status='done')),
+        in_progress=Count('id', filter=Q(status='in_progress')),
+        upcoming=Count('id', filter=Q(status__in=['pending', 'planned', 'to_reschedule'])),
+    )
+
+    return render(request, 'technician/profile.html', {
+        'page_title': 'Mon Profil',
+        'tech_profile': tech_profile,
+        'stats': stats,
+        'now': timezone.now(),
+    })
 
 @login_required
 @user_passes_test(is_technician)

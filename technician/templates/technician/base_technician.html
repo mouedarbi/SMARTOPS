@@ -53,13 +53,13 @@
             </div>
             
             <div class="space-y-4 flex-1">
-                <a href="{% url 'technician_dashboard' %}" class="flex items-center gap-4 p-3 rounded-xl bg-blue-50 text-blue-600 font-bold">
+                <a href="{% url 'technician_dashboard' %}" class="flex items-center gap-4 p-3 rounded-xl {% if request.resolver_match.url_name == 'technician_dashboard' %}bg-blue-50 text-blue-600 font-bold{% else %}text-slate-600 hover:bg-slate-50 transition-colors{% endif %}">
                     <i class="fas fa-calendar-alt"></i> Planning
                 </a>
-                <a href="#" class="flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                <a href="{% url 'technician_history' %}" class="flex items-center gap-4 p-3 rounded-xl {% if request.resolver_match.url_name == 'technician_history' %}bg-blue-50 text-blue-600 font-bold{% else %}text-slate-600 hover:bg-slate-50 transition-colors{% endif %}">
                     <i class="fas fa-history"></i> Historique
                 </a>
-                <a href="#" class="flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+                <a href="{% url 'technician_profile' %}" class="flex items-center gap-4 p-3 rounded-xl {% if request.resolver_match.url_name == 'technician_profile' %}bg-blue-50 text-blue-600 font-bold{% else %}text-slate-600 hover:bg-slate-50 transition-colors{% endif %}">
                     <i class="fas fa-user-circle"></i> Mon Profil
                 </a>
             </div>

@@ -1,0 +1,43 @@
+{% extends 'technician/base_technician.html' %}
+
+{% block content %}
+<div class="px-4 py-6">
+    <h2 class="text-lg font-black text-slate-800 mb-1">Historique</h2>
+    <p class="text-xs text-slate-400 font-bold mb-6">Vos interventions terminées, à replanifier ou annulées.</p>
+
+    {% if page %}
+        {% regroup page by planned_start|date:"l d F Y" as tickets_by_day %}
+        <div class="space-y-6">
+            {% for day in tickets_by_day %}
+            <div>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ day.grouper }}</span>
+                <div class="mt-2 space-y-3">
+                    {% for ticket in day.list %}
+                        {% include 'technician/components/ticket_card.html' with ticket=ticket %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if page.has_other_pages %}
+        <div class="mt-8 flex items-center justify-between text-xs font-bold">
+            {% if page.has_previous %}
+                <a href="?page={{ page.previous_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">← Plus récentes</a>
+            {% else %}<span></span>{% endif %}
+            <span class="text-slate-300">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}
+                <a href="?page={{ page.next_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">Plus anciennes →</a>
+            {% else %}<span></span>{% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="py-20 text-center">
+            <div class="inline-flex h-20 w-20 bg-slate-100 text-slate-300 rounded-full items-center justify-center text-3xl mb-4">
+                <i class="fas fa-history"></i>
+            </div>
+            <p class="text-slate-400 font-bold">Aucune intervention dans l'historique</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

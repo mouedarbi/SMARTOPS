@@ -151,3 +151,74 @@ class TechnicianInterventionTests(TestCase):
         response = self.client_http.get(url)
         
         self.assertEqual(response.status_code, 404) # Not found because of filter in view
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class TechnicianMenuPagesTests(TestCase):
+    """Pages « Historique » et « Mon Profil » du menu technicien (issue #4)."""
+
+    def setUp(self):
+        self.tech_user = User.objects.create_user(username='tech1', password='password123', role='technician', first_name='Ali')
+        self.tech_profile = self.tech_user.technician_profile
+        self.tech_profile.specialties = ['Electrique', 'Hydraulique']
+        self.tech_profile.save()
+        other_user = User.objects.create_user(username='tech2', password='password123', role='technician')
+        self.other_profile = other_user.technician_profile
+
+        company = CompanyClient.objects.create(name="Client")
+        building = Building.objects.create(name="Bâtiment Nord", client=company)
+        eq_type = EquipmentType.objects.create(name="Type")
+        self.equipment = Equipment.objects.create(
+            name="Pompe A", equipment_type=eq_type, building=building,
+            serial_number="SN1", installed_at=timezone.now().date(),
+        )
+        now = timezone.now()
+        def ticket(profile, status, days_ago):
+            return MaintenanceTicket.objects.create(
+                equipment=self.equipment, technician=profile, status=status,
+                planned_start=now - timedelta(days=days_ago), planned_end=now - timedelta(days=days_ago) + timedelta(hours=1),
+            )
+        self.done = ticket(self.tech_profile, 'done', 3)
+        self.canceled = ticket(self.tech_profile, 'canceled', 5)
+        self.planned = ticket(self.tech_profile, 'planned', -1)
+        self.in_progress = ticket(self.tech_profile, 'in_progress', 0)
+        self.foreign_done = ticket(self.other_profile, 'done', 2)
+        self.client_http = HttpClient()
+        self.client_http.login(username='tech1', password='password123')
+
+    def test_menu_links_point_to_real_pages(self):
+        html = self.client_http.get(reverse('technician_dashboard')).content.decode()
+        self.assertIn(f'href="{reverse("technician_history")}"', html)
+        self.assertIn(f'href="{reverse("technician_profile")}"', html)
+        self.assertNotIn('href="#"', html)
+
+    def test_history_lists_only_own_finished_tickets(self):
+        response = self.client_http.get(reverse('technician_history'))
+        self.assertEqual(response.status_code, 200)
+        ids = {t.id for t in response.context['page']}
+        self.assertEqual(ids, {self.done.id, self.canceled.id})
+        self.assertNotIn(self.foreign_done.id, ids)
+        self.assertContains(response, 'Pompe A')
+
+    def test_history_empty_state(self):
+        MaintenanceTicket.objects.filter(technician=self.tech_profile).delete()
+        self.assertContains(self.client_http.get(reverse('technician_history')), "Aucune intervention dans l'historique")
+
+    def test_profile_shows_identity_specialties_and_counts(self):
+        response = self.client_http.get(reverse('technician_profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ali')
+        self.assertContains(response, 'Hydraulique')
+        self.assertEqual(response.context['stats'], {'done': 1, 'in_progress': 1, 'upcoming': 1})
+
+    def test_pages_require_technician_login(self):
+        anonymous = HttpClient()
+        manager = User.objects.create_user(username='boss', password='password123', role='manager')
+        manager_client = HttpClient()
+        manager_client.login(username='boss', password='password123')
+        for name in ('technician_history', 'technician_profile'):
+            self.assertEqual(anonymous.get(reverse(name)).status_code, 302)
+            self.assertEqual(manager_client.get(reverse(name)).status_code, 302)
