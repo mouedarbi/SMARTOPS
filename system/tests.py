@@ -124,3 +124,23 @@ class MobileSidebarTests(TestCase):
     def test_burger_is_present_on_other_pages_too(self):
         html = self.client.get(reverse('ticket_list')).content.decode()
         self.assertIn('id="sidebar-toggle"', html)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class FaviconTests(TestCase):
+    """Le favicon existe et est référencé par les pages principales."""
+
+    def test_icon_files_are_real_images(self):
+        from django.contrib.staticfiles import finders
+        import os
+        for name in ('system/favicon.ico', 'system/favicon-32x32.png', 'system/apple-touch-icon.png'):
+            path = finders.find(name)
+            self.assertIsNotNone(path, name)
+            self.assertGreater(os.path.getsize(path), 500, name)
+
+    def test_pages_reference_the_favicon(self):
+        for url_name in ('technician_login', 'login'):
+            html = self.client.get(reverse(url_name), follow=True).content.decode()
+            self.assertIn('favicon.ico', html, url_name)
+            self.assertIn('apple-touch-icon', html, url_name)
+            self.assertIn('name="theme-color"', html, url_name)
