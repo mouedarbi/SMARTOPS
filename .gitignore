@@ -4,7 +4,7 @@ __pycache__/
 *.pyc
 .env
 media/
-static/
+/static/
 credentials.txt
 tmp_plugin/
 rebuild_plugin/
