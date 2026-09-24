@@ -18,7 +18,7 @@
         <div class="flex items-center gap-4">
             <span class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
                 <i class="las la-calendar text-blue-600 mr-2"></i>
-                {{ "today"|date:"d F Y" }}
+                {% now "d F Y" %}
             </span>
         </div>
     </div>

@@ -144,3 +144,22 @@ class FaviconTests(TestCase):
             self.assertIn('favicon.ico', html, url_name)
             self.assertIn('apple-touch-icon', html, url_name)
             self.assertIn('name="theme-color"', html, url_name)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class DashboardDateBadgeTests(TestCase):
+    """Le badge calendrier du dashboard affiche la date du jour (il était vide)."""
+
+    def test_calendar_badge_shows_current_date(self):
+        from django.utils import timezone
+        from system.models import SystemConfiguration
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Ma Société'
+        config.save()
+        get_user_model().objects.create_user(username='manager1', password='password123', role='manager')
+        self.client.login(username='manager1', password='password123')
+        html = self.client.get(reverse('dashboard')).content.decode()
+        start = html.index('la-calendar text-blue-600 mr-2')
+        badge = html[start:html.index('</span>', start)]
+        text = badge[badge.index('>') + 1:].replace('</i>', '').strip()
+        self.assertIn(str(timezone.now().year), text)
