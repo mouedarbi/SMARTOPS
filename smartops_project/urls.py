@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.apps import apps
-import importlib.util
+from plugins_system.urls_loader import build_plugin_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,20 +27,8 @@ urlpatterns = [
 ]
 
 # --- MOTEUR DE ROUTAGE DYNAMIQUE (Hot-Plug) ---
-# Ce bloc est le cerveau qui branche les modules installés
-for app_config in apps.get_app_configs():
-    # On cible uniquement nos modules premium
-    if app_config.name.startswith('smartops_'):
-        # On ignore les dossiers de base
-        if app_config.name in ['system', 'licensing', 'smartops_project']:
-            continue
-            
-        urls_module = f"{app_config.name}.urls"
-        # Si le module possède un fichier urls.py, on l'injecte dans le système
-        if importlib.util.find_spec(urls_module):
-            urlpatterns.append(
-                path(f'app/{app_config.name}/', include(urls_module))
-            )
+# Branche les pages des modules installés ; un module défectueux est ignoré (voir plugins_system/urls_loader.py).
+urlpatterns += build_plugin_urlpatterns([app_config.name for app_config in apps.get_app_configs()])
 # ----------------------------------------------
 
 if settings.DEBUG:
