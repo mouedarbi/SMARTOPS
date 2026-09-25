@@ -28,7 +28,10 @@ urlpatterns = [
 
 # --- MOTEUR DE ROUTAGE DYNAMIQUE (Hot-Plug) ---
 # Branche les pages des modules installés ; un module défectueux est ignoré (voir plugins_system/urls_loader.py).
-urlpatterns += build_plugin_urlpatterns([app_config.name for app_config in apps.get_app_configs()])
+urlpatterns += build_plugin_urlpatterns(
+    [app_config.name for app_config in apps.get_app_configs()],
+    active_plugin_apps=getattr(settings, 'DYNAMIC_PLUGIN_APPS', ()),
+)
 # ----------------------------------------------
 
 if settings.DEBUG:

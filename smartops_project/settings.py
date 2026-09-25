@@ -94,7 +94,9 @@ INSTALLED_APPS = [
 ]
 
 # Injection automatique des plugins depuis la base de données
-INSTALLED_APPS += get_dynamic_apps()
+# Modules actifs en base : lus une seule fois, réutilisés par le montage des URLs (plugins_system/urls_loader.py).
+DYNAMIC_PLUGIN_APPS = get_dynamic_apps()
+INSTALLED_APPS += DYNAMIC_PLUGIN_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

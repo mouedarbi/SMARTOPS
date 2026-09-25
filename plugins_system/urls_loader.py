@@ -22,21 +22,28 @@ EXCLUDED_APPS = ('system', 'licensing', 'smartops_project')
 PLUGIN_PREFIX = 'smartops_'
 
 
-def is_mountable(app_name):
-    """Indique si l'application est un module dont on doit monter les pages."""
-    return app_name not in EXCLUDED_APPS and app_name.startswith(PLUGIN_PREFIX)
+def is_mountable(app_name, active_plugin_apps=()):
+    """
+    Indique si l'application est un module dont on doit monter les pages : soit un module actif en base
+    (quel que soit le nom de son paquet), soit une application dont le nom commence par `smartops_`.
+    Les applications du Core ne sont jamais montées comme des modules.
+    """
+    if app_name in EXCLUDED_APPS:
+        return False
+    return app_name in active_plugin_apps or app_name.startswith(PLUGIN_PREFIX)
 
 
-def build_plugin_urlpatterns(app_names):
+def build_plugin_urlpatterns(app_names, active_plugin_apps=()):
     """
     Retourne les routes `app/<module>/` des modules qui exposent un `urls.py`.
+    `active_plugin_apps` : noms des paquets des modules actifs (table `licensing_plugin`).
 
     Un module dont le chargement échoue (erreur de syntaxe, import manquant...) est ignoré :
     l'erreur est écrite dans les journaux et les autres modules restent montés.
     """
     patterns = []
     for app_name in app_names:
-        if not is_mountable(app_name):
+        if not is_mountable(app_name, active_plugin_apps):
             continue
 
         urls_module = f"{app_name}.urls"
