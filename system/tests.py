@@ -87,8 +87,9 @@ class DashboardSyncBannerTests(TestCase):
         config = SystemConfiguration.get_instance()
         config.company_name = 'Ma Société'
         config.save()
-        get_user_model().objects.create_user(username='manager1', password='password123', role='manager')
-        self.client.login(username='manager1', password='password123')
+        # La synchronisation avec le Portal est réservée à l'administrateur.
+        get_user_model().objects.create_user(username='admin1', password='password123', role='admin')
+        self.client.login(username='admin1', password='password123')
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()

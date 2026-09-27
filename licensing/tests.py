@@ -126,3 +126,54 @@ class LicensingUnitTestCase(TestCase):
         with patch('licensing.views.os.kill') as mock_kill:
             _hot_reload(request)
             mock_kill.assert_not_called()
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class PluginAdminAccessTestCase(TestCase):
+    """La gestion des modules premium est réservée à l'administrateur (CDC F10)."""
+
+    URL_NAMES = ('plugin_list', 'plugin_install_stream', 'plugin_uninstall_stream', 'sync_portal', 'api_check_sync')
+
+    def setUp(self):
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Ma Société'
+        config.save()
+        for username, role in (('adm', 'admin'), ('mgr', 'manager'), ('tech', 'technician')):
+            User.objects.create_user(username=username, password='pass', role=role)
+
+    def client_for(self, username):
+        client = HttpClient()
+        client.login(username=username, password='pass')
+        return client
+
+    def test_manager_and_technician_are_refused(self):
+        for username in ('mgr', 'tech'):
+            client = self.client_for(username)
+            for name in self.URL_NAMES:
+                response = client.get(reverse(name))
+                self.assertEqual(response.status_code, 302, f'{username} {name}')
+                self.assertIn(reverse('login'), response.url)
+            response = client.post(reverse('plugin_list'), {'license_key': 'ABC'})
+            self.assertEqual(response.status_code, 302)
+            self.assertIn(reverse('login'), response.url)
+
+    @patch('licensing.views.LicenseService.activate_plugin')
+    def test_manager_cannot_activate_a_license(self, mock_activate):
+        self.client_for('mgr').post(reverse('plugin_list'), {'license_key': 'ABC'})
+        mock_activate.assert_not_called()
+
+    def test_admin_is_allowed(self):
+        response = self.client_for('adm').get(reverse('plugin_list'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_links_hidden_from_manager(self):
+        response = self.client_for('mgr').get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        for name in ('plugin_list', 'sync_portal', 'api_check_sync'):
+            self.assertNotContains(response, reverse(name))
+        response = self.client_for('adm').get(reverse('dashboard'))
+        for name in ('plugin_list', 'sync_portal', 'api_check_sync'):
+            self.assertContains(response, reverse(name))

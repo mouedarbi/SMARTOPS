@@ -167,6 +167,7 @@
     </div>
 </div>
 
+{% if user.is_admin or user.is_superuser %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Déclenchement de la synchro silencieuse (Throttle 24h géré côté serveur)
@@ -197,4 +198,5 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => console.log("Portail SMARTOPS inaccessible (Mode Offline)"));
 });
 </script>
+{% endif %}
 {% endblock %}

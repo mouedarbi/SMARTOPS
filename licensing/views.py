@@ -16,7 +16,7 @@ import os
 import signal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.http import StreamingHttpResponse, JsonResponse
 from django.core.management import call_command
@@ -24,6 +24,7 @@ from django.core.management import call_command
 from .services import LicenseService
 from .models import Plugin
 from system.models import SystemConfiguration
+from accounts.views import is_admin
 
 
 def _hot_reload(request):
@@ -64,6 +65,7 @@ def _reload_application_stream(request):
         yield line + "\n"
 
 @login_required
+@user_passes_test(is_admin)
 def plugin_list_view(request):
     """
     Affiche la liste des modules premium et gère le formulaire d'activation.
@@ -89,6 +91,7 @@ def plugin_list_view(request):
     return render(request, 'licensing/plugin_list.html', context)
 
 @login_required
+@user_passes_test(is_admin)
 def plugin_install_stream_view(request):
     """
     Vue de streaming qui exécute l'installation et renvoie les logs en live.
@@ -160,6 +163,7 @@ def plugin_install_stream_view(request):
     return StreamingHttpResponse(stream_installation(), content_type='text/plain')
 
 @login_required
+@user_passes_test(is_admin)
 def plugin_uninstall_stream_view(request):
     """
     Vue de streaming pour la désinstallation physique d'un module.
@@ -213,6 +217,7 @@ def plugin_uninstall_stream_view(request):
     return StreamingHttpResponse(stream_uninstallation(), content_type='text/plain')
 
 @login_required
+@user_passes_test(is_admin)
 def api_check_sync(request):
     """
     API interne appelée par le dashboard pour synchroniser en arrière-plan.
@@ -237,6 +242,7 @@ def api_check_sync(request):
     return JsonResponse(result)
 
 @login_required
+@user_passes_test(is_admin)
 def sync_portal_view(request):
     """
     Déclenche la synchronisation manuelle avec le Portail SMARTOPS.
