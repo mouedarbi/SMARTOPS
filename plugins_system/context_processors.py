@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def plugin_menus(request):
     """
     Récupère les items de menu via le hook register_menu_items de Pluggy,
-    mais uniquement si au moins un module est réellement actif en base.
+    uniquement pour les modules actifs dans le registre (licensing_plugin).
 
     Cela évite d'afficher des entrées de menu « fantômes » lorsqu'un module
     a été désinstallé alors que les workers gunicorn tournent encore avec
@@ -28,17 +28,20 @@ def plugin_menus(request):
     """
     try:
         from licensing.models import Plugin
-        has_active_plugin = Plugin.objects.filter(is_active=True).exists()
+        active_packages = set(Plugin.objects.filter(is_active=True).values_list('python_path', flat=True))
     except Exception as exc:  # base non migrée, table absente, etc.
         logger.debug("plugin_menus: vérification des modules actifs impossible (%s)", exc)
         return {'plugin_menus': []}
 
-    if not has_active_plugin:
+    if not active_packages:
         return {'plugin_menus': []}
 
     dynamic_menus = []
     try:
-        results = plugin_manager.hook.register_menu_items()
+        # Seuls les modules actifs du registre fournissent un menu : un paquet encore présent
+        # dans l'environnement mais désinstallé du registre ne doit plus apparaître.
+        inactive = [plugin for name, plugin in plugin_manager.list_name_plugin() if name not in active_packages]
+        results = plugin_manager.subset_hook_caller('register_menu_items', remove_plugins=inactive)()
         for plugin_result in results:
             if plugin_result:
                 dynamic_menus.extend(plugin_result)

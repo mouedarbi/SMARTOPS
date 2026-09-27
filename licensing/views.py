@@ -23,6 +23,7 @@ from django.core.management import call_command
 
 from .services import LicenseService
 from .models import Plugin
+from .installer import PluginInstaller
 from system.models import SystemConfiguration
 from accounts.views import is_admin
 
@@ -203,16 +204,22 @@ def plugin_uninstall_stream_view(request):
         # 2. Désactivation et Suppression PIP
         yield ">>> Désactivation dans le registre local...\n"
         package_name = plugin.python_path or plugin.slug.replace('-', '_')
-        
+        # pip désinstalle par nom de paquet (pyproject.toml), pas par nom de module Python.
+        distributions = PluginInstaller.distribution_names(package_name)
+
         try:
             process = subprocess.Popen(
-                [sys.executable, "-m", "pip", "uninstall", "-y", package_name],
+                [sys.executable, "-m", "pip", "uninstall", "-y", *distributions],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
             )
             for line in process.stdout:
                 yield f"    {line}"
             process.wait()
-            
+
+            if process.returncode != 0:
+                yield f"!!! ERREUR PIP (Code {process.returncode}) : le paquet {', '.join(distributions)} n'a pas pu être désinstallé.\n"
+                return
+
             yield ">>> Nettoyage de la base de données...\n"
             plugin.delete()
             yield "\n✅ MODULE DESINSTALLE AVEC SUCCÈS !\n"

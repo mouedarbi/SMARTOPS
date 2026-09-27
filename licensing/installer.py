@@ -9,9 +9,11 @@ Description : Moteur universel d'installation de modules premium.
               Inspiré de la logique validée dans le POC.
 """
 
+import importlib
 import subprocess
 import sys
 import logging
+from importlib.metadata import packages_distributions
 import os
 import requests
 import tempfile
@@ -24,6 +26,16 @@ class PluginInstaller:
     """
     Service responsable de l'installation physique des paquets de modules (Hot-Plug).
     """
+
+    @staticmethod
+    def distribution_names(package_name):
+        """
+        Nom(s) pip du paquet qui fournit le module Python `package_name`.
+        Ex. : contrats_de_maintenance -> smartops-plugin-contrats-de-maintenance
+        (nom défini dans le pyproject.toml de l'archive, différent du nom d'import).
+        """
+        importlib.invalidate_caches()
+        return sorted(set(packages_distributions().get(package_name, []))) or [package_name]
 
     @staticmethod
     def install(package_name, download_url):
