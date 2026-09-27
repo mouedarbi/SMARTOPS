@@ -6,10 +6,11 @@ Description : Routeur DRF pour l'API REST SMARTOPS v0.2.0.
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from .views import (
+    ThrottledTokenObtainPairView,
     MeView,
     ClientViewSet,
     BuildingViewSet,
@@ -30,7 +31,7 @@ router.register(r'tickets', MaintenanceTicketViewSet, basename='ticket')
 
 urlpatterns = [
     # Auth JWT
-    path('auth/token/', TokenObtainPairView.as_view(), name='api_token_obtain'),
+    path('auth/token/', ThrottledTokenObtainPairView.as_view(), name='api_token_obtain'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='api_token_refresh'),
     path('auth/token/blacklist/', TokenBlacklistView.as_view(), name='api_token_blacklist'),
     path('auth/me/', MeView.as_view(), name='api_me'),

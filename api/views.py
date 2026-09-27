@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from django.utils import timezone
 from datetime import timedelta
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.models import CustomUser
 from inventory.models import Client, Building, EquipmentType, Equipment
@@ -31,6 +32,12 @@ from .serializers import (
     InterventionPhotoSerializer,
 )
 from .permissions import IsAdminOrManager, IsAdminOnly, IsTechnicianOwner
+from .throttles import TokenObtainRateThrottle
+
+
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    """Obtention du jeton JWT, limitée par adresse IP."""
+    throttle_classes = [TokenObtainRateThrottle]
 
 
 @extend_schema(tags=['Auth'])
