@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 buildingSelect.innerHTML = '<option value="">--- Choisir un lieu ---</option>';
                 data.forEach(b => {
-                    buildingSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+                    buildingSelect.add(new Option(b.name, b.id));
                 });
                 buildingContainer.classList.remove('hidden');
             });

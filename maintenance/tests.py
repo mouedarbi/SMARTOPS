@@ -175,6 +175,14 @@ class MaintenanceWebViewsTestCase(TestCase):
         self.http_client = HttpClient()
         self.http_client.login(username='manager_maint', password='Password123!')
 
+    def test_ticket_form_builds_options_as_text(self):
+        """Les noms de lieux reçus en JSON sont insérés comme texte (new Option), jamais comme HTML."""
+        response = self.http_client.get(reverse('ticket_create'))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('buildingSelect.add(new Option(b.name, b.id))', html)
+        self.assertNotIn('${b.name}', html)
+
     def test_ticket_create_view_post_by_manager(self):
         """F5 : Test de création réelle d'un ticket par un gestionnaire via le formulaire Web."""
         url = reverse('ticket_create')
