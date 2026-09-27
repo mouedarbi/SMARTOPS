@@ -76,9 +76,9 @@ class EquipmentTypeViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=['Inventaire'])
 class EquipmentViewSet(viewsets.ModelViewSet):
-    """CRUD complet sur les équipements."""
+    """CRUD complet sur les équipements (administrateurs et gestionnaires)."""
     serializer_class = EquipmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def get_queryset(self):
         qs = Equipment.objects.select_related(
@@ -130,8 +130,11 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in ['destroy']:
+        # Création et modification : gestionnaire (CDC F5) ; actions terrain : technicien du ticket.
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
             return [IsAuthenticated(), IsAdminOrManager()]
+        if self.action in ('start', 'stop', 'photos'):
+            return [IsAuthenticated(), IsTechnicianOwner()]
         return [IsAuthenticated()]
 
     @extend_schema(
@@ -143,13 +146,6 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     def start(self, request, pk=None):
         """Passe le ticket en `in_progress` et enregistre l'heure de début."""
         ticket = self.get_object()
-
-        if request.user.role == 'technician':
-            try:
-                if ticket.technician != request.user.technician_profile:
-                    return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
-            except Exception:
-                return Response({'detail': 'Profil technicien introuvable.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if ticket.status not in ('pending', 'planned', 'to_reschedule'):
             return Response(
@@ -178,13 +174,6 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     def stop(self, request, pk=None):
         """Passe le ticket en `done` ou `to_reschedule` et enregistre l'heure de fin."""
         ticket = self.get_object()
-
-        if request.user.role == 'technician':
-            try:
-                if ticket.technician != request.user.technician_profile:
-                    return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
-            except Exception:
-                return Response({'detail': 'Profil technicien introuvable.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if ticket.status != 'in_progress':
             return Response(
@@ -217,13 +206,6 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             qs = ticket.photos.select_related('uploaded_by').all()
             return Response(InterventionPhotoSerializer(qs, many=True).data)
-
-        if request.user.role == 'technician':
-            try:
-                if ticket.technician != request.user.technician_profile:
-                    return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
-            except Exception:
-                return Response({'detail': 'Profil technicien introuvable.'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = InterventionPhotoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

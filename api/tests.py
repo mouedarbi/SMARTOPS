@@ -274,6 +274,103 @@ class TicketAPITestCase(TestCase):
     SECURE_SSL_REDIRECT=False,
     PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
 )
+class RolePermissionsAPITestCase(TestCase):
+    """Droits d'accès à l'API par rôle (dossier technique §4.3.1)."""
+
+    def setUp(self):
+        self.api = APIClient()
+        for username, role in (('mgr3', 'manager'), ('tech_a', 'technician'), ('tech_b', 'technician')):
+            CustomUser.objects.create_user(username=username, password='pass', role=role)
+        self.tokens = {
+            name: self.api.post('/api/v1/auth/token/', {'username': name, 'password': 'pass'}).data['access']
+            for name in ('mgr3', 'tech_a', 'tech_b')
+        }
+        client_obj = Client.objects.create(name='Perm Corp', address='Rue P', contact_name='Eve', email='e@p.fr')
+        self.building = Building.objects.create(client=client_obj, name='Bâtiment P', address='Rue P')
+        self.eq_type = EquipmentType.objects.create(name='Pompe')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Pompe 1', equipment_type=self.eq_type,
+            serial_number='SN-P01', installed_at='2024-01-01'
+        )
+        now = timezone.now()
+        self.tech_a = Technician.objects.get(user__username='tech_a')
+        self.tech_b = Technician.objects.get(user__username='tech_b')
+        self.ticket_a = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech_a, type='maintenance',
+            planned_start=now, planned_end=now + timedelta(hours=1), status='planned',
+        )
+        self.ticket_b = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech_b, type='maintenance',
+            planned_start=now, planned_end=now + timedelta(hours=1), status='planned',
+        )
+
+    def login_as(self, username):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tokens[username]}')
+
+    def equipment_payload(self, serial):
+        return {
+            'building': self.building.id, 'name': 'Pompe 2', 'equipment_type': self.eq_type.id,
+            'serial_number': serial, 'installed_at': '2024-02-01',
+        }
+
+    def ticket_payload(self):
+        now = timezone.now()
+        return {
+            'equipment': self.equipment.id, 'technician': self.tech_a.id, 'type': 'repair',
+            'planned_start': now.isoformat(), 'planned_end': (now + timedelta(hours=1)).isoformat(),
+        }
+
+    def test_technician_cannot_access_equipments(self):
+        self.login_as('tech_a')
+        url = f'/api/v1/equipments/{self.equipment.id}/'
+        self.assertEqual(self.api.get('/api/v1/equipments/').status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.api.post('/api/v1/equipments/', self.equipment_payload('SN-P02')).status_code,
+                         status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.api.patch(url, {'name': 'Renommé'}).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.api.delete(url).status_code, status.HTTP_403_FORBIDDEN)
+        self.equipment.refresh_from_db()
+        self.assertEqual(self.equipment.name, 'Pompe 1')
+
+    def test_manager_creates_equipment(self):
+        self.login_as('mgr3')
+        r = self.api.post('/api/v1/equipments/', self.equipment_payload('SN-P03'))
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+
+    def test_technician_cannot_create_or_edit_tickets(self):
+        self.login_as('tech_a')
+        self.assertEqual(self.api.post('/api/v1/tickets/', self.ticket_payload()).status_code,
+                         status.HTTP_403_FORBIDDEN)
+        r = self.api.patch(f'/api/v1/tickets/{self.ticket_a.id}/', {'status': 'done', 'technician': self.tech_b.id})
+        self.assertEqual(r.status_code, status.HTTP_403_FORBIDDEN)
+        self.ticket_a.refresh_from_db()
+        self.assertEqual((self.ticket_a.status, self.ticket_a.technician), ('planned', self.tech_a))
+
+    def test_manager_creates_ticket(self):
+        self.login_as('mgr3')
+        self.assertEqual(self.api.post('/api/v1/tickets/', self.ticket_payload()).status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_technician_gets_404_on_colleague_ticket(self):
+        self.login_as('tech_a')
+        for method, suffix in (('get', ''), ('post', 'start/'), ('post', 'stop/'), ('get', 'photos/')):
+            r = getattr(self.api, method)(f'/api/v1/tickets/{self.ticket_b.id}/{suffix}')
+            self.assertEqual(r.status_code, status.HTTP_404_NOT_FOUND, suffix or 'retrieve')
+        self.ticket_b.refresh_from_db()
+        self.assertEqual(self.ticket_b.status, 'planned')
+
+    def test_technician_starts_and_stops_own_ticket(self):
+        self.login_as('tech_a')
+        r = self.api.post(f'/api/v1/tickets/{self.ticket_a.id}/start/', {})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        r = self.api.post(f'/api/v1/tickets/{self.ticket_a.id}/stop/', {'status': 'done'})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data['status'], 'done')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class OpenAPISchemaTestCase(TestCase):
     def setUp(self):
         self.api = APIClient()
