@@ -62,7 +62,8 @@ def get_dynamic_apps():
     return dynamic_apps
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-a43ml7%bpwm2&*18ay)jt24gam!89wh0oss150hxc)$8&0(+uc')
+# Fournie par le fichier .env (aucune valeur par défaut dans le code source).
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env('DEBUG')
 
