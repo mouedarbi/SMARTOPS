@@ -18,6 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from accounts.models import CustomUser
 from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
+from maintenance.services import reschedule_ticket
 
 from .serializers import (
     UserSerializer,
@@ -154,7 +155,7 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         """Passe le ticket en `in_progress` et enregistre l'heure de début."""
         ticket = self.get_object()
 
-        if ticket.status not in ('pending', 'planned', 'to_reschedule'):
+        if ticket.status not in ('pending', 'planned'):
             return Response(
                 {'detail': f"Impossible de démarrer un ticket au statut '{ticket.get_status_display()}'."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -179,7 +180,10 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['post'], url_path='stop')
     def stop(self, request, pk=None):
-        """Passe le ticket en `done` ou `to_reschedule` et enregistre l'heure de fin."""
+        """
+        Passe le ticket en `done` ou `to_reschedule` et enregistre l'heure de fin.
+        En `to_reschedule`, un ticket de suite est créé en attente, sans technicien.
+        """
         ticket = self.get_object()
 
         if ticket.status != 'in_progress':
@@ -191,11 +195,15 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         serializer = TicketStopSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        ticket.status = serializer.validated_data.get('status', 'done')
-        ticket.effective_end = timezone.now()
-        if serializer.validated_data.get('intervention_report'):
-            ticket.intervention_report = serializer.validated_data['intervention_report']
-        ticket.save()
+        report = serializer.validated_data.get('intervention_report') or None
+        if serializer.validated_data.get('status') == 'to_reschedule':
+            reschedule_ticket(ticket, report)
+        else:
+            ticket.status = 'done'
+            ticket.effective_end = timezone.now()
+            if report:
+                ticket.intervention_report = report
+            ticket.save()
 
         return Response(MaintenanceTicketSerializer(ticket).data)
 

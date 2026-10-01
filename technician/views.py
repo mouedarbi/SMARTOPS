@@ -8,6 +8,8 @@ from django.db.models import Count, Q
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
+from maintenance.services import reschedule_ticket
+from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
     return user.is_authenticated and user.role == 'technician'
@@ -129,7 +131,7 @@ def technician_profile(request):
     stats = MaintenanceTicket.objects.filter(technician=tech_profile).aggregate(
         done=Count('id', filter=Q(status='done')),
         in_progress=Count('id', filter=Q(status='in_progress')),
-        upcoming=Count('id', filter=Q(status__in=['pending', 'planned', 'to_reschedule'])),
+        upcoming=Count('id', filter=Q(status__in=['pending', 'planned'])),
     )
 
     return render(request, 'technician/profile.html', {
@@ -179,6 +181,10 @@ def technician_ticket_detail(request, pk):
         'ticket': ticket,
         'now': timezone.now(),
         'photos': ticket.photos.all(),
+        # Liens vers les tickets cités dans la description, limités à ceux du technicien
+        'linkable_ids': set(MaintenanceTicket.objects.filter(
+            technician=tech_profile, pk__in=referenced_ticket_ids(ticket.description),
+        ).values_list('pk', flat=True)),
     }
     return render(request, 'technician/ticket_detail.html', context)
 
@@ -197,7 +203,7 @@ def start_intervention(request, pk):
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
 
-    if ticket.status in ['pending', 'planned', 'to_reschedule']:
+    if ticket.status in ['pending', 'planned']:
         ticket.status = 'in_progress'
         ticket.effective_start = timezone.now()
 
@@ -255,14 +261,17 @@ def stop_intervention(request, pk):
                 'final_status': final_status,
             })
 
-        ticket.intervention_report = report
-        ticket.status = final_status
-        ticket.effective_end = timezone.now()
-        ticket.save()
-
         if final_status == 'to_reschedule':
-            messages.success(request, "Rapport enregistré. Intervention marquée « à replanifier ».")
+            follow_up = reschedule_ticket(ticket, report)
+            messages.success(
+                request,
+                f"Rapport enregistré. Intervention clôturée, ticket de suite #{follow_up.id} transmis au dispatching.",
+            )
         else:
+            ticket.intervention_report = report
+            ticket.status = final_status
+            ticket.effective_end = timezone.now()
+            ticket.save()
             messages.success(request, "Intervention clôturée. Merci et bon travail !")
         return redirect('technician_ticket_detail', pk=pk)
 

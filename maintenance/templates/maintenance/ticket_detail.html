@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ticket_links %}
 
 {% block title %}Intervention #{{ ticket.id }} | SMARTOPS{% endblock %}
 {% block page_title %}Intervention #{{ ticket.id }}{% endblock %}
@@ -28,7 +29,7 @@
             </a>
             {% endif %}
             
-            {% if ticket.status == 'pending' or ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
+            {% if ticket.status == 'pending' or ticket.status == 'planned' %}
             <a href="{% url 'ticket_update' ticket.id %}" class="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition flex items-center gap-2">
                 <i class="las la-edit text-xl"></i>
                 Modifier la planification
@@ -177,13 +178,13 @@
 
                     <div class="p-8 bg-slate-50/50">
                         <span class="text-[10px] font-black text-slate-400 uppercase block mb-3">Consignes & Description</span>
+                        {% if ticket.description %}
+                        <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic whitespace-pre-line">{% ticket_links ticket.description 'ticket_detail' %}</div>
+                        {% else %}
                         <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic">
-                            {% if ticket.description %}
-                                "{{ ticket.description }}"
-                            {% else %}
                                 Aucune consigne spécifique n'a été renseignée pour cette intervention.
-                            {% endif %}
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

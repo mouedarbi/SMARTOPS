@@ -204,6 +204,23 @@ class TicketAPITestCase(TestCase):
         self.assertEqual(r3.data['status'], 'done')
         self.assertIn('Remplacement', r3.data['intervention_report'])
 
+    def test_stop_to_reschedule_creates_follow_up(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {})
+        r = self.api.post(f'/api/v1/tickets/{self.ticket.id}/stop/', {
+            'intervention_report': 'Pièce manquante.',
+            'status': 'to_reschedule',
+        })
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data['status'], 'to_reschedule')
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        self.assertEqual(follow_up.status, 'pending')
+        self.assertIsNone(follow_up.technician)
+
+        # Le ticket clôturé ne peut plus être démarré
+        r2 = self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {})
+        self.assertEqual(r2.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_my_interventions_endpoint(self):
         self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
         r = self.api.get('/api/v1/my/interventions/?range=today')

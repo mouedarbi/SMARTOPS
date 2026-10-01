@@ -1,8 +1,9 @@
 {% extends 'technician/base_technician.html' %}
+{% load ticket_links %}
 
 {% block content %}
 <!-- Floating Action Button (Démarrer) -->
-{% if ticket.status == 'pending' or ticket.status == 'planned' or ticket.status == 'to_reschedule' %}
+{% if ticket.status == 'pending' or ticket.status == 'planned' %}
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
     <form id="start-intervention-form" method="post" action="{% url 'start_intervention' ticket.id %}">
         {% csrf_token %}
@@ -69,6 +70,13 @@
         </div>
     </div>
 
+    {% if ticket.status == 'to_reschedule' %}
+    <div class="bg-orange-50 border border-orange-100 text-orange-700 rounded-3xl p-5 mb-6 text-xs font-bold leading-relaxed">
+        <i class="fas fa-route mr-1"></i>
+        Intervention clôturée « à replanifier ». La suite est transmise au dispatching, qui la réattribuera.
+    </div>
+    {% endif %}
+
     <!-- Single Page Sections -->
     <div class="space-y-6">
         <!-- Section: Localisation -->
@@ -118,13 +126,11 @@
         <section>
             <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Consignes / Problème</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
-                <p class="text-sm text-slate-600 leading-relaxed italic">
-                    {% if ticket.description %}
-                        "{{ ticket.description }}"
-                    {% else %}
-                        Aucune consigne spécifique renseignée.
-                    {% endif %}
-                </p>
+                {% if ticket.description %}
+                <p class="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{% ticket_links ticket.description 'technician_ticket_detail' linkable_ids %}</p>
+                {% else %}
+                <p class="text-sm text-slate-600 leading-relaxed italic">Aucune consigne spécifique renseignée.</p>
+                {% endif %}
             </div>
         </section>
 

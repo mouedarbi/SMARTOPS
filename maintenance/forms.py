@@ -94,7 +94,7 @@ class MaintenanceTicketForm(forms.ModelForm):
 
         # 1.bis Sécurité : Si l'intervention est en cours ou terminée, on verrouille la planification et le statut
         if self.instance and self.instance.pk:
-            if self.instance.status in ['in_progress', 'done', 'canceled']:
+            if self.instance.status in ['in_progress', 'done', 'canceled', 'to_reschedule']:
                 # On verrouille TOUT pour éviter les incohérences avec le terrain
                 for field_name in self.fields:
                     self.fields[field_name].disabled = True

@@ -2,9 +2,14 @@ from django.test import TestCase, Client as HttpClient, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from maintenance.models import MaintenanceTicket, Technician
+from maintenance.models import MaintenanceTicket, Technician, InterventionPhoto
 from inventory.models import Equipment, EquipmentType, Building, Client as CompanyClient
 from datetime import timedelta
+from decimal import Decimal
+import os
+import shutil
+import tempfile
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 User = get_user_model()
 
@@ -118,6 +123,21 @@ class TechnicianInterventionTests(TestCase):
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.status, 'to_reschedule')
         self.assertIsNotNone(self.ticket.effective_end)
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        self.assertEqual(follow_up.status, 'pending')
+        self.assertIsNone(follow_up.technician)
+
+    def test_rescheduled_ticket_cannot_be_started(self):
+        """Un ticket « à replanifier » est clôturé : seul le ticket de suite pourra être démarré."""
+        self.ticket.status = 'to_reschedule'
+        self.ticket.save()
+
+        self.client_http.post(reverse('start_intervention', args=[self.ticket.id]))
+
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'to_reschedule')
+        detail = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id]))
+        self.assertNotContains(detail, 'id="start-intervention-form"')
 
     def test_cannot_start_already_done_ticket(self):
         """Test that we cannot start a ticket that is already done."""
@@ -222,3 +242,115 @@ class TechnicianMenuPagesTests(TestCase):
         for name in ('technician_history', 'technician_profile'):
             self.assertEqual(anonymous.get(reverse(name)).status_code, 302)
             self.assertEqual(manager_client.get(reverse(name)).status_code, 302)
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class RescheduleFollowUpTests(TestCase):
+    """Clôture « à replanifier » : le ticket est conservé et un ticket de suite est créé (issue #15)."""
+
+    def setUp(self):
+        self.media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.media, ignore_errors=True)
+        media_override = override_settings(MEDIA_ROOT=self.media)
+        media_override.enable()
+        self.addCleanup(media_override.disable)
+
+        self.tech_user = User.objects.create_user(username='tech1', password='password123', role='technician')
+        self.tech_profile = self.tech_user.technician_profile
+        company = CompanyClient.objects.create(name="Client")
+        building = Building.objects.create(name="Bâtiment Nord", client=company)
+        eq_type = EquipmentType.objects.create(name="Type")
+        self.equipment = Equipment.objects.create(
+            name="Pompe A", equipment_type=eq_type, building=building,
+            serial_number="SN1", installed_at=timezone.now().date(),
+        )
+        now = timezone.now()
+        self.ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech_profile, type='repair',
+            status='in_progress', description="Fuite sur la vanne",
+            planned_start=now - timedelta(hours=1), planned_end=now + timedelta(hours=1),
+            effective_start=now - timedelta(minutes=30),
+            start_latitude=Decimal('50.850000'), start_longitude=Decimal('4.350000'),
+        )
+        self.photo = InterventionPhoto.objects.create(
+            ticket=self.ticket, caption="Vanne", phase='before', uploaded_by=self.tech_user,
+            image=SimpleUploadedFile('vanne.jpg', b'photo-bytes', content_type='image/jpeg'),
+        )
+        self.client_http = HttpClient()
+        self.client_http.login(username='tech1', password='password123')
+
+    def close_to_reschedule(self):
+        return self.client_http.post(reverse('stop_intervention', args=[self.ticket.id]), {
+            'intervention_report': 'Pièce manquante.',
+            'final_status': 'to_reschedule',
+        })
+
+    def test_original_ticket_keeps_field_data(self):
+        self.close_to_reschedule()
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'to_reschedule')
+        self.assertIsNotNone(self.ticket.effective_start)
+        self.assertIsNotNone(self.ticket.effective_end)
+        self.assertEqual(self.ticket.start_latitude, Decimal('50.850000'))
+        self.assertEqual(self.ticket.intervention_report, 'Pièce manquante.')
+        self.assertEqual(self.ticket.photos.count(), 1)
+
+    def test_follow_up_ticket_goes_back_to_dispatching(self):
+        self.close_to_reschedule()
+        self.ticket.refresh_from_db()
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+
+        self.assertEqual(follow_up.status, 'pending')
+        self.assertIsNone(follow_up.technician)
+        self.assertEqual(follow_up.equipment, self.equipment)
+        self.assertEqual(follow_up.type, 'repair')
+        self.assertIsNone(follow_up.effective_start)
+        self.assertIsNone(follow_up.effective_end)
+        self.assertIsNone(follow_up.start_latitude)
+        self.assertIn(f"Suite de l'intervention #{self.ticket.id}", follow_up.description)
+        self.assertIn("Fuite sur la vanne", follow_up.description)
+        self.assertIn("Pièce manquante.", follow_up.description)
+        self.assertIn(f"ticket #{follow_up.id}", self.ticket.description)
+
+    def test_photos_are_copied_to_their_own_files(self):
+        self.close_to_reschedule()
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        copy = follow_up.photos.get()
+
+        self.assertNotEqual(copy.image.name, self.photo.image.name)
+        self.assertEqual((copy.caption, copy.phase, copy.uploaded_by), ("Vanne", 'before', self.tech_user))
+        copy.delete()
+        self.assertTrue(os.path.exists(self.photo.image.path))
+
+    def test_follow_up_can_be_started_once_dispatched(self):
+        self.close_to_reschedule()
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        follow_up.technician = self.tech_profile
+        follow_up.status = 'planned'
+        follow_up.save()
+
+        self.client_http.post(reverse('start_intervention', args=[follow_up.id]))
+        follow_up.refresh_from_db()
+        self.assertEqual(follow_up.status, 'in_progress')
+
+    def test_description_links_only_to_own_tickets(self):
+        self.close_to_reschedule()
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        html = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id])).content.decode()
+        # Le ticket de suite n'est pas encore attribué : pas de lien
+        self.assertNotIn(reverse('technician_ticket_detail', args=[follow_up.id]), html)
+
+        follow_up.technician = self.tech_profile
+        follow_up.save()
+        html = self.client_http.get(reverse('technician_ticket_detail', args=[follow_up.id])).content.decode()
+        self.assertIn(f'href="{reverse("technician_ticket_detail", args=[self.ticket.id])}"', html)
+
+    def test_manager_cannot_edit_rescheduled_ticket(self):
+        self.close_to_reschedule()
+        manager = User.objects.create_user(username='mgr', password='password123', role='manager')
+        self.client_http.force_login(manager)
+        response = self.client_http.get(reverse('ticket_update', args=[self.ticket.id]))
+        self.assertRedirects(response, reverse('ticket_detail', args=[self.ticket.id]))

@@ -206,7 +206,7 @@ def ticket_update(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     
     # Sécurité : Pas d'édition si déjà commencé/fini
-    if ticket.status in ['in_progress', 'done', 'canceled']:
+    if ticket.status in ['in_progress', 'done', 'canceled', 'to_reschedule']:
         messages.warning(request, "Cette intervention ne peut plus être modifiée car elle est déjà en cours ou clôturée.")
         return redirect('ticket_detail', pk=ticket.id)
 
