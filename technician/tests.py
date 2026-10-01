@@ -245,6 +245,25 @@ class TechnicianMenuPagesTests(TestCase):
         self.assertNotIn(self.foreign_done.id, ids)
         self.assertContains(response, 'Pompe A')
 
+    def test_dashboard_lists_overdue_unclosed_tickets(self):
+        """Une intervention non clôturée d'un jour précédent reste visible dans le planning (issue #16)."""
+        now = timezone.now()
+        overdue = {}
+        for status in ('pending', 'planned', 'in_progress', 'done', 'to_reschedule', 'canceled'):
+            overdue[status] = MaintenanceTicket.objects.create(
+                equipment=self.equipment, technician=self.tech_profile, status=status,
+                planned_start=now - timedelta(days=2), planned_end=now - timedelta(days=2) + timedelta(hours=1),
+            )
+
+        response = self.client_http.get(reverse('technician_dashboard'))
+        listed = list(response.context['tickets_overdue'])
+        for status in ('pending', 'planned', 'in_progress'):
+            self.assertIn(overdue[status], listed)
+        for status in ('done', 'to_reschedule', 'canceled'):
+            self.assertNotIn(overdue[status], listed)
+        self.assertNotIn(self.planned, listed)  # demain : pas en retard
+        self.assertContains(response, 'En retard')
+
     def test_history_empty_state(self):
         MaintenanceTicket.objects.filter(technician=self.tech_profile).delete()
         self.assertContains(self.client_http.get(reverse('technician_history')), "Aucune intervention dans l'historique")

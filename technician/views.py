@@ -83,10 +83,18 @@ def technician_dashboard(request):
         planned_start__lt=week_end
     ).order_by('planned_start')
 
+    # Interventions des jours précédents qui n'ont pas été clôturées
+    tickets_overdue = MaintenanceTicket.objects.filter(
+        technician=tech_profile,
+        planned_start__lt=today_start,
+        status__in=['pending', 'planned', 'in_progress'],
+    ).order_by('planned_start')
+
     context = {
         'page_title': 'Mon Planning',
         'tickets_today': tickets_today,
         'tickets_week': tickets_week,
+        'tickets_overdue': tickets_overdue,
         'now': now,
     }
     return render(request, 'technician/dashboard.html', context)
