@@ -50,7 +50,7 @@
     <!-- Week's List -->
     <div id="tab-week" class="hidden space-y-4">
         {% if tickets_week %}
-            {% regroup tickets_week by planned_start|date:"l d F" as tickets_by_day %}
+            {% regroup tickets_week by display_start|date:"l d F" as tickets_by_day %}
             {% for day in tickets_by_day %}
                 <div class="pt-2">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ day.grouper }}</span>

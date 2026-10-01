@@ -10,7 +10,7 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
 from maintenance.forms import InterventionPhotoForm
-from maintenance.services import reschedule_ticket
+from maintenance.services import reschedule_ticket, with_display_start
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
@@ -73,21 +73,21 @@ def technician_dashboard(request):
         messages.error(request, "Profil technicien introuvable.")
         return redirect('login')
 
-    tickets_today = MaintenanceTicket.objects.filter(
-        technician=tech_profile,
-        planned_start__gte=today_start,
-        planned_start__lt=today_end
-    ).order_by('planned_start')
+    # Datation : début effectif si démarrée, sinon début prévu
+    tickets = with_display_start(MaintenanceTicket.objects.filter(technician=tech_profile))
 
-    tickets_week = MaintenanceTicket.objects.filter(
-        technician=tech_profile,
-        planned_start__gte=today_start,
-        planned_start__lt=week_end
-    ).order_by('planned_start')
+    tickets_today = tickets.filter(
+        display_start__gte=today_start,
+        display_start__lt=today_end
+    ).order_by('display_start')
+
+    tickets_week = tickets.filter(
+        display_start__gte=today_start,
+        display_start__lt=week_end
+    ).order_by('display_start')
 
     # Interventions des jours précédents qui n'ont pas été clôturées
-    tickets_overdue = MaintenanceTicket.objects.filter(
-        technician=tech_profile,
+    tickets_overdue = tickets.filter(
         planned_start__lt=today_start,
         status__in=['pending', 'planned', 'in_progress'],
     ).order_by('planned_start')
@@ -114,10 +114,10 @@ def technician_history(request):
         return redirect('technician_dashboard')
 
     tickets = (
-        MaintenanceTicket.objects
+        with_display_start(MaintenanceTicket.objects)
         .filter(technician=tech_profile, status__in=['done', 'to_reschedule', 'canceled'])
         .select_related('equipment', 'equipment__building')
-        .order_by('-planned_start', '-id')
+        .order_by('-display_start', '-id')
     )
     page = Paginator(tickets, 20).get_page(request.GET.get('page'))
 

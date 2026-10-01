@@ -9,9 +9,18 @@ import os
 
 from django.core.files import File
 from django.db import transaction
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import MaintenanceTicket, InterventionPhoto
+
+
+def with_display_start(queryset):
+    """
+    Annote `display_start` : début effectif si l'intervention a démarré, sinon début prévu.
+    Sert à dater une intervention réalisée un autre jour que prévu.
+    """
+    return queryset.annotate(display_start=Coalesce('effective_start', 'planned_start'))
 
 
 def reschedule_ticket(ticket, report=None):

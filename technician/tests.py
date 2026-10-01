@@ -272,6 +272,23 @@ class TechnicianMenuPagesTests(TestCase):
         self.assertNotIn(self.planned, listed)  # demain : pas en retard
         self.assertContains(response, 'En retard')
 
+    def test_ticket_done_ahead_of_schedule_is_dated_by_effective_start(self):
+        """Prévue demain mais réalisée aujourd'hui : datée du jour réel (issue #18)."""
+        now = timezone.now()
+        early = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech_profile, status='done',
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+            effective_start=now - timedelta(minutes=50), effective_end=now - timedelta(minutes=10),
+        )
+
+        dashboard = self.client_http.get(reverse('technician_dashboard'))
+        self.assertIn(early, list(dashboard.context['tickets_today']))
+        self.assertContains(dashboard, timezone.localtime(early.effective_start).strftime('%H:%M'))
+
+        history = self.client_http.get(reverse('technician_history'))
+        tickets = list(history.context['page'].object_list)
+        self.assertEqual(tickets[0], early)  # le plus récent en date effective
+
     def test_history_empty_state(self):
         MaintenanceTicket.objects.filter(technician=self.tech_profile).delete()
         self.assertContains(self.client_http.get(reverse('technician_history')), "Aucune intervention dans l'historique")

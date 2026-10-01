@@ -221,6 +221,19 @@ class TicketAPITestCase(TestCase):
         r2 = self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {})
         self.assertEqual(r2.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_my_interventions_uses_effective_date(self):
+        now = timezone.now()
+        self.ticket.planned_start = now + timedelta(days=1)
+        self.ticket.planned_end = now + timedelta(days=1, hours=1)
+        self.ticket.effective_start = now - timedelta(minutes=50)
+        self.ticket.effective_end = now - timedelta(minutes=10)
+        self.ticket.status = 'done'
+        self.ticket.save()
+
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        r = self.api.get('/api/v1/my/interventions/?range=today')
+        self.assertEqual([t['id'] for t in r.data], [self.ticket.id])
+
     def test_my_interventions_endpoint(self):
         self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
         r = self.api.get('/api/v1/my/interventions/?range=today')

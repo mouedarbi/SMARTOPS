@@ -6,7 +6,7 @@
     <p class="text-xs text-slate-400 font-bold mb-6">Vos interventions terminées, à replanifier ou annulées.</p>
 
     {% if page %}
-        {% regroup page by planned_start|date:"l d F Y" as tickets_by_day %}
+        {% regroup page by display_start|date:"l d F Y" as tickets_by_day %}
         <div class="space-y-6">
             {% for day in tickets_by_day %}
             <div>

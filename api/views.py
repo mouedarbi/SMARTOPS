@@ -18,7 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from accounts.models import CustomUser
 from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
-from maintenance.services import reschedule_ticket
+from maintenance.services import reschedule_ticket, with_display_start
 
 from .serializers import (
     UserSerializer,
@@ -257,19 +257,12 @@ class MyInterventionsView(APIView):
         today_end = today_start + timedelta(days=1)
         week_end = today_start + timedelta(days=7)
 
-        range_param = request.query_params.get('range', 'today')
-        if range_param == 'week':
-            tickets = MaintenanceTicket.objects.filter(
-                technician=tech,
-                planned_start__gte=today_start,
-                planned_start__lt=week_end,
-            ).order_by('planned_start')
-        else:
-            tickets = MaintenanceTicket.objects.filter(
-                technician=tech,
-                planned_start__gte=today_start,
-                planned_start__lt=today_end,
-            ).order_by('planned_start')
+        # Datation : début effectif si démarrée, sinon début prévu
+        range_end = week_end if request.query_params.get('range', 'today') == 'week' else today_end
+        tickets = with_display_start(MaintenanceTicket.objects.filter(technician=tech)).filter(
+            display_start__gte=today_start,
+            display_start__lt=range_end,
+        ).order_by('display_start')
 
         serializer = MaintenanceTicketSerializer(tickets, many=True)
         return Response(serializer.data)

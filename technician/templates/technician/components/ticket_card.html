@@ -1,9 +1,16 @@
 <a href="{% url 'technician_ticket_detail' ticket.id %}" class="block bg-white p-4 rounded-3xl shadow-sm border border-slate-100 active:scale-[0.98] transition-all">
     <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-2">
+            {% if ticket.effective_start %}
+            <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg" title="Horaire réel">
+                {{ ticket.effective_start|date:"H:i" }}{% if ticket.effective_end %} – {{ ticket.effective_end|date:"H:i" }}{% endif %}
+                <span class="font-sans text-[9px] uppercase tracking-wider opacity-70">réel</span>
+            </span>
+            {% else %}
             <span class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">
                 {{ ticket.planned_start|date:"H:i" }}
             </span>
+            {% endif %}
             <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">
                 ID: #{{ ticket.id }}
             </span>
