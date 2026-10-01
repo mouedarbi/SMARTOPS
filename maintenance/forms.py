@@ -12,7 +12,7 @@ from itertools import groupby
 from django import forms
 from django.utils import timezone
 from datetime import timedelta, time
-from .models import MaintenanceTicket, Technician
+from .models import MaintenanceTicket, Technician, InterventionPhoto
 
 from inventory.models import Client, Building, Equipment
 
@@ -185,3 +185,13 @@ class TechnicianForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class InterventionPhotoForm(forms.ModelForm):
+    """
+    Ajout d'une photo d'intervention : le fichier doit être une image valide
+    (extension et contenu vérifiés par l'ImageField).
+    """
+    class Meta:
+        model = InterventionPhoto
+        fields = ['image', 'caption']

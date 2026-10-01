@@ -362,6 +362,18 @@ class InterventionPhotoTestCase(TestCase):
         self.assertEqual(self.ticket.photos.count(), 1)
         self.assertEqual(self.ticket.photos.first().uploaded_by, self.tech_user)
 
+    def test_upload_rejects_non_image_files(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        tech = HttpClient()
+        tech.login(username='tech_photo', password='Password123!')
+        manager = HttpClient()
+        manager.force_login(self.manager)
+        for http, url_name in ((tech, 'technician_ticket_detail'), (manager, 'ticket_detail')):
+            fake = SimpleUploadedFile('photo.jpg', b'not an image', content_type='image/jpeg')
+            http.post(reverse(url_name, kwargs={'pk': self.ticket.id}),
+                      {'action': 'add_photo', 'phase': 'during', 'image': fake})
+        self.assertEqual(self.ticket.photos.count(), 0)
+
     def tearDown(self):
         import shutil
         shutil.rmtree('/tmp/smartops_test_media', ignore_errors=True)

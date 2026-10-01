@@ -8,6 +8,7 @@ from django.db.models import Count, Q
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
+from maintenance.forms import InterventionPhotoForm
 from maintenance.services import reschedule_ticket
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
@@ -166,18 +167,21 @@ def technician_ticket_detail(request, pk):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        if action == 'add_photo' and request.FILES.get('image'):
-            phase = request.POST.get('phase', 'during')
-            if phase not in dict(InterventionPhoto.PHASE_CHOICES):
-                phase = 'during'
-            InterventionPhoto.objects.create(
-                ticket=ticket,
-                image=request.FILES['image'],
-                caption=(request.POST.get('caption') or '').strip(),
-                phase=phase,
-                uploaded_by=request.user,
-            )
-            messages.success(request, "Photo ajoutée.")
+        if action == 'add_photo':
+            form = InterventionPhotoForm(request.POST, request.FILES)
+            if form.is_valid():
+                phase = request.POST.get('phase', 'during')
+                if phase not in dict(InterventionPhoto.PHASE_CHOICES):
+                    phase = 'during'
+                photo = form.save(commit=False)
+                photo.ticket = ticket
+                photo.caption = photo.caption.strip()
+                photo.phase = phase
+                photo.uploaded_by = request.user
+                photo.save()
+                messages.success(request, "Photo ajoutée.")
+            else:
+                messages.error(request, "Le fichier envoyé n'est pas une image valide.")
         elif action == 'delete_photo':
             photo = ticket.photos.filter(pk=request.POST.get('photo_id'), uploaded_by=request.user).first()
             if photo:
