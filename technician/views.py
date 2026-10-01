@@ -12,6 +12,15 @@ from maintenance.models import MaintenanceTicket, InterventionPhoto
 def is_technician(user):
     return user.is_authenticated and user.role == 'technician'
 
+def technician_root(request):
+    """
+    Point d'entrée /technician/ : redirige vers le dashboard si connecté en technicien,
+    ou vers la page de login technicien sinon.
+    """
+    if request.user.is_authenticated and getattr(request.user, 'role', None) == 'technician':
+        return redirect('technician_dashboard')
+    return redirect('technician_login')
+
 def technician_login(request):
     """
     Vue de connexion dédiée aux techniciens.
@@ -29,6 +38,9 @@ def technician_login(request):
         if user is not None:
             if user.role == 'technician':
                 login(request, user)
+                next_url = request.GET.get('next') or request.POST.get('next')
+                if next_url and next_url.startswith('/technician/'):
+                    return redirect(next_url)
                 return redirect('technician_dashboard')
             else:
                 messages.error(request, "Accès réservé au personnel technique.")
@@ -39,8 +51,8 @@ def technician_login(request):
         'page_title': 'Connexion Technicien'
     })
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def technician_dashboard(request):
     """
     Dashboard principal du technicien (Liste des interventions).
@@ -76,8 +88,8 @@ def technician_dashboard(request):
     }
     return render(request, 'technician/dashboard.html', context)
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def technician_history(request):
     """
     Historique des interventions du technicien (terminées, à replanifier ou annulées).
@@ -102,8 +114,8 @@ def technician_history(request):
         'now': timezone.now(),
     })
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def technician_profile(request):
     """
     Profil du technicien : identité, spécialités et récapitulatif de son activité.
@@ -127,8 +139,8 @@ def technician_profile(request):
         'now': timezone.now(),
     })
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def technician_ticket_detail(request, pk):
     """
     Vue détaillée d'une intervention pour le technicien.
@@ -170,8 +182,8 @@ def technician_ticket_detail(request, pk):
     }
     return render(request, 'technician/ticket_detail.html', context)
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def start_intervention(request, pk):
     """
     Démarre l'intervention : Change le statut, enregistre l'heure de début
@@ -205,8 +217,8 @@ def start_intervention(request, pk):
 
     return redirect('technician_ticket_detail', pk=pk)
 
-@login_required
-@user_passes_test(is_technician)
+@login_required(login_url='technician_login')
+@user_passes_test(is_technician, login_url='technician_login')
 def stop_intervention(request, pk):
     """
     Clôture de l'intervention (Phase 5) : saisie du rapport terrain,
