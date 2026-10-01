@@ -57,13 +57,21 @@ class TechnicianInterventionTests(TestCase):
     def test_start_intervention(self):
         """Test starting an intervention updates status and timestamp."""
         url = reverse('start_intervention', args=[self.ticket.id])
-        response = self.client_http.get(url)
+        response = self.client_http.post(url)
         
         self.ticket.refresh_from_db()
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.ticket.status, 'in_progress')
         self.assertIsNotNone(self.ticket.effective_start)
         self.assertIsNone(self.ticket.effective_end)
+
+    def test_start_intervention_requires_post(self):
+        """Une simple requête GET ne démarre pas l'intervention."""
+        response = self.client_http.get(reverse('start_intervention', args=[self.ticket.id]))
+
+        self.assertEqual(response.status_code, 405)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'planned')
 
     def test_stop_intervention_shows_report_form(self):
         """Phase 5 : le GET sur la clôture affiche le formulaire de rapport (pas de transition)."""
@@ -167,7 +175,7 @@ class TechnicianInterventionTests(TestCase):
         self.ticket.save()
 
         url = reverse('start_intervention', args=[self.ticket.id])
-        self.client_http.get(url)
+        self.client_http.post(url)
         
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.status, 'done') # No change
@@ -190,7 +198,7 @@ class TechnicianInterventionTests(TestCase):
         )
 
         url = reverse('start_intervention', args=[other_ticket.id])
-        response = self.client_http.get(url)
+        response = self.client_http.post(url)
         
         self.assertEqual(response.status_code, 404) # Not found because of filter in view
 

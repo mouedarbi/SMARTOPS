@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
@@ -203,6 +204,7 @@ def technician_ticket_detail(request, pk):
 
 @login_required(login_url='technician_login')
 @user_passes_test(is_technician, login_url='technician_login')
+@require_POST
 def start_intervention(request, pk):
     """
     Démarre l'intervention : Change le statut, enregistre l'heure de début
