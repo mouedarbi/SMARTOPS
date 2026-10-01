@@ -4,7 +4,9 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from maintenance.models import MaintenanceTicket, Technician, InterventionPhoto
 from inventory.models import Equipment, EquipmentType, Building, Client as CompanyClient
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone as dt_timezone
+from unittest import mock
+import zoneinfo
 from decimal import Decimal
 import os
 import shutil
@@ -126,6 +128,26 @@ class TechnicianInterventionTests(TestCase):
         follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
         self.assertEqual(follow_up.status, 'pending')
         self.assertIsNone(follow_up.technician)
+
+    def test_today_uses_local_time_zone(self):
+        """« Aujourd'hui » suit le fuseau local : à 00:30 (Paris), la veille au soir n'en fait plus partie."""
+        paris = zoneinfo.ZoneInfo('Europe/Paris')
+        fake_now = datetime(2026, 7, 10, 0, 30, tzinfo=paris).astimezone(dt_timezone.utc)
+        self.ticket.planned_start = datetime(2026, 7, 10, 8, 0, tzinfo=paris)
+        self.ticket.planned_end = self.ticket.planned_start + timedelta(hours=1)
+        self.ticket.save()
+        yesterday = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech_profile, status='planned',
+            planned_start=datetime(2026, 7, 9, 20, 0, tzinfo=paris),
+            planned_end=datetime(2026, 7, 9, 21, 0, tzinfo=paris),
+        )
+
+        with mock.patch('django.utils.timezone.now', return_value=fake_now):
+            response = self.client_http.get(reverse('technician_dashboard'))
+
+        today = list(response.context['tickets_today'])
+        self.assertIn(self.ticket, today)
+        self.assertNotIn(yesterday, today)
 
     def test_rescheduled_ticket_cannot_be_started(self):
         """Un ticket « à replanifier » est clôturé : seul le ticket de suite pourra être démarré."""

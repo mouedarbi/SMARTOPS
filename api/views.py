@@ -252,7 +252,8 @@ class MyInterventionsView(APIView):
             return Response({'detail': 'Profil technicien introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
         now = timezone.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Bornes du jour dans le fuseau local (TIME_ZONE), pas en UTC
+        today_start = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
         week_end = today_start + timedelta(days=7)
 
