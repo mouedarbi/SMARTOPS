@@ -81,6 +81,46 @@ class LicensingUnitTestCase(TestCase):
         self.assertFalse(result.get("success"))
         self.assertIn("déjà activée", result.get("error"))
 
+    @patch('requests.post')
+    def test_license_service_shows_portal_error_message(self, mock_post):
+        """Le message d'erreur renvoyé par le portail est transmis tel quel."""
+        mock_response = MagicMock()
+        mock_response.status_code = 403
+        mock_response.json.return_value = {
+            "success": False,
+            "error": "Ce module est déjà activé sur cette installation avec une autre licence."
+        }
+        mock_post.return_value = mock_response
+
+        result = LicenseService.validate_key_with_portal("second-license-uuid")
+        self.assertFalse(result.get("success"))
+        self.assertEqual(result.get("error"), mock_response.json.return_value["error"])
+
+    @patch('licensing.views.requests.get')
+    @patch('licensing.views.LicenseService.validate_key_with_portal')
+    def test_install_stream_refuses_an_already_active_module(self, mock_validate, mock_get):
+        """Une autre clé ne remplace pas la licence d'un module déjà actif."""
+        Plugin.objects.create(
+            slug='smartops-iot', python_path='smartops_iot', name='Connecteur IoT',
+            version='1.2.0', license_key='first-license-uuid', is_active=True
+        )
+        mock_validate.return_value = {
+            "success": True,
+            "plugin_slug": "smartops-iot",
+            "plugin_name": "Connecteur IoT",
+            "version": "1.2.0",
+            "download_url": "https://www.opensmartops.org/download/test/"
+        }
+
+        response = self.client_http.get(reverse('plugin_install_stream'), {'license_key': 'second-license-uuid'})
+        content = b''.join(response.streaming_content).decode()
+
+        self.assertIn("déjà installé et actif", content)
+        mock_get.assert_not_called()
+        plugin = Plugin.objects.get(slug='smartops-iot')
+        self.assertEqual(plugin.license_key, 'first-license-uuid')
+        self.assertTrue(plugin.is_active)
+
     def test_plugin_list_view_get(self):
         """Vérifie l'affichage de la page de gestion des plugins."""
         url = reverse('plugin_list')

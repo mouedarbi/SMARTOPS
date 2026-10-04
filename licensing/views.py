@@ -114,6 +114,14 @@ def plugin_install_stream_view(request):
         plugin_slug = validation_data['plugin_slug']
         yield f">>> Licence validée pour : {validation_data['plugin_name']} (v{validation_data['version']})\n"
 
+        # Contrôle local : un module déjà actif garde sa licence actuelle
+        if Plugin.objects.filter(slug=plugin_slug, is_active=True).exists():
+            yield (
+                f"!!! ERREUR : le module '{validation_data['plugin_name']}' est déjà installé et actif. "
+                "Désinstallez-le avant d'utiliser une autre licence.\n"
+            )
+            return
+
         # 2. Préparation base de données locale
         yield ">>> Mise à jour du registre local des modules...\n"
         plugin, created = Plugin.objects.get_or_create(slug=plugin_slug)

@@ -24,7 +24,19 @@ class LicenseService:
     """
 
     @staticmethod
-    def validate_key_with_portal(key):
+    def _portal_error(response, default):
+        """
+        Renvoie le message d'erreur explicite fourni par le Portail,
+        ou le message par défaut si la réponse n'en contient pas.
+        """
+        try:
+            error = response.json().get('error')
+        except (ValueError, AttributeError):
+            error = None
+        return error if isinstance(error, str) and error else default
+
+    @classmethod
+    def validate_key_with_portal(cls, key):
         """
         Appelle la Marketplace pour valider la clé de licence.
         Envoie également l'installation_uuid pour le Hardware Binding.
@@ -53,9 +65,13 @@ class LicenseService:
             if response.status_code == 200:
                 return response.json()
             elif response.status_code == 403:
-                return {"success": False, "error": "Cette licence est déjà activée sur une autre machine ou est invalide."}
+                return {"success": False, "error": cls._portal_error(
+                    response, "Cette licence est déjà activée sur une autre machine ou est invalide."
+                )}
             else:
-                return {"success": False, "error": f"Erreur Marketplace ({response.status_code})"}
+                return {"success": False, "error": cls._portal_error(
+                    response, f"Erreur Marketplace ({response.status_code})"
+                )}
                 
         except requests.exceptions.RequestException as e:
             logger.error(f"Erreur de connexion Marketplace : {e}")
