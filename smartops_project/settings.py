@@ -224,6 +224,8 @@ SPECTACULAR_SETTINGS = {
 
 # Demandes de jeton JWT par adresse IP (api/throttles.py)
 API_TOKEN_THROTTLE_RATE = None if TESTING else env('API_TOKEN_THROTTLE_RATE', default='5/min')
+# Vérification de licence par l'application mobile (essais de clés en série).
+MOBILE_LICENSE_THROTTLE_RATE = None if TESTING else env('MOBILE_LICENSE_THROTTLE_RATE', default='10/min')
 
 # --- JWT ---
 SIMPLE_JWT = {

@@ -19,6 +19,7 @@ from .views import (
     TechnicianViewSet,
     MaintenanceTicketViewSet,
     MyInterventionsView,
+    MobileLicenseVerifyView,
 )
 
 router = DefaultRouter()
@@ -38,6 +39,7 @@ urlpatterns = [
 
     # Technicien mobile
     path('my/interventions/', MyInterventionsView.as_view(), name='api_my_interventions'),
+    path('mobile/license/verify/', MobileLicenseVerifyView.as_view(), name='api_mobile_license_verify'),
 
     # Resources REST
     path('', include(router.urls)),

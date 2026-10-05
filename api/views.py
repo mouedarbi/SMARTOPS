@@ -4,18 +4,24 @@ Application : api
 Description : ViewSets DRF pour l'API REST SMARTOPS v0.2.0.
 """
 
+import hmac
+import logging
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from django.utils import timezone
 from datetime import timedelta
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
+from rest_framework import serializers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.models import CustomUser
+from accounts.security import get_client_ip
+from licensing.models import Plugin
 from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
 from maintenance.services import reschedule_ticket, with_display_start
@@ -33,7 +39,7 @@ from .serializers import (
     InterventionPhotoSerializer,
 )
 from .permissions import IsAdminOrManager, IsAdminOnly, IsTechnicianOwner
-from .throttles import TokenObtainRateThrottle
+from .throttles import MobileLicenseRateThrottle, TokenObtainRateThrottle
 
 
 class ThrottledTokenObtainPairView(TokenObtainPairView):
@@ -266,3 +272,46 @@ class MyInterventionsView(APIView):
 
         serializer = MaintenanceTicketSerializer(tickets, many=True)
         return Response(serializer.data)
+
+
+MOBILE_MODULE_SLUG = 'smartops-mobile'
+mobile_logger = logging.getLogger('api.mobile')
+
+
+@extend_schema(
+    tags=['Technicien mobile'], auth=[],
+    request=inline_serializer('MobileLicenseVerifyRequest', {'license_key': serializers.CharField()}),
+    responses={
+        200: inline_serializer('MobileLicenseValid', {
+            'valid': serializers.BooleanField(), 'module': serializers.CharField(), 'version': serializers.CharField(),
+        }),
+        403: inline_serializer('MobileLicenseInvalid', {'valid': serializers.BooleanField(), 'detail': serializers.CharField()}),
+    },
+)
+class MobileLicenseVerifyView(APIView):
+    """
+    Vérifie la clé de licence saisie dans l'application mobile à sa configuration.
+    Contrôle local (module SmartOps Mobile installé et actif sur ce Core), sans appel au Portail.
+    Même réponse 403 pour une clé fausse et un module absent ; la clé n'est jamais journalisée.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [MobileLicenseRateThrottle]
+
+    def post(self, request):
+        key = request.data.get('license_key') if hasattr(request.data, 'get') else None
+        key = key.strip() if isinstance(key, str) else ''
+        plugin = Plugin.objects.filter(slug=MOBILE_MODULE_SLUG, is_active=True).first()
+        ip = get_client_ip(request)
+
+        if key and plugin and plugin.license_key and hmac.compare_digest(
+            key.encode(), plugin.license_key.strip().encode()
+        ):
+            mobile_logger.info("Licence mobile valide (IP %s).", ip)
+            return Response({'valid': True, 'module': MOBILE_MODULE_SLUG, 'version': plugin.version})
+
+        mobile_logger.warning("Licence mobile refusée (IP %s).", ip)
+        return Response(
+            {'valid': False, 'detail': 'Licence mobile invalide ou inactive.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )

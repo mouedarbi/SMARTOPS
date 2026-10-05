@@ -415,3 +415,85 @@ class OpenAPISchemaTestCase(TestCase):
     def test_swagger_ui_accessible(self):
         r = self.api.get('/api/v1/docs/')
         self.assertEqual(r.status_code, status.HTTP_200_OK)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class MobileLicenseVerifyTestCase(TestCase):
+    """POST /api/v1/mobile/license/verify/ : clé du module SmartOps Mobile, contrôle local."""
+
+    URL = '/api/v1/mobile/license/verify/'
+    KEY = '3f1c2b7e-9a4d-4c1e-8b2a-5d6e7f809a1b'
+
+    def setUp(self):
+        from licensing.models import Plugin
+        self.client = APIClient()
+        self.plugin = Plugin.objects.create(
+            slug='smartops-mobile', name='SmartOps Mobile', version='1.0.0',
+            license_key=self.KEY, is_active=True,
+        )
+
+    def _post(self, key):
+        return self.client.post(self.URL, {'license_key': key}, format='json')
+
+    def test_valid_key_returns_200_with_version(self):
+        response = self._post(self.KEY)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'valid': True, 'module': 'smartops-mobile', 'version': '1.0.0'})
+
+    def test_wrong_key_returns_403(self):
+        response = self._post('00000000-0000-0000-0000-000000000000')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {'valid': False, 'detail': 'Licence mobile invalide ou inactive.'})
+
+    def test_missing_or_non_string_key_returns_403(self):
+        self.assertEqual(self.client.post(self.URL, {}, format='json').status_code, 403)
+        self.assertEqual(self._post(['x']).status_code, 403)
+
+    def test_inactive_module_returns_403(self):
+        self.plugin.is_active = False
+        self.plugin.save()
+        self.assertEqual(self._post(self.KEY).status_code, 403)
+
+    def test_absent_module_returns_same_403(self):
+        self.plugin.delete()
+        response = self._post(self.KEY)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {'valid': False, 'detail': 'Licence mobile invalide ou inactive.'})
+
+    def test_key_of_another_module_is_refused(self):
+        from licensing.models import Plugin
+        Plugin.objects.create(slug='stock-pieces-detachees', name='Stock', license_key='autre-cle', is_active=True)
+        self.assertEqual(self._post('autre-cle').status_code, 403)
+
+    def test_no_authentication_needed_and_any_number_of_phones(self):
+        for _ in range(5):
+            self.assertEqual(APIClient().post(self.URL, {'license_key': self.KEY}, format='json').status_code, 200)
+
+    def test_no_call_to_portal(self):
+        from unittest import mock
+        with mock.patch('requests.post') as post, mock.patch('requests.get') as get:
+            self._post(self.KEY)
+            self._post('mauvaise')
+        post.assert_not_called()
+        get.assert_not_called()
+
+    def test_key_is_never_logged(self):
+        with self.assertLogs('api.mobile', level='INFO') as logs:
+            self._post(self.KEY)
+            self._post('cle-fausse-123')
+        joined = '\n'.join(logs.output)
+        self.assertNotIn(self.KEY, joined)
+        self.assertNotIn('cle-fausse-123', joined)
+
+    def test_rate_limited_per_ip(self):
+        from django.core.cache import cache
+        cache.clear()
+        with override_settings(MOBILE_LICENSE_THROTTLE_RATE='3/min'):
+            codes = [self._post('mauvaise').status_code for _ in range(4)]
+        cache.clear()
+        self.assertEqual(codes, [403, 403, 403, 429])
+
+    def test_me_without_token_still_401_bearer(self):
+        response = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(response.status_code, 401)
+        self.assertIn('Bearer', response['WWW-Authenticate'])

@@ -19,3 +19,11 @@ class TokenObtainRateThrottle(SimpleRateThrottle):
 
     def get_cache_key(self, request, view):
         return self.cache_format % {'scope': self.scope, 'ident': get_client_ip(request)}
+
+
+class MobileLicenseRateThrottle(TokenObtainRateThrottle):
+    """Vérification de licence de l'app mobile, par adresse IP (MOBILE_LICENSE_THROTTLE_RATE)."""
+    scope = 'mobile_license'
+
+    def get_rate(self):
+        return getattr(settings, 'MOBILE_LICENSE_THROTTLE_RATE', None)
