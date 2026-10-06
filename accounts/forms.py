@@ -39,6 +39,7 @@ class CustomUserCreateForm(CustomUserForm):
         fields = CustomUserForm.Meta.fields + ['password']
 
     def save(self, commit=True):
+        """Enregistre l'utilisateur avec son mot de passe haché."""
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
         if commit:

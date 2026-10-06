@@ -1,3 +1,12 @@
+"""
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : inventory
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests des vues d'inventaire (clients, lieux, équipements, étiquettes et rapport public).
+"""
+
 from django.test import TestCase, Client as HttpClient, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -159,4 +168,3 @@ class InventoryWebViewsTestCase(TestCase):
         self.assertIsNotNone(custom_field)
         self.assertEqual(custom_field.field_type, 'number')
         self.assertTrue(custom_field.required)
-

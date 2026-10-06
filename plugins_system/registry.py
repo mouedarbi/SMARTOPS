@@ -25,7 +25,6 @@ def get_plugin_manager():
     # C'est ce qui permet l'installation "à chaud" via pip.
     try:
         pm.load_setuptools_entrypoints("smartops.plugins")
-        # logger.info("Plugins SMARTOPS chargés avec succès.")
     except Exception as e:
         logger.error(f"Erreur lors du chargement des plugins : {e}")
         

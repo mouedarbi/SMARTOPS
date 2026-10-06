@@ -14,6 +14,7 @@ from .models import CustomUser
 from .forms import CustomUserForm, CustomUserCreateForm
 
 def is_admin(user):
+    """Vrai si l'utilisateur connecté est administrateur ou superutilisateur."""
     return user.is_authenticated and (user.role == 'admin' or user.is_superuser)
 
 def is_management_staff(user):

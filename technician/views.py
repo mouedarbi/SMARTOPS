@@ -1,3 +1,13 @@
+"""
+Fichier : views.py
+Projet : SMARTOPS (Core Application)
+Application : technician
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Vues de l'application web mobile des techniciens : connexion, tableau de bord,
+              démarrage et clôture des interventions, photos, historique et profil.
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -14,6 +24,7 @@ from maintenance.services import reschedule_ticket, with_display_start
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
+    """Vrai si l'utilisateur connecté est technicien."""
     return user.is_authenticated and user.role == 'technician'
 
 def technician_root(request):
@@ -299,5 +310,6 @@ def stop_intervention(request, pk):
     })
 
 def technician_logout(request):
+    """Déconnecte le technicien et revient à l'écran de connexion."""
     logout(request)
     return redirect('technician_login')

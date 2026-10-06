@@ -1,7 +1,9 @@
 """
 Fichier : tests.py
+Projet : SMARTOPS (Core Application)
 Application : licensing
 Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Tests unitaires du module de licensing, validation de plugins et communication mockée.
 """
 

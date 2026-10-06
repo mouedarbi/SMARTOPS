@@ -1,3 +1,12 @@
+"""
+Fichier : forms.py
+Projet : SMARTOPS (Core Application)
+Application : inventory
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Formulaires des clients, lieux, équipements et types d'équipements.
+"""
+
 from django import forms
 from .models import Client, Building, Equipment, EquipmentType, EquipmentTypeField
 

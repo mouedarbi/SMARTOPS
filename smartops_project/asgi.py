@@ -1,10 +1,10 @@
 """
-ASGI config for smartops_project project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
+Fichier : asgi.py
+Projet : SMARTOPS (Core Application)
+Application : smartops_project
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Point d'entrée ASGI : expose l'application sous le nom ``application``.
 """
 
 import os

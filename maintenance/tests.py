@@ -1,7 +1,9 @@
 """
 Fichier : tests.py
+Projet : SMARTOPS (Core Application)
 Application : maintenance
 Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Tests unitaires du modèle MaintenanceTicket et des contraintes d'intégrité temporelle.
 """
 

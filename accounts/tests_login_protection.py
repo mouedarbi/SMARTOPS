@@ -1,6 +1,9 @@
 """
 Fichier : tests_login_protection.py
+Projet : SMARTOPS (Core Application)
 Application : accounts
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Limitation des tentatives de connexion (django-axes) et des demandes de jeton JWT.
 """
 

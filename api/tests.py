@@ -1,6 +1,12 @@
 """
-Tests de l'API REST SMARTOPS v0.2.0.
-Couvre : Auth JWT, Inventaire, Maintenance (start/stop), accès technicien.
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests de l'API REST SMARTOPS v0.2.0.
+              Couvre : Auth JWT, Inventaire, Maintenance (start/stop), accès technicien,
+              permissions par rôle, schéma OpenAPI et licence de l'application mobile.
 """
 
 from django.test import TestCase, override_settings

@@ -30,6 +30,10 @@ def _equipment_choices_by_type(queryset):
 
 
 class MaintenanceTicketForm(forms.ModelForm):
+    """
+    Création et planification d'un ticket : client, lieu et équipement en cascade,
+    technicien, date, créneau de début et durée (en heure locale).
+    """
     # Choix pour les créneaux horaires
     TIME_SLOTS = [(time(h, m).strftime('%H:%M'), f"{h:02d}:{m:02d}") for h in range(7, 20) for m in (0, 30)]
     
@@ -146,6 +150,10 @@ class MaintenanceTicketForm(forms.ModelForm):
                 pass
 
     def clean(self):
+        """
+        Calcule le début et la fin prévus (heure locale) et refuse un conflit de
+        planning avec une autre intervention du même technicien.
+        """
         cleaned_data = super().clean()
         planned_date = cleaned_data.get('planned_date')
         start_time_str = cleaned_data.get('start_time_slot')
@@ -171,6 +179,7 @@ class MaintenanceTicketForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        """Enregistre le ticket avec le début et la fin prévus calculés par clean()."""
         instance = super().save(commit=False)
         instance.planned_start = self.cleaned_data['planned_start']
         instance.planned_end = self.cleaned_data['planned_end']
@@ -202,6 +211,7 @@ class TechnicianForm(forms.ModelForm):
             self.fields['specialties_str'].initial = ", ".join(self.instance.specialties)
 
     def save(self, commit=True):
+        """Enregistre le profil avec la liste des spécialités saisies."""
         instance = super().save(commit=False)
         # Conversion de la chaîne en liste
         spec_str = self.cleaned_data.get('specialties_str', '')

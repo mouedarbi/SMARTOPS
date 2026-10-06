@@ -1,3 +1,10 @@
-from django.db import models
+"""
+Fichier : models.py
+Projet : SMARTOPS (Core Application)
+Application : technician
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Modèles de l'espace technicien : aucun modèle propre, il utilise ceux de maintenance.
+"""
 
-# Create your models here.
+from django.db import models

@@ -1,6 +1,9 @@
 """
 Fichier : security.py
+Projet : SMARTOPS (Core Application)
 Application : accounts
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Adresse IP du client derrière le proxy nginx (limitation des tentatives de connexion).
 """
 

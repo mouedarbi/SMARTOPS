@@ -1,3 +1,13 @@
+"""
+Fichier : populate_interventions.py
+Projet : SMARTOPS (Core Application)
+Application : maintenance
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Script de peuplement de 100 interventions de démonstration,
+              passées et à venir, réparties entre les techniciens.
+"""
+
 import os
 import sys
 import django
@@ -14,6 +24,7 @@ from inventory.models import Equipment
 from maintenance.models import Technician, MaintenanceTicket
 
 def run():
+    """Génère 100 interventions de démonstration, passées et à venir."""
     print("Début de la génération de 100 interventions...")
     
     # Récupération de tous les techniciens et équipements

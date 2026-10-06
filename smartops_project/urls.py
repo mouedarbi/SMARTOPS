@@ -1,5 +1,10 @@
 """
-URL configuration for smartops_project project.
+Fichier : urls.py
+Projet : SMARTOPS (Core Application)
+Application : smartops_project
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Routes principales du Core, puis pages des modules installés (« Hot-Plug »).
 """
 from django.contrib import admin
 from django.urls import path, include

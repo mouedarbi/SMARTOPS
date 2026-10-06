@@ -363,6 +363,7 @@ from django.http import JsonResponse
 @login_required
 @user_passes_test(is_management_staff)
 def api_get_buildings(request):
+    """Lieux d'un client au format JSON (formulaire de ticket)."""
     client_id = request.GET.get('client_id')
     from inventory.models import Building
     buildings = Building.objects.filter(client_id=client_id).values('id', 'name')
@@ -371,6 +372,7 @@ def api_get_buildings(request):
 @login_required
 @user_passes_test(is_management_staff)
 def api_get_equipments(request):
+    """Équipements d'un lieu au format JSON, avec recherche par nom ou numéro de série."""
     building_id = request.GET.get('building_id')
     search = request.GET.get('search')
     from inventory.models import Equipment

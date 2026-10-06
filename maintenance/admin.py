@@ -20,15 +20,18 @@ class TechnicianAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'user__email')
 
     def get_full_name(self, obj):
+        """Nom complet du technicien, ou son identifiant."""
         return obj.user.get_full_name() or obj.user.username
     get_full_name.short_description = "Nom Complet"
 
     def get_email(self, obj):
+        """Adresse e-mail du technicien."""
         return obj.user.email
     get_email.short_description = "Email"
 
 
 class InterventionPhotoInline(admin.TabularInline):
+    """Photos d'une intervention, affichées dans la fiche du ticket."""
     model = InterventionPhoto
     extra = 0
     fields = ('image', 'phase', 'caption', 'uploaded_by', 'uploaded_at')
@@ -37,6 +40,7 @@ class InterventionPhotoInline(admin.TabularInline):
 
 @admin.register(InterventionPhoto)
 class InterventionPhotoAdmin(admin.ModelAdmin):
+    """Administration des photos d'intervention."""
     list_display = ('id', 'ticket', 'phase', 'caption', 'uploaded_by', 'uploaded_at')
     list_filter = ('phase',)
     search_fields = ('ticket__id', 'caption')

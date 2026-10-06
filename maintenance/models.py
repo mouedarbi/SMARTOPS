@@ -89,6 +89,7 @@ class MaintenanceTicket(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Date de mise à jour"))
 
     def clean(self):
+        """Vérifie que les fins prévue et réelle suivent les débuts correspondants."""
         super().clean()
         errors = {}
         if self.planned_start and self.planned_end:

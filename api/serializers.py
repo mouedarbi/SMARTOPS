@@ -1,6 +1,9 @@
 """
 Fichier : serializers.py
+Projet : SMARTOPS (Core Application)
 Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Sérialiseurs DRF pour tous les modèles SMARTOPS.
 """
 
@@ -11,8 +14,10 @@ from accounts.models import CustomUser
 
 
 class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Jeton JWT enrichi du rôle de l'utilisateur."""
     @classmethod
     def get_token(cls, user):
+        """Ajoute le rôle de l'utilisateur dans le jeton."""
         token = super().get_token(user)
         token['role'] = user.role
         return token
@@ -22,6 +27,7 @@ from maintenance.services import NOT_STARTED, find_schedule_conflict, schedule_c
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Identité et rôle de l'utilisateur."""
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
@@ -29,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ClientSerializer(serializers.ModelSerializer):
+    """Client B2B."""
     class Meta:
         model = Client
         fields = ['id', 'name', 'address', 'contact_name', 'email', 'phone', 'vat_number', 'is_active', 'created_at']
@@ -36,6 +43,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class BuildingSerializer(serializers.ModelSerializer):
+    """Lieu d'un client, avec le nom du client."""
     client_name = serializers.CharField(source='client.name', read_only=True)
 
     class Meta:
@@ -45,12 +53,14 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 
 class EquipmentTypeFieldSerializer(serializers.ModelSerializer):
+    """Champ personnalisé d'un type d'équipement."""
     class Meta:
         model = EquipmentTypeField
         fields = ['id', 'field_name', 'field_type', 'required']
 
 
 class EquipmentTypeSerializer(serializers.ModelSerializer):
+    """Type d'équipement avec ses champs personnalisés."""
     fields = EquipmentTypeFieldSerializer(many=True, read_only=True)
 
     class Meta:
@@ -59,6 +69,7 @@ class EquipmentTypeSerializer(serializers.ModelSerializer):
 
 
 class EquipmentSerializer(serializers.ModelSerializer):
+    """Équipement, avec les noms de son lieu et de son type."""
     building_name = serializers.CharField(source='building.name', read_only=True)
     equipment_type_name = serializers.CharField(source='equipment_type.name', read_only=True)
     client_name = serializers.CharField(source='building.client.name', read_only=True)
@@ -74,6 +85,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 
 class TechnicianSerializer(serializers.ModelSerializer):
+    """Technicien avec son compte utilisateur."""
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -82,6 +94,7 @@ class TechnicianSerializer(serializers.ModelSerializer):
 
 
 class InterventionPhotoSerializer(serializers.ModelSerializer):
+    """Photo d'intervention (avant, pendant, après), avec son auteur."""
     phase_display = serializers.CharField(source='get_phase_display', read_only=True)
     uploaded_by_name = serializers.SerializerMethodField()
 
@@ -93,12 +106,14 @@ class InterventionPhotoSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_uploaded_by_name(self, obj):
+        """Nom complet de l'auteur de la photo, ou son identifiant."""
         if obj.uploaded_by:
             return obj.uploaded_by.get_full_name() or obj.uploaded_by.username
         return None
 
 
 class MaintenanceTicketSerializer(serializers.ModelSerializer):
+    """Ticket de maintenance avec ses libellés et ses photos."""
     equipment_name = serializers.CharField(source='equipment.name', read_only=True)
     technician_name = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -122,6 +137,10 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'effective_start', 'effective_end', 'created_at', 'updated_at']
 
     def validate(self, attrs):
+        """
+        Vérifie que la fin prévue suit le début prévu et refuse un conflit de
+        planning avec une autre intervention du même technicien.
+        """
         attrs = super().validate(attrs)
         instance = self.instance
 
@@ -142,17 +161,20 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_technician_name(self, obj):
+        """Nom du technicien affecté, ou None."""
         if obj.technician:
             return str(obj.technician)
         return None
 
 
 class TicketStartSerializer(serializers.Serializer):
+    """Démarrage d'une intervention : position GPS facultative."""
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
 
 
 class TicketStopSerializer(serializers.Serializer):
+    """Clôture d'une intervention : rapport et statut final (terminée ou à replanifier)."""
     intervention_report = serializers.CharField(required=False, allow_blank=True)
     status = serializers.ChoiceField(
         choices=['done', 'to_reschedule'],

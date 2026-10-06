@@ -1,3 +1,10 @@
-from django.db import models
+"""
+Fichier : models.py
+Projet : SMARTOPS (Core Application)
+Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Modèles de l'API : aucun modèle propre, l'API expose ceux des autres applications.
+"""
 
-# Create your models here.
+from django.db import models

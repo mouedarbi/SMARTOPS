@@ -1,3 +1,13 @@
+"""
+Fichier : populate_data.py
+Projet : SMARTOPS (Core Application)
+Application : inventory
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Script de peuplement des données de démonstration belges :
+              utilisateurs, clients, lieux, types d'équipements et équipements.
+"""
+
 import random
 from datetime import timedelta
 from django.utils import timezone
@@ -97,6 +107,7 @@ CATEGORIES = {
 }
 
 def run_population():
+    """Crée les utilisateurs, clients, lieux, types d'équipements et équipements de démonstration."""
     print("Début de l'importation des données belges...")
 
     # 1. Création des Utilisateurs

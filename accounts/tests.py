@@ -1,3 +1,12 @@
+"""
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : accounts
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests du modèle utilisateur personnalisé (rôles et suppression logique).
+"""
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone

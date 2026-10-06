@@ -2,6 +2,8 @@
 Fichier : services.py
 Projet : SMARTOPS (Core Application)
 Application : maintenance
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Opérations métier partagées entre l'application technicien et l'API.
 """
 

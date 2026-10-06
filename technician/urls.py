@@ -1,3 +1,12 @@
+"""
+Fichier : urls.py
+Projet : SMARTOPS (Core Application)
+Application : technician
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Routes de l'application web mobile des techniciens.
+"""
+
 from django.urls import path
 from . import views
 

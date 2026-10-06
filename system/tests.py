@@ -1,11 +1,20 @@
+"""
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : system
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests du formulaire de configuration système (site web de l'entreprise).
+"""
+
 from django.test import TestCase
 from system.forms import SystemConfigurationForm
 
 class SystemConfigurationFormTests(TestCase):
     def test_website_without_protocol(self):
         """
-        Tests that a website entered without http/https protocol is automatically
-        prepended with http:// and passes validation.
+        Un site saisi sans protocole http/https reçoit automatiquement http://
+        et passe la validation.
         """
         form_data = {
             'company_name': 'Test Company',
@@ -21,7 +30,7 @@ class SystemConfigurationFormTests(TestCase):
 
     def test_website_with_protocol(self):
         """
-        Tests that a website entered with https protocol is preserved and passes validation.
+        Un site saisi avec https est conservé tel quel et passe la validation.
         """
         form_data = {
             'company_name': 'Test Company',
@@ -37,7 +46,7 @@ class SystemConfigurationFormTests(TestCase):
 
     def test_invalid_website(self):
         """
-        Tests that an invalid website throws a validation error with a custom message.
+        Un site invalide est refusé avec un message d'erreur personnalisé.
         """
         form_data = {
             'company_name': 'Test Company',
@@ -57,7 +66,7 @@ class SystemConfigurationFormTests(TestCase):
 
     def test_website_with_underscore(self):
         """
-        Tests that a domain name with an underscore passes validation.
+        Un nom de domaine contenant un tiret bas passe la validation.
         """
         form_data = {
             'company_name': 'Test Company',

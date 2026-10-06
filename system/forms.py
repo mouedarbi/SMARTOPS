@@ -39,6 +39,7 @@ class SystemConfigurationForm(forms.ModelForm):
         }
 
     def clean_company_website(self):
+        """Ajoute http:// au site web saisi sans protocole, puis le valide."""
         website = self.cleaned_data.get('company_website', '').strip()
         if not website:
             return ""

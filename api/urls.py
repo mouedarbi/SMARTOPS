@@ -1,6 +1,9 @@
 """
 Fichier : urls.py
+Projet : SMARTOPS (Core Application)
 Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Routeur DRF pour l'API REST SMARTOPS v0.2.0.
 """
 

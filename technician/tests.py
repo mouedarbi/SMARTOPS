@@ -1,3 +1,12 @@
+"""
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : technician
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests de l'application web des techniciens (connexion, interventions, photos, menus).
+"""
+
 from django.test import TestCase, Client as HttpClient, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -27,7 +36,7 @@ class TechnicianInterventionTests(TestCase):
             password='password123',
             role='technician'
         )
-        # Profil is created by signal automatically
+        # Le profil est créé automatiquement par signal
         self.tech_profile = self.tech_user.technician_profile
 
         # 2. Create Inventory Hierarchy
@@ -55,7 +64,7 @@ class TechnicianInterventionTests(TestCase):
         self.client_http.login(username='tech1', password='password123')
 
     def test_start_intervention(self):
-        """Test starting an intervention updates status and timestamp."""
+        """Démarrer une intervention met à jour son statut et son heure de début."""
         url = reverse('start_intervention', args=[self.ticket.id])
         response = self.client_http.post(url)
         
@@ -170,7 +179,7 @@ class TechnicianInterventionTests(TestCase):
         self.assertNotContains(detail, 'id="start-intervention-form"')
 
     def test_cannot_start_already_done_ticket(self):
-        """Test that we cannot start a ticket that is already done."""
+        """Une intervention déjà terminée ne peut pas être démarrée."""
         self.ticket.status = 'done'
         self.ticket.save()
 
@@ -181,7 +190,7 @@ class TechnicianInterventionTests(TestCase):
         self.assertEqual(self.ticket.status, 'done') # No change
 
     def test_security_access(self):
-        """Test that a technician cannot access/start another technician's ticket."""
+        """Un technicien ne peut ni consulter ni démarrer l'intervention d'un autre technicien."""
         other_tech_user = User.objects.create_user(
             username='tech2',
             password='password123',

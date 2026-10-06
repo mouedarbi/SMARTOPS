@@ -1,6 +1,9 @@
 """
 Fichier : views.py
+Projet : SMARTOPS (Core Application)
 Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : ViewSets DRF pour l'API REST SMARTOPS v0.2.0.
 """
 
@@ -54,6 +57,7 @@ class MeView(APIView):
 
     @extend_schema(responses=UserSerializer)
     def get(self, request):
+        """Renvoie l'utilisateur authentifié."""
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
@@ -73,6 +77,7 @@ class BuildingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def get_queryset(self):
+        """Lieux par nom, filtrables par client (?client=)."""
         qs = Building.objects.select_related('client').order_by('name')
         client_id = self.request.query_params.get('client')
         if client_id:
@@ -95,6 +100,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def get_queryset(self):
+        """Équipements par nom, filtrables par lieu (?building=)."""
         qs = Equipment.objects.select_related(
             'building', 'building__client', 'equipment_type'
         ).order_by('name')
@@ -122,6 +128,10 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Tickets du plus récent au plus ancien ; un technicien ne voit que les siens.
+        Filtres : ?status= et, pour la gestion, ?technician=.
+        """
         qs = MaintenanceTicket.objects.select_related(
             'equipment', 'technician', 'technician__user'
         ).order_by('-created_at')
@@ -144,6 +154,10 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
+        """
+        Création, modification et suppression : administrateur ou gestionnaire ;
+        actions terrain : technicien du ticket.
+        """
         # Création et modification : gestionnaire (CDC F5) ; actions terrain : technicien du ticket.
         if self.action in ('create', 'update', 'partial_update', 'destroy'):
             return [IsAuthenticated(), IsAdminOrManager()]
@@ -249,6 +263,10 @@ class MyInterventionsView(APIView):
         ],
     )
     def get(self, request):
+        """
+        Interventions du technicien connecté, datées par leur début effectif
+        s'il existe : aujourd'hui (par défaut) ou la semaine (?range=week).
+        """
         if request.user.role != 'technician':
             return Response({'detail': 'Réservé aux techniciens.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -299,6 +317,10 @@ class MobileLicenseVerifyView(APIView):
     throttle_classes = [MobileLicenseRateThrottle]
 
     def post(self, request):
+        """
+        Vérifie la clé saisie dans l'application : 200 si elle est celle du module
+        SmartOps Mobile actif, sinon 403.
+        """
         key = request.data.get('license_key') if hasattr(request.data, 'get') else None
         key = key.strip() if isinstance(key, str) else ''
         plugin = Plugin.objects.filter(slug=MOBILE_MODULE_SLUG, is_active=True).first()

@@ -1,6 +1,9 @@
 """
 Fichier : throttles.py
+Projet : SMARTOPS (Core Application)
 Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Limitation du nombre de demandes de jeton JWT par adresse IP.
 """
 
@@ -15,9 +18,11 @@ class TokenObtainRateThrottle(SimpleRateThrottle):
     scope = 'auth_token'
 
     def get_rate(self):
+        """Taux lu à chaque requête dans API_TOKEN_THROTTLE_RATE."""
         return getattr(settings, 'API_TOKEN_THROTTLE_RATE', None)
 
     def get_cache_key(self, request, view):
+        """Compteur par adresse IP du client."""
         return self.cache_format % {'scope': self.scope, 'ident': get_client_ip(request)}
 
 
@@ -26,4 +31,5 @@ class MobileLicenseRateThrottle(TokenObtainRateThrottle):
     scope = 'mobile_license'
 
     def get_rate(self):
+        """Taux lu à chaque requête dans MOBILE_LICENSE_THROTTLE_RATE."""
         return getattr(settings, 'MOBILE_LICENSE_THROTTLE_RATE', None)

@@ -1,6 +1,9 @@
 """
 Fichier : permissions.py
+Projet : SMARTOPS (Core Application)
 Application : api
+Auteur : Mohamed Ouedarbi
+Version : 1.0
 Description : Permissions DRF basées sur les rôles SMARTOPS.
 """
 
@@ -11,6 +14,7 @@ class IsAdminOrManager(BasePermission):
     """Accès réservé aux administrateurs et gestionnaires."""
 
     def has_permission(self, request, view):
+        """Accès réservé aux administrateurs et gestionnaires connectés."""
         return request.user.is_authenticated and request.user.role in ('admin', 'manager')
 
 
@@ -18,6 +22,7 @@ class IsAdminOnly(BasePermission):
     """Accès réservé aux administrateurs."""
 
     def has_permission(self, request, view):
+        """Accès réservé aux administrateurs connectés."""
         return request.user.is_authenticated and request.user.role == 'admin'
 
 
@@ -28,6 +33,10 @@ class IsTechnicianOwner(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        """
+        Administrateurs et gestionnaires : tout ticket ;
+        technicien : seulement les tickets qui lui sont affectés.
+        """
         if request.user.role in ('admin', 'manager'):
             return True
         try:

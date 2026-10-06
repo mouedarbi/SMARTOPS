@@ -1,10 +1,10 @@
 """
-WSGI config for smartops_project project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
+Fichier : wsgi.py
+Projet : SMARTOPS (Core Application)
+Application : smartops_project
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Point d'entrée WSGI utilisé par gunicorn : expose ``application``.
 """
 
 import os

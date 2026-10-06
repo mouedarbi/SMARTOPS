@@ -1,3 +1,12 @@
+"""
+Fichier : urls.py
+Projet : SMARTOPS (Core Application)
+Application : inventory
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Routes des écrans d'inventaire (clients, lieux, équipements, étiquettes QR).
+"""
+
 from django.urls import path
 from .views import (
     client_list_view, client_create_view, client_update_view, client_detail_view,

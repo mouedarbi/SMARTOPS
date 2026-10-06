@@ -1,6 +1,12 @@
 """
-Tests du montage des pages des modules (plugins_system/urls_loader.py).
-Chaque test crée de vrais paquets Python temporaires : c'est le chemin d'import réel qui est exercé.
+Fichier : tests.py
+Projet : SMARTOPS (Core Application)
+Application : plugins_system
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Tests du montage des pages des modules (plugins_system/urls_loader.py).
+              Chaque test crée de vrais paquets Python temporaires : c'est le chemin
+              d'import réel qui est exercé.
 """
 
 import importlib

@@ -13,6 +13,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 class CustomUser(AbstractUser):
+    """
+    Utilisateur SMARTOPS avec un rôle métier (administrateur, gestionnaire, technicien)
+    et une suppression logique qui conserve l'historique.
+    """
     ROLE_CHOICES = (
         ('admin', _('Administrateur')),
         ('manager', _('Gestionnaire')),
@@ -35,6 +39,7 @@ class CustomUser(AbstractUser):
     )
 
     def soft_delete(self):
+        """Suppression logique : marque le compte supprimé et date la suppression."""
         self.is_deleted = True
         self.deleted_at = timezone.now()
         self.save()
@@ -44,14 +49,17 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
+        """Vrai si l'utilisateur est administrateur."""
         return self.role == 'admin'
 
     @property
     def is_manager(self):
+        """Vrai si l'utilisateur est gestionnaire."""
         return self.role == 'manager'
 
     @property
     def is_technician(self):
+        """Vrai si l'utilisateur est technicien."""
         return self.role == 'technician'
 
     class Meta:

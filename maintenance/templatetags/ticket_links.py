@@ -1,3 +1,12 @@
+"""
+Fichier : ticket_links.py
+Projet : SMARTOPS (Core Application)
+Application : maintenance
+Auteur : Mohamed Ouedarbi
+Version : 1.0
+Description : Filtre de gabarit : transforme les mentions « ticket #N » d'un texte en liens.
+"""
+
 import re
 
 from django import template
