@@ -253,8 +253,9 @@ class TicketAPITestCase(TestCase):
             'equipment': self.ticket.equipment.id,
             'technician': tech_profile.id,
             'type': 'repair',
-            'planned_start': now.isoformat(),
-            'planned_end': (now + timedelta(hours=3)).isoformat(),
+            # Après self.ticket (même technicien, 2 h) : pas de conflit de planning.
+            'planned_start': (now + timedelta(hours=2)).isoformat(),
+            'planned_end': (now + timedelta(hours=5)).isoformat(),
             'description': 'Panne de climatisation signalée au 2ème étage.'
         })
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
@@ -347,7 +348,8 @@ class RolePermissionsAPITestCase(TestCase):
         now = timezone.now()
         return {
             'equipment': self.equipment.id, 'technician': self.tech_a.id, 'type': 'repair',
-            'planned_start': now.isoformat(), 'planned_end': (now + timedelta(hours=1)).isoformat(),
+            # Après ticket_a (même technicien) : pas de conflit de planning.
+            'planned_start': (now + timedelta(hours=2)).isoformat(), 'planned_end': (now + timedelta(hours=3)).isoformat(),
         }
 
     def test_technician_cannot_access_equipments(self):

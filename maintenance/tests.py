@@ -490,6 +490,123 @@ class TicketListSectionsTestCase(TestCase):
         self.assertFalse(response.context['filtering'])
 
 
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class ScheduleConflictTestCase(TestCase):
+    """Un technicien ne peut pas avoir deux interventions sur des créneaux qui se chevauchent."""
+
+    def setUp(self):
+        from rest_framework.test import APIClient
+        self.manager = CustomUser.objects.create_user(username='chef_c', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(username='tech_c', password='Password123!', role='technician').technician_profile
+        self.other_tech = CustomUser.objects.create_user(username='tech_d', password='Password123!', role='technician').technician_profile
+        self.client_obj = Client.objects.create(name='Client C', address='1 rue C')
+        self.building = Building.objects.create(client=self.client_obj, name='Site C', address='1 rue C')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Pompe', equipment_type=EquipmentType.objects.create(name='Pompe'),
+            serial_number='PO-1', installed_at=date(2025, 1, 1),
+        )
+        # Intervention existante : 15/12/2026 de 09:00 à 10:30 (heure locale).
+        self.start = timezone.make_aware(timezone.datetime(2026, 12, 15, 9, 0))
+        self.existing = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='maintenance', status='planned',
+            planned_start=self.start, planned_end=self.start + timedelta(minutes=90),
+        )
+        self.http = HttpClient()
+        self.http.login(username='chef_c', password='Password123!')
+        self.api = APIClient()
+        self.api.force_authenticate(self.manager)
+
+    def _form_data(self, **overrides):
+        data = {
+            'client': self.client_obj.id, 'building': self.building.id, 'equipment': self.equipment.id,
+            'technician': self.tech.id, 'type': 'maintenance', 'status': 'planned',
+            'planned_date': '2026-12-15', 'start_time_slot': '10:00', 'duration_seconds': 3600,
+            'description': 'Contrôle',
+        }
+        data.update(overrides)
+        return data
+
+    def test_form_refuses_overlapping_slot(self):
+        response = self.http.post(reverse('ticket_create'), self._form_data())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MaintenanceTicket.objects.count(), 1)
+        html = response.content.decode()
+        self.assertIn('Conflit de planning', html)
+        self.assertIn(f'#{self.existing.pk}', html)
+        self.assertIn(reverse('ticket_detail', args=[self.existing.pk]), html)
+        self.assertIn('le 15/12 de 09:00 à 10:30', html)
+
+    def test_form_accepts_adjacent_slot_other_technician_or_unassigned(self):
+        for data in (
+            self._form_data(start_time_slot='10:30'),
+            self._form_data(technician=self.other_tech.id),
+            self._form_data(technician=''),
+        ):
+            response = self.http.post(reverse('ticket_create'), data)
+            self.assertEqual(response.status_code, 302, data)
+        self.assertEqual(MaintenanceTicket.objects.count(), 4)
+
+    def test_finished_canceled_or_rescheduled_tickets_do_not_block(self):
+        for status in ('done', 'canceled', 'to_reschedule'):
+            self.existing.status = status
+            self.existing.save()
+            self.assertIsNone(self._conflict(self.start, self.start + timedelta(hours=1)), status)
+
+    def test_started_ticket_occupies_its_effective_slot(self):
+        """Démarrée à 14:00 pour 1h30 : le créneau prévu de 09:00 est libéré, 14:00–15:30 est occupé."""
+        self.existing.status = 'in_progress'
+        self.existing.effective_start = self.start.replace(hour=14)
+        self.existing.save()
+        self.assertIsNone(self._conflict(self.start, self.start + timedelta(hours=1)))
+        conflict = self._conflict(self.start.replace(hour=15), self.start.replace(hour=16))
+        self.assertEqual(conflict, self.existing)
+        self.assertEqual(timezone.localtime(conflict.busy_end).strftime('%H:%M'), '15:30')
+
+    def test_editing_a_ticket_does_not_conflict_with_itself(self):
+        response = self.http.post(reverse('ticket_update', args=[self.existing.pk]), self._form_data(start_time_slot='09:00', duration_seconds=5400))
+        self.assertEqual(response.status_code, 302)
+
+    def test_moving_a_ticket_onto_another_is_refused(self):
+        other = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='maintenance', status='planned',
+            planned_start=self.start.replace(hour=14), planned_end=self.start.replace(hour=15),
+        )
+        response = self.http.post(reverse('ticket_update', args=[other.pk]), self._form_data(start_time_slot='09:30'))
+        self.assertEqual(response.status_code, 200)
+        other.refresh_from_db()
+        self.assertEqual(timezone.localtime(other.planned_start).hour, 14)
+
+    def test_api_refuses_overlapping_slot(self):
+        payload = {
+            'equipment': self.equipment.id, 'technician': self.tech.id, 'type': 'repair',
+            'planned_start': self.start.replace(hour=10).isoformat(), 'planned_end': self.start.replace(hour=11).isoformat(),
+        }
+        response = self.api.post('/api/v1/tickets/', payload, format='json')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Conflit de planning', str(response.data['planned_start']))
+        payload['planned_start'] = self.start.replace(hour=11).isoformat()
+        payload['planned_end'] = self.start.replace(hour=12).isoformat()
+        self.assertEqual(self.api.post('/api/v1/tickets/', payload, format='json').status_code, 201)
+
+    def test_api_patch_onto_another_slot_is_refused(self):
+        other = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='maintenance', status='planned',
+            planned_start=self.start.replace(hour=14), planned_end=self.start.replace(hour=15),
+        )
+        response = self.api.patch(f'/api/v1/tickets/{other.pk}/', {
+            'planned_start': self.start.replace(hour=9, minute=30).isoformat(),
+            'planned_end': self.start.replace(hour=10, minute=30).isoformat(),
+        }, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def _conflict(self, start, end):
+        from maintenance.services import find_schedule_conflict
+        return find_schedule_conflict(self.tech, start, end)
+
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketFormLocalTimeTestCase(TestCase):
     """Le formulaire de modification affiche l'heure locale : l'enregistrer sans changement ne décale rien."""

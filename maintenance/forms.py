@@ -10,9 +10,12 @@ Description : Formulaires pour la gestion de la maintenance.
 from itertools import groupby
 
 from django import forms
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from datetime import timedelta, time
 from .models import MaintenanceTicket, Technician, InterventionPhoto
+from .services import NOT_STARTED, find_schedule_conflict, schedule_conflict_message
 
 from inventory.models import Client, Building, Equipment
 
@@ -116,7 +119,7 @@ class MaintenanceTicketForm(forms.ModelForm):
             self.fields['equipment'].initial = self.instance.equipment
 
             if self.instance.planned_start:
-                # Heure locale : les champs sont réenregistrés en heure locale (voir save()).
+                # Heure locale : les champs sont réenregistrés en heure locale (voir clean()).
                 local_start = timezone.localtime(self.instance.planned_start)
                 self.fields['planned_date'].initial = local_start.strftime('%Y-%m-%d')
                 self.fields['start_time_slot'].initial = local_start.strftime('%H:%M')
@@ -142,17 +145,36 @@ class MaintenanceTicketForm(forms.ModelForm):
             except (ValueError, TypeError):
                 pass
 
+    def clean(self):
+        cleaned_data = super().clean()
+        planned_date = cleaned_data.get('planned_date')
+        start_time_str = cleaned_data.get('start_time_slot')
+        duration_sec = cleaned_data.get('duration_seconds')
+        if not (planned_date and start_time_str and duration_sec):
+            return cleaned_data
+
+        start = timezone.make_aware(timezone.datetime.combine(planned_date, time.fromisoformat(start_time_str)))
+        end = start + timedelta(seconds=duration_sec)
+        cleaned_data['planned_start'], cleaned_data['planned_end'] = start, end
+
+        # Conflit de planning : seulement pour une intervention pas encore démarrée, avec un technicien.
+        if cleaned_data.get('status') in NOT_STARTED:
+            conflict = find_schedule_conflict(cleaned_data.get('technician'), start, end, exclude_pk=self.instance.pk)
+            if conflict:
+                message = schedule_conflict_message(conflict)
+                ticket_ref = f"#{conflict.pk}"
+                before, after = message.split(ticket_ref, 1)
+                self.add_error(None, format_html(
+                    '<strong>Conflit de planning</strong> : {}<a href="{}" target="_blank" class="underline font-bold">{}</a>{}',
+                    before, reverse('ticket_detail', args=[conflict.pk]), ticket_ref, after,
+                ))
+        return cleaned_data
+
     def save(self, commit=True):
         instance = super().save(commit=False)
-        
-        planned_date = self.cleaned_data['planned_date']
-        start_time_str = self.cleaned_data['start_time_slot']
-        duration_sec = self.cleaned_data['duration_seconds']
+        instance.planned_start = self.cleaned_data['planned_start']
+        instance.planned_end = self.cleaned_data['planned_end']
 
-        start_time = time.fromisoformat(start_time_str)
-        instance.planned_start = timezone.make_aware(timezone.datetime.combine(planned_date, start_time))
-        instance.planned_end = instance.planned_start + timedelta(seconds=duration_sec)
-        
         if commit:
             instance.save()
         return instance

@@ -151,3 +151,45 @@ def tickets_of_the_day(queryset, now=None, exclude_ids=()):
             default=Value(1), output_field=IntegerField(),
         ),
     ).order_by('day_order', 'planned_start'))
+
+
+def occupied_interval(ticket):
+    """
+    Plage horaire occupée par une intervention pour son technicien, ou None si elle n'occupe plus rien :
+    - en attente / planifiée : créneau prévu ;
+    - en cours : à partir du démarrage effectif, pour la durée prévue ;
+    - terminée, annulée, à replanifier : rien.
+    """
+    if ticket.status in NOT_STARTED:
+        return ticket.planned_start, ticket.planned_end
+    if ticket.status == 'in_progress' and ticket.effective_start:
+        return ticket.effective_start, ticket.effective_start + (ticket.planned_end - ticket.planned_start)
+    return None
+
+
+def find_schedule_conflict(technician, start, end, exclude_pk=None):
+    """
+    Première intervention du technicien dont la plage occupée chevauche [start, end[, ou None.
+    Les créneaux bord à bord ne sont pas en conflit. La plage occupée est exposée en `busy_start` / `busy_end`.
+    """
+    if technician is None or start is None or end is None:
+        return None
+    candidates = MaintenanceTicket.objects.filter(technician=technician).filter(
+        Q(status__in=NOT_STARTED, planned_start__lt=end, planned_end__gt=start)
+        | Q(status='in_progress', effective_start__lt=end)
+    ).exclude(pk=exclude_pk).select_related('equipment', 'equipment__building', 'technician__user').order_by('planned_start')
+    for ticket in candidates:
+        interval = occupied_interval(ticket)
+        if interval and interval[0] < end and interval[1] > start:
+            ticket.busy_start, ticket.busy_end = interval
+            return ticket
+    return None
+
+
+def schedule_conflict_message(conflict):
+    """Message lisible (heure locale) pour un conflit trouvé par find_schedule_conflict()."""
+    start, end = timezone.localtime(conflict.busy_start), timezone.localtime(conflict.busy_end)
+    when = f"le {start:%d/%m} de {start:%H:%M} à {end:%H:%M}" if start.date() == end.date() \
+        else f"du {start:%d/%m %H:%M} au {end:%d/%m %H:%M}"
+    place = f"{conflict.equipment.name} – {conflict.equipment.building.name}"
+    return f"{conflict.technician} est déjà affecté à l'intervention #{conflict.pk} ({place}) {when}."

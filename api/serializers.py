@@ -18,6 +18,7 @@ class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
+from maintenance.services import NOT_STARTED, find_schedule_conflict, schedule_conflict_message
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -119,6 +120,25 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'effective_start', 'effective_end', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        instance = self.instance
+
+        def current(field):
+            return attrs[field] if field in attrs else getattr(instance, field, None)
+
+        start, end = current('planned_start'), current('planned_end')
+        if start and end and end <= start:
+            raise serializers.ValidationError({'planned_end': "La date de fin prévue doit être postérieure à la date de début prévue."})
+
+        # Conflit de planning : seulement pour une intervention pas encore démarrée, avec un technicien.
+        status = current('status') or 'pending'
+        if status in NOT_STARTED:
+            conflict = find_schedule_conflict(current('technician'), start, end, exclude_pk=getattr(instance, 'pk', None))
+            if conflict:
+                raise serializers.ValidationError({'planned_start': f"Conflit de planning : {schedule_conflict_message(conflict)}"})
+        return attrs
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_technician_name(self, obj):
