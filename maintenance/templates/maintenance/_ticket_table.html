@@ -1,0 +1,90 @@
+{# Tableau d'interventions partagé par les sections de la liste (rows, show_reason, empty_text). #}
+    <div class="bg-white rounded-3xl shadow-sm border {% if show_reason %}border-orange-200{% else %}border-slate-100{% endif %} overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">ID</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Date Prévue</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
+                    {% if show_reason %}<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Motif</th>{% endif %}
+                    <th class="px-6 py-4 text-right"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for ticket in rows %}
+                <tr class="hover:bg-slate-50/50 transition group">
+                    <td class="px-6 py-4">
+                        <span class="font-black text-slate-400">#{{ ticket.id }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800">{{ ticket.equipment.name }}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">S/N: {{ ticket.equipment.serial_number|default:"N/A" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if ticket.technician %}
+                        <div class="flex items-center gap-2">
+                            <div class="h-6 w-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black">
+                                {{ ticket.technician.user.username|slice:":1"|upper }}
+                            </div>
+                            <span class="font-medium text-slate-600">{{ ticket.technician }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-slate-300 italic text-sm">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {% if ticket.type == 'emergency' %}bg-rose-50 text-rose-600 border border-rose-100{% elif ticket.type == 'repair' %}bg-amber-50 text-amber-600 border border-amber-100{% else %}bg-blue-50 text-blue-600 border border-blue-100{% endif %}">
+                            {{ ticket.get_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            {% if ticket.effective_start %}
+                                <span class="font-bold text-blue-600 text-sm">EN DIRECT : {{ ticket.effective_start|date:"H:i" }}{% if ticket.effective_end %} - {{ ticket.effective_end|date:"H:i" }}{% endif %}</span>
+                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tight line-through">Prévu: {{ ticket.planned_start|date:"H:i" }}</span>
+                            {% else %}
+                                <span class="font-bold text-slate-700 text-sm">{{ ticket.planned_start|date:"d/m/Y" }}</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full {% if ticket.status == 'done' %}bg-emerald-500{% elif ticket.status == 'in_progress' %}bg-blue-500 animate-pulse{% elif ticket.status == 'pending' %}bg-slate-300{% elif ticket.status == 'to_reschedule' %}bg-orange-500{% elif ticket.status == 'canceled' %}bg-rose-500{% else %}bg-amber-500{% endif %}"></span>
+                            <span class="font-bold text-sm text-slate-600">{{ ticket.get_status_display }}</span>
+                        </div>
+                    </td>
+                    {% if show_reason %}
+                    <td class="px-6 py-4">
+                        {% if ticket.reschedule_reason == 'follow_up' %}
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-orange-50 text-orange-600 border border-orange-100">Suite de l'intervention{% if ticket.origin_id %} #{{ ticket.origin_id }}{% endif %}</span>
+                        {% else %}
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100">Créneau dépassé, non démarrée</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td class="px-6 py-4 text-right">
+                        <a href="{% url 'ticket_detail' ticket.id %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center inline-flex">
+                            <i class="las la-search text-xl"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if show_reason %}8{% else %}7{% endif %}" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center opacity-30">
+                            <i class="las la-clipboard-list text-6xl"></i>
+                            <p class="mt-4 font-bold tracking-tight">{{ empty_text|default:"Aucun ticket trouvé" }}</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+

@@ -25,6 +25,7 @@
                 <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Technicien</label>
                 <select name="technician" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
                     <option value="">Tous</option>
+                    <option value="none" {% if filters.technician == 'none' %}selected{% endif %}>Non assigné</option>
                     {% for tech in technicians %}
                     <option value="{{ tech.id }}" {% if filters.technician == tech.id|stringformat:"s" %}selected{% endif %}>{{ tech }}</option>
                     {% endfor %}
@@ -74,85 +75,48 @@
         </form>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50/50 border-b border-slate-100">
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">ID</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Date Prévue</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
-                    <th class="px-6 py-4 text-right"></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-                {% for ticket in tickets %}
-                <tr class="hover:bg-slate-50/50 transition group">
-                    <td class="px-6 py-4">
-                        <span class="font-black text-slate-400">#{{ ticket.id }}</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-800">{{ ticket.equipment.name }}</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">S/N: {{ ticket.equipment.serial_number|default:"N/A" }}</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if ticket.technician %}
-                        <div class="flex items-center gap-2">
-                            <div class="h-6 w-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black">
-                                {{ ticket.technician.user.username|slice:":1"|upper }}
-                            </div>
-                            <span class="font-medium text-slate-600">{{ ticket.technician }}</span>
-                        </div>
-                        {% else %}
-                        <span class="text-slate-300 italic text-sm">Non assigné</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {% if ticket.type == 'emergency' %}bg-rose-50 text-rose-600 border border-rose-100{% elif ticket.type == 'repair' %}bg-amber-50 text-amber-600 border border-amber-100{% else %}bg-blue-50 text-blue-600 border border-blue-100{% endif %}">
-                            {{ ticket.get_type_display }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col">
-                            {% if ticket.effective_start %}
-                                <span class="font-bold text-blue-600 text-sm">EN DIRECT : {{ ticket.effective_start|date:"H:i" }}{% if ticket.effective_end %} - {{ ticket.effective_end|date:"H:i" }}{% endif %}</span>
-                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tight line-through">Prévu: {{ ticket.planned_start|date:"H:i" }}</span>
-                            {% else %}
-                                <span class="font-bold text-slate-700 text-sm">{{ ticket.planned_start|date:"d/m/Y" }}</span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-2">
-                            <span class="h-2 w-2 rounded-full {% if ticket.status == 'done' %}bg-emerald-500{% elif ticket.status == 'in_progress' %}bg-blue-500 animate-pulse{% elif ticket.status == 'pending' %}bg-slate-300{% elif ticket.status == 'to_reschedule' %}bg-orange-500{% elif ticket.status == 'canceled' %}bg-rose-500{% else %}bg-amber-500{% endif %}"></span>
-                            <span class="font-bold text-sm text-slate-600">{{ ticket.get_status_display }}</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="{% url 'ticket_detail' ticket.id %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center inline-flex">
-                            <i class="las la-search text-xl"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="px-6 py-20 text-center">
-                        <div class="flex flex-col items-center opacity-30">
-                            <i class="las la-clipboard-list text-6xl"></i>
-                            <p class="mt-4 font-bold tracking-tight">Aucun ticket trouvé</p>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    {% if not filtering %}
+    {% if to_reschedule %}
+    <!-- Interventions à replanifier -->
+    <section class="mb-10">
+        <div class="mb-4 flex items-start gap-3">
+            <div class="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0"><i class="las la-exclamation-triangle text-xl"></i></div>
+            <div>
+                <h3 class="text-lg font-black text-slate-800">Interventions à replanifier <span class="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs align-middle">{{ to_reschedule|length }}</span></h3>
+                <p class="text-slate-500 text-sm">Interventions non réalisées, ou non démarrées à l'heure prévue au cours des 7 derniers jours : à réaffecter à un technicien.</p>
+            </div>
+        </div>
+        {% include "maintenance/_ticket_table.html" with rows=to_reschedule show_reason=True %}
+    </section>
+    {% endif %}
+
+    <!-- Interventions du jour -->
+    <section class="mb-10">
+        <div class="mb-4 flex items-start gap-3">
+            <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0"><i class="las la-calendar-day text-xl"></i></div>
+            <div>
+                <h3 class="text-lg font-black text-slate-800">Interventions du jour <span class="ml-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs align-middle">{{ of_the_day|length }}</span></h3>
+                <p class="text-slate-500 text-sm">Interventions en cours, interventions prévues aujourd'hui par heure de début, puis interventions terminées aujourd'hui.</p>
+            </div>
+        </div>
+        {% include "maintenance/_ticket_table.html" with rows=of_the_day empty_text="Aucune intervention en cours ni prévue aujourd'hui" %}
+    </section>
+    {% endif %}
+
+    <!-- Toutes les interventions -->
+    <div class="mb-4 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+            <h3 class="text-lg font-black text-slate-800">{% if filtering %}Résultats{% else %}Toutes les interventions{% endif %}</h3>
+            {% if not filtering %}<p class="text-slate-500 text-sm">Autres interventions, de la plus récente à la plus ancienne date prévue.</p>{% endif %}
+            {% if older_late %}<p class="text-sm font-semibold text-rose-600 mt-1"><i class="las la-history"></i> Dont {{ older_late }} intervention{{ older_late|pluralize }} jamais démarrée{{ older_late|pluralize }} dont le créneau est dépassé depuis plus de 7 jours.</p>{% endif %}
+        </div>
+        {% if unassigned_count and filters.technician != 'none' %}
+        <a href="?technician=none" class="text-sm font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1">
+            <i class="las la-user-slash"></i> {{ unassigned_count }} intervention{{ unassigned_count|pluralize }} à venir sans technicien
+        </a>
+        {% endif %}
     </div>
+    {% include "maintenance/_ticket_table.html" with rows=tickets %}
 
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="flex items-center justify-between mt-6">

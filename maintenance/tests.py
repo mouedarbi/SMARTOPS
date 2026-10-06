@@ -378,3 +378,113 @@ class InterventionPhotoTestCase(TestCase):
         import shutil
         shutil.rmtree('/tmp/smartops_test_media', ignore_errors=True)
 
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class TicketListSectionsTestCase(TestCase):
+    """Liste des interventions : à replanifier, du jour, puis toutes les autres."""
+
+    def setUp(self):
+        from maintenance.services import reschedule_ticket
+        CustomUser.objects.create_user(username='chef', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(username='tech_s', password='Password123!', role='technician').technician_profile
+        client = Client.objects.create(name='Client S', address='1 rue S')
+        building = Building.objects.create(client=client, name='Site S', address='1 rue S')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Chaudière', equipment_type=EquipmentType.objects.create(name='Chaudière'),
+            serial_number='CH-1', installed_at=date(2025, 1, 1),
+        )
+        # Heure fixée à 10:00 (heure locale) : le résultat ne dépend pas de l'heure du test.
+        from unittest import mock
+        now = timezone.localtime().replace(hour=10, minute=0, second=0, microsecond=0)
+        patcher = mock.patch('django.utils.timezone.now', return_value=now)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        today_noon = now.replace(hour=12)
+
+        # Intervention clôturée « à replanifier » : crée une suite sans technicien.
+        origin = self._ticket(now - timedelta(days=2), status='in_progress', technician=self.tech, effective_start=now - timedelta(days=2))
+        self.follow_up = reschedule_ticket(origin, report='Pièce manquante.')
+        self.origin = origin
+        self.late = self._ticket(now - timedelta(days=1), status='planned', technician=self.tech)
+        self.started_early = self._ticket(now + timedelta(days=1), status='in_progress', technician=self.tech, effective_start=now)
+        self.today = self._ticket(today_noon, status='planned', technician=self.tech)
+        self.future = self._ticket(now + timedelta(days=20), status='planned', technician=self.tech)
+        self.unassigned = self._ticket(now + timedelta(days=5), status='pending')
+        self.done = self._ticket(now - timedelta(days=3), status='done', technician=self.tech, effective_start=now - timedelta(days=3), effective_end=now - timedelta(days=3) + timedelta(hours=1))
+        self.old_late = self._ticket(now - timedelta(days=10), status='planned', technician=self.tech)
+        self.done_today = self._ticket(now - timedelta(hours=3), status='done', technician=self.tech,
+                                       effective_start=now - timedelta(hours=2), effective_end=now - timedelta(hours=1))
+
+        self.http = HttpClient()
+        self.http.login(username='chef', password='Password123!')
+
+    def _ticket(self, start, **kwargs):
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='maintenance', planned_start=start, planned_end=start + timedelta(hours=1), **kwargs,
+        )
+
+    def _ids(self, rows):
+        return [t.pk for t in rows]
+
+    def test_sections_without_filter(self):
+        response = self.http.get(reverse('ticket_list'))
+        ctx = response.context
+        self.assertEqual(self._ids(ctx['to_reschedule']), [self.follow_up.pk, self.late.pk])
+        self.assertEqual([t.reschedule_reason for t in ctx['to_reschedule']], ['follow_up', 'late'])
+        self.assertEqual(ctx['to_reschedule'][0].origin_id, self.origin.pk)
+
+        # Démarrée en avance (prévue demain) : en tête des interventions du jour.
+        of_the_day = self._ids(ctx['of_the_day'])
+        self.assertEqual(of_the_day[0], self.started_early.pk)
+        self.assertEqual(of_the_day, [self.started_early.pk, self.today.pk, self.done_today.pk])
+        self.assertEqual(ctx['older_late'], 1)
+
+        rest = self._ids(ctx['tickets'])
+        for ticket in (self.follow_up, self.late, self.started_early):
+            self.assertNotIn(ticket.pk, rest)
+        for ticket in (self.future, self.unassigned, self.done, self.origin, self.old_late):
+            self.assertIn(ticket.pk, rest)
+        self.assertNotIn(self.done_today.pk, rest)
+        self.assertEqual(ctx['unassigned_count'], 2)  # la suite + le ticket à venir non assigné
+
+        html = response.content.decode()
+        self.assertIn('Interventions à replanifier', html)
+        self.assertIn(f"Suite de l'intervention #{self.origin.pk}", html)
+        self.assertIn('Créneau dépassé, non démarrée', html)
+        self.assertIn('Interventions du jour', html)
+
+    def test_assigned_follow_up_leaves_the_reschedule_section(self):
+        self.follow_up.technician = self.tech
+        self.follow_up.status = 'planned'
+        self.follow_up.planned_start = timezone.now() + timedelta(days=2)
+        self.follow_up.planned_end = self.follow_up.planned_start + timedelta(hours=1)
+        self.follow_up.save()
+        response = self.http.get(reverse('ticket_list'))
+        self.assertEqual(self._ids(response.context['to_reschedule']), [self.late.pk])
+
+    def test_filters_show_a_single_result_list(self):
+        response = self.http.get(reverse('ticket_list'), {'status': 'in_progress'})
+        self.assertTrue(response.context['filtering'])
+        self.assertEqual(response.context['to_reschedule'], [])
+        self.assertEqual(self._ids(response.context['tickets']), [self.started_early.pk])
+        self.assertNotIn('Interventions du jour', response.content.decode())
+
+    def test_unassigned_filter(self):
+        response = self.http.get(reverse('ticket_list'), {'technician': 'none'})
+        self.assertEqual(set(self._ids(response.context['tickets'])), {self.follow_up.pk, self.unassigned.pk})
+
+    def test_date_filter_uses_local_day(self):
+        """Filtre par date en heure locale, sans recherche __date (inopérante sur MySQL sans fuseaux)."""
+        day = timezone.localdate(self.today.planned_start).isoformat()
+        response = self.http.get(reverse('ticket_list'), {'date': day})
+        self.assertIn(self.today.pk, self._ids(response.context['tickets']))
+        self.assertNotIn(self.future.pk, self._ids(response.context['tickets']))
+
+    def test_invalid_date_filter_is_ignored(self):
+        response = self.http.get(reverse('ticket_list'), {'date': 'pas-une-date'})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context['filtering'])

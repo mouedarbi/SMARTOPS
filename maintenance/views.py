@@ -7,6 +7,8 @@ Version : 1.0
 Description : Vues pour la gestion de la maintenance dans l'admin custom.
 """
 
+import datetime
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -14,6 +16,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm, InterventionPhotoForm
+from .services import NOT_STARTED, local_day_range, older_late_count, tickets_of_the_day, tickets_to_reschedule
 from schedule.models import Calendar
 from accounts.views import is_management_staff
 
@@ -36,16 +39,33 @@ def ticket_list(request):
     building_id = request.GET.get('building') or ''
     client_id = request.GET.get('client') or ''
 
-    if technician_id:
+    if technician_id == 'none':
+        tickets = tickets.filter(technician__isnull=True)
+    elif technician_id:
         tickets = tickets.filter(technician_id=technician_id)
     if date_filter:
-        tickets = tickets.filter(planned_start__date=date_filter)
+        try:
+            day_start, day_end = local_day_range(datetime.date.fromisoformat(date_filter))
+        except ValueError:
+            date_filter = ''
+        else:
+            tickets = tickets.filter(planned_start__gte=day_start, planned_start__lt=day_end)
     if status_filter:
         tickets = tickets.filter(status=status_filter)
     if building_id:
         tickets = tickets.filter(equipment__building_id=building_id)
     if client_id:
         tickets = tickets.filter(equipment__building__client_id=client_id)
+
+    # Sans filtre : interventions à replanifier et du jour en tête, le reste dans la liste complète.
+    # Avec un filtre : une seule liste, celle des résultats.
+    filtering = any([technician_id, date_filter, status_filter, building_id, client_id])
+    to_reschedule, of_the_day, older_late = [], [], 0
+    if not filtering:
+        older_late = older_late_count(tickets)
+        to_reschedule = tickets_to_reschedule(tickets)
+        of_the_day = tickets_of_the_day(tickets, exclude_ids=[t.pk for t in to_reschedule])
+        tickets = tickets.exclude(pk__in=[t.pk for t in to_reschedule + of_the_day])
 
     paginator = Paginator(tickets, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -58,6 +78,11 @@ def ticket_list(request):
         'tickets': page_obj,
         'page_obj': page_obj,
         'querystring': querystring.urlencode(),
+        'filtering': filtering,
+        'to_reschedule': to_reschedule,
+        'of_the_day': of_the_day,
+        'older_late': older_late,
+        'unassigned_count': MaintenanceTicket.objects.filter(technician__isnull=True, status__in=NOT_STARTED).count(),
         'page_title': "Tickets de Maintenance",
         'technicians': Technician.objects.select_related('user').order_by('user__username'),
         'clients': Client.objects.order_by('name'),
