@@ -223,10 +223,13 @@ class TicketAPITestCase(TestCase):
 
     def test_my_interventions_uses_effective_date(self):
         now = timezone.now()
+        # Démarrage effectif aujourd'hui (heure locale), même si le test tourne juste après minuit.
+        today_start = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
+        effective_start = max(now - timedelta(minutes=50), today_start + timedelta(minutes=1))
         self.ticket.planned_start = now + timedelta(days=1)
         self.ticket.planned_end = now + timedelta(days=1, hours=1)
-        self.ticket.effective_start = now - timedelta(minutes=50)
-        self.ticket.effective_end = now - timedelta(minutes=10)
+        self.ticket.effective_start = effective_start
+        self.ticket.effective_end = effective_start + timedelta(minutes=40)
         self.ticket.status = 'done'
         self.ticket.save()
 

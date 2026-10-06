@@ -275,10 +275,13 @@ class TechnicianMenuPagesTests(TestCase):
     def test_ticket_done_ahead_of_schedule_is_dated_by_effective_start(self):
         """Prévue demain mais réalisée aujourd'hui : datée du jour réel (issue #18)."""
         now = timezone.now()
+        # Démarrage effectif aujourd'hui (heure locale), même si le test tourne juste après minuit.
+        today_start = timezone.localtime(now).replace(hour=0, minute=0, second=0, microsecond=0)
+        effective_start = max(now - timedelta(minutes=50), today_start + timedelta(minutes=1))
         early = MaintenanceTicket.objects.create(
             equipment=self.equipment, technician=self.tech_profile, status='done',
             planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
-            effective_start=now - timedelta(minutes=50), effective_end=now - timedelta(minutes=10),
+            effective_start=effective_start, effective_end=effective_start + timedelta(minutes=40),
         )
 
         dashboard = self.client_http.get(reverse('technician_dashboard'))
