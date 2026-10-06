@@ -488,3 +488,40 @@ class TicketListSectionsTestCase(TestCase):
         response = self.http.get(reverse('ticket_list'), {'date': 'pas-une-date'})
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context['filtering'])
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class TicketFormLocalTimeTestCase(TestCase):
+    """Le formulaire de modification affiche l'heure locale : l'enregistrer sans changement ne décale rien."""
+
+    def test_edit_form_shows_local_time_and_keeps_the_slot(self):
+        from maintenance.forms import MaintenanceTicketForm
+        CustomUser.objects.create_user(username='chef_t', password='Password123!', role='manager')
+        tech = CustomUser.objects.create_user(username='tech_t', password='Password123!', role='technician').technician_profile
+        client_obj = Client.objects.create(name='Client T', address='1 rue T')
+        building = Building.objects.create(client=client_obj, name='Site T', address='1 rue T')
+        equipment = Equipment.objects.create(
+            building=building, name='Clim', equipment_type=EquipmentType.objects.create(name='Clim'),
+            serial_number='CL-1', installed_at=date(2025, 1, 1),
+        )
+        # 09:00 heure de Paris en été = 07:00 UTC : l'ancien formulaire affichait 07:00 et réenregistrait 07:00 heure locale.
+        start = timezone.make_aware(timezone.datetime(2026, 7, 10, 9, 0))
+        ticket = MaintenanceTicket.objects.create(
+            equipment=equipment, technician=tech, type='maintenance', status='planned',
+            planned_start=start, planned_end=start + timedelta(minutes=90),
+        )
+        # Relu depuis la base (heure UTC), comme dans la vue de modification.
+        form = MaintenanceTicketForm(instance=MaintenanceTicket.objects.get(pk=ticket.pk))
+        self.assertEqual(form.fields['planned_date'].initial, '2026-07-10')
+        self.assertEqual(form.fields['start_time_slot'].initial, '09:00')
+
+        http = HttpClient()
+        http.login(username='chef_t', password='Password123!')
+        response = http.post(reverse('ticket_update', args=[ticket.pk]), {
+            'client': client_obj.id, 'building': building.id, 'equipment': equipment.id, 'technician': tech.id,
+            'type': 'maintenance', 'status': 'planned', 'planned_date': form.fields['planned_date'].initial,
+            'start_time_slot': form.fields['start_time_slot'].initial, 'duration_seconds': 5400, 'description': '',
+        })
+        self.assertEqual(response.status_code, 302)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.planned_start, start)

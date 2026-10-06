@@ -116,8 +116,10 @@ class MaintenanceTicketForm(forms.ModelForm):
             self.fields['equipment'].initial = self.instance.equipment
 
             if self.instance.planned_start:
-                self.fields['planned_date'].initial = self.instance.planned_start.strftime('%Y-%m-%d')
-                self.fields['start_time_slot'].initial = self.instance.planned_start.strftime('%H:%M')
+                # Heure locale : les champs sont réenregistrés en heure locale (voir save()).
+                local_start = timezone.localtime(self.instance.planned_start)
+                self.fields['planned_date'].initial = local_start.strftime('%Y-%m-%d')
+                self.fields['start_time_slot'].initial = local_start.strftime('%H:%M')
                 if self.instance.planned_end:
                     diff = (self.instance.planned_end - self.instance.planned_start).total_seconds()
                     # On cherche la durée la plus proche
