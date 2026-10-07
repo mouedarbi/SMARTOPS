@@ -10,9 +10,22 @@
             <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Lieu</p>
             <p class="font-bold text-slate-800">{{ building.name }} — {{ building.client.name }}</p>
         </div>
+        {% if form.non_field_errors %}
+        <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">{{ form.non_field_errors }}</div>
+        {% endif %}
         <div class="space-y-4">
-            {{ form.as_p }}
+            {% for field in form.standard_fields %}
+            <div>{{ field.as_field_group }}</div>
+            {% endfor %}
         </div>
+        {% for type_id, fields in form.custom_groups %}
+        <div class="custom-fields-group mt-6 pt-4 border-t border-slate-100 space-y-4" data-equipment-type="{{ type_id }}">
+            <p class="text-xs font-black uppercase tracking-widest text-slate-400">Attributs du type</p>
+            {% for field in fields %}
+            <div>{{ field.as_field_group }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
         <div class="mt-6 flex justify-end items-center gap-3">
             <a href="{{ cancel_url }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-2 px-6 rounded-xl transition duration-200">
                 Annuler
@@ -23,4 +36,21 @@
         </div>
     </form>
 </div>
+<script>
+    // Affiche uniquement les attributs du type d'équipement choisi ; les autres sont désactivés
+    // pour ne pas être envoyés.
+    (function () {
+        const select = document.getElementById('{{ form.equipment_type.id_for_label }}');
+        const groups = document.querySelectorAll('.custom-fields-group');
+        function refresh() {
+            groups.forEach(function (group) {
+                const visible = group.dataset.equipmentType === select.value;
+                group.hidden = !visible;
+                group.querySelectorAll('input, select, textarea').forEach(function (input) { input.disabled = !visible; });
+            });
+        }
+        select.addEventListener('change', refresh);
+        refresh();
+    })();
+</script>
 {% endblock %}

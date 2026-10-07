@@ -230,3 +230,65 @@ class CreationFromParentTests(TestCase):
     def test_lists_no_longer_offer_a_creation_button(self):
         self.assertNotContains(self.http.get(reverse('building_list')), reverse('building_create'))
         self.assertNotContains(self.http.get(reverse('equipment_list')), reverse('equipment_create'))
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class EquipmentCustomFieldsFormTests(TestCase):
+    """Le formulaire d'ajout d'un équipement propose les champs personnalisés du type choisi, les
+    valide (obligation, format) avec un message sous le champ, et les enregistre dans custom_fields."""
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='gestion', password='Password123!', role='manager')
+        client = Client.objects.create(name="Société Alpha", address="Rue Royale 10", contact_name="Marc",
+                                       email="alpha@example.be", phone="0", vat_number="BE0123456789")
+        self.building = Building.objects.create(client=client, name="Siège", address="Rue Royale 10")
+        self.detector = EquipmentType.objects.create(name="Détecteur de fumée")
+        self.battery = EquipmentTypeField.objects.create(equipment_type=self.detector, field_name="Autonomie pile (ans)",
+                                                         field_type='number', required=True)
+        self.made = EquipmentTypeField.objects.create(equipment_type=self.detector, field_name="Date de fabrication",
+                                                      field_type='date', required=True)
+        self.note = EquipmentTypeField.objects.create(equipment_type=self.detector, field_name="Remarque",
+                                                      field_type='text', required=False)
+        self.lift = EquipmentType.objects.create(name="Ascenseur")
+        self.capacity = EquipmentTypeField.objects.create(equipment_type=self.lift, field_name="Capacité (kg)",
+                                                          field_type='number', required=True)
+        self.http = HttpClient()
+        self.http.login(username='gestion', password='Password123!')
+        self.url = reverse('equipment_create') + f'?building={self.building.pk}'
+
+    def post(self, **custom):
+        data = {'name': 'Détecteur hall', 'equipment_type': self.detector.pk, 'serial_number': 'DF-1',
+                'installed_at': '2026-01-15', **custom}
+        return self.http.post(self.url, data)
+
+    def test_form_offers_the_custom_fields_of_each_type(self):
+        response = self.http.get(self.url)
+        self.assertContains(response, 'Autonomie pile (ans) *')
+        self.assertContains(response, 'Capacité (kg) *')
+        self.assertContains(response, f'data-equipment-type="{self.detector.pk}"')
+
+    def test_custom_fields_are_saved_with_their_type(self):
+        response = self.post(**{f'cf_{self.battery.pk}': '10', f'cf_{self.made.pk}': '2025-06-01',
+                                f'cf_{self.note.pk}': 'Hall d\'entrée'})
+        self.assertEqual(response.status_code, 302)
+        equipment = Equipment.objects.get(serial_number='DF-1')
+        self.assertEqual(equipment.custom_fields, {'Autonomie pile (ans)': 10, 'Date de fabrication': '2025-06-01',
+                                                   'Remarque': "Hall d'entrée"})
+
+    def test_missing_required_field_shows_a_message_instead_of_a_server_error(self):
+        response = self.post(**{f'cf_{self.battery.pk}': '10'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ce champ est requis pour ce type d&#x27;équipement.")
+        self.assertFalse(Equipment.objects.exists())
+
+    def test_invalid_number_or_date_is_refused(self):
+        response = self.post(**{f'cf_{self.battery.pk}': 'dix', f'cf_{self.made.pk}': '31/31/2025'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(response.context['form'].errors), {f'cf_{self.battery.pk}', f'cf_{self.made.pk}'})
+        self.assertFalse(Equipment.objects.exists())
+
+    def test_fields_of_another_type_are_neither_required_nor_saved(self):
+        self.post(**{f'cf_{self.battery.pk}': '7.5', f'cf_{self.made.pk}': '2025-06-01',
+                     f'cf_{self.capacity.pk}': 'pas un nombre'})
+        equipment = Equipment.objects.get(serial_number='DF-1')
+        self.assertEqual(equipment.custom_fields, {'Autonomie pile (ans)': 7.5, 'Date de fabrication': '2025-06-01'})
