@@ -6,11 +6,15 @@
 <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl border border-slate-200">
     <form method="post">
         {% csrf_token %}
+        <div class="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Client</p>
+            <p class="font-bold text-slate-800">{{ client.name }}</p>
+        </div>
         <div class="space-y-4">
             {{ form.as_p }}
         </div>
         <div class="mt-6 flex justify-end items-center gap-3">
-            <a href="javascript:window.history.back()" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-2 px-6 rounded-xl transition duration-200">
+            <a href="{{ cancel_url }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-2 px-6 rounded-xl transition duration-200">
                 Annuler
             </a>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition duration-200">

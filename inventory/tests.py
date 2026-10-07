@@ -168,3 +168,65 @@ class InventoryWebViewsTestCase(TestCase):
         self.assertIsNotNone(custom_field)
         self.assertEqual(custom_field.field_type, 'number')
         self.assertTrue(custom_field.required)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class CreationFromParentTests(TestCase):
+    """Un lieu se crée depuis la fiche de son client, un équipement depuis la fiche de son lieu :
+    le parent est fixé, jamais choisi dans une liste, et le client d'un lieu ne change pas."""
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='gestion', password='Password123!', role='manager')
+        self.alpha = Client.objects.create(name="Société Alpha", address="Rue Royale 10", contact_name="Marc",
+                                           email="alpha@example.be", phone="0", vat_number="BE0123456789")
+        self.beta = Client.objects.create(name="Société Beta", address="Rue Haute 1", contact_name="Anne",
+                                          email="beta@example.be", phone="0", vat_number="BE0987654321")
+        self.building = Building.objects.create(client=self.alpha, name="Siège", address="Rue Royale 10")
+        self.eq_type = EquipmentType.objects.create(name="Centrale Incendie")
+        self.http = HttpClient()
+        self.http.login(username='gestion', password='Password123!')
+
+    def test_building_form_shows_the_client_without_a_select(self):
+        response = self.http.get(reverse('building_create') + f'?client={self.alpha.pk}')
+        self.assertContains(response, 'Société Alpha')
+        self.assertNotContains(response, 'name="client"')
+        self.assertNotContains(response, 'Société Beta')
+
+    def test_building_is_created_for_the_client_of_the_url(self):
+        response = self.http.post(reverse('building_create') + f'?client={self.alpha.pk}',
+                                  {'name': 'Entrepôt', 'address': 'Rue du Port 2', 'client': self.beta.pk})
+        self.assertRedirects(response, reverse('client_detail', args=[self.alpha.pk]), fetch_redirect_response=False)
+        self.assertEqual(Building.objects.get(name='Entrepôt').client, self.alpha)
+
+    def test_building_creation_without_client_goes_back_to_the_list(self):
+        for query in ('', '?client=999', '?client=abc'):
+            response = self.http.get(reverse('building_create') + query)
+            self.assertRedirects(response, reverse('building_list'), fetch_redirect_response=False)
+        self.assertEqual(Building.objects.count(), 1)
+
+    def test_building_update_never_changes_its_client(self):
+        self.http.post(reverse('building_update', args=[self.building.pk]),
+                       {'name': 'Siège rénové', 'address': 'Rue Royale 10', 'client': self.beta.pk})
+        self.building.refresh_from_db()
+        self.assertEqual((self.building.name, self.building.client), ('Siège rénové', self.alpha))
+
+    def test_equipment_form_shows_the_building_and_its_client(self):
+        response = self.http.get(reverse('equipment_create') + f'?building={self.building.pk}')
+        self.assertContains(response, 'Siège — Société Alpha')
+        self.assertNotContains(response, 'name="building"')
+
+    def test_equipment_is_created_in_the_building_of_the_url(self):
+        other = Building.objects.create(client=self.beta, name="Usine", address="Rue Haute 1")
+        response = self.http.post(reverse('equipment_create') + f'?building={self.building.pk}', {
+            'name': 'Centrale Nord', 'equipment_type': self.eq_type.pk, 'serial_number': 'SN-1',
+            'installed_at': '2026-01-15', 'building': other.pk})
+        self.assertRedirects(response, reverse('building_detail', args=[self.building.pk]), fetch_redirect_response=False)
+        self.assertEqual(Equipment.objects.get(serial_number='SN-1').building, self.building)
+
+    def test_equipment_creation_without_building_goes_back_to_the_list(self):
+        response = self.http.get(reverse('equipment_create'))
+        self.assertRedirects(response, reverse('equipment_list'), fetch_redirect_response=False)
+
+    def test_lists_no_longer_offer_a_creation_button(self):
+        self.assertNotContains(self.http.get(reverse('building_list')), reverse('building_create'))
+        self.assertNotContains(self.http.get(reverse('equipment_list')), reverse('equipment_create'))

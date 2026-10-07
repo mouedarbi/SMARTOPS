@@ -8,6 +8,7 @@ Description : Vues CRUD pour la gestion des clients, lieux, équipements et type
 """
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.views import is_management_staff
@@ -144,22 +145,29 @@ def building_list_view(request):
 @login_required
 @user_passes_test(is_management_staff)
 def building_create_view(request):
-    """Crée un nouveau lieu."""
-    if request.method == 'POST':
-        form = BuildingForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Lieu créé avec succès.")
-            return redirect('building_list')
-    else:
-        form = BuildingForm()
-    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Nouveau lieu'})
+    """Crée un lieu pour le client passé dans l'URL (?client=), depuis la fiche de ce client."""
+    client_id = request.GET.get('client') or ''
+    client = Client.objects.filter(pk=client_id).first() if client_id.isdigit() else None
+    if client is None:
+        messages.warning(request, "Un lieu se crée depuis la fiche de son client.")
+        return redirect('building_list')
+    form = BuildingForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        building = form.save(commit=False)
+        building.client = client
+        building.save()
+        messages.success(request, "Lieu créé avec succès.")
+        return redirect('client_detail', pk=client.pk)
+    return render(request, 'inventory/building_form.html', {
+        'form': form, 'title': 'Nouveau lieu', 'client': client,
+        'cancel_url': reverse('client_detail', args=[client.pk]),
+    })
 
 @login_required
 @user_passes_test(is_management_staff)
 def building_update_view(request, pk):
     """Met à jour un lieu existant."""
-    building = get_object_or_404(Building, pk=pk)
+    building = get_object_or_404(Building.objects.select_related('client'), pk=pk)
     if request.method == 'POST':
         form = BuildingForm(request.POST, instance=building)
         if form.is_valid():
@@ -168,7 +176,10 @@ def building_update_view(request, pk):
             return redirect('building_list')
     else:
         form = BuildingForm(instance=building)
-    return render(request, 'inventory/building_form.html', {'form': form, 'title': 'Modifier le lieu'})
+    return render(request, 'inventory/building_form.html', {
+        'form': form, 'title': 'Modifier le lieu', 'client': building.client,
+        'cancel_url': reverse('building_detail', args=[building.pk]),
+    })
 
 # --- VUES ÉQUIPEMENT ---
 
@@ -218,16 +229,24 @@ def equipment_list_view(request):
 @login_required
 @user_passes_test(is_management_staff)
 def equipment_create_view(request):
-    """Crée un nouvel équipement."""
-    if request.method == 'POST':
-        form = EquipmentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Équipement créé avec succès.")
-            return redirect('equipment_list')
-    else:
-        form = EquipmentForm()
-    return render(request, 'inventory/equipment_form.html', {'form': form, 'title': 'Nouvel Équipement'})
+    """Crée un équipement pour le lieu passé dans l'URL (?building=), depuis la fiche de ce lieu."""
+    building_id = request.GET.get('building') or ''
+    building = (Building.objects.select_related('client').filter(pk=building_id).first()
+                if building_id.isdigit() else None)
+    if building is None:
+        messages.warning(request, "Un équipement se crée depuis la fiche de son lieu.")
+        return redirect('equipment_list')
+    form = EquipmentForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        equipment = form.save(commit=False)
+        equipment.building = building
+        equipment.save()
+        messages.success(request, "Équipement créé avec succès.")
+        return redirect('building_detail', pk=building.pk)
+    return render(request, 'inventory/equipment_form.html', {
+        'form': form, 'title': 'Nouvel Équipement', 'building': building,
+        'cancel_url': reverse('building_detail', args=[building.pk]),
+    })
 
 # --- VUES TYPE ÉQUIPEMENT ---
 

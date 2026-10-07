@@ -26,23 +26,23 @@ class ClientForm(forms.ModelForm):
         }
 
 class BuildingForm(forms.ModelForm):
-    """Formulaire pour la création et l'édition d'un lieu."""
+    """Formulaire pour la création et l'édition d'un lieu. Le client est fixé par la vue :
+    un lieu se crée depuis la fiche de son client et n'en change jamais."""
     class Meta:
         model = Building
-        fields = ['client', 'name', 'address']
+        fields = ['name', 'address']
         widgets = {
-            'client': forms.Select(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
             'name': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
             'address': forms.Textarea(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'rows': 2}),
         }
 
 class EquipmentForm(forms.ModelForm):
-    """Formulaire pour la création d'équipement."""
+    """Formulaire pour la création d'équipement. Le lieu est fixé par la vue : un équipement se
+    crée depuis la fiche de son lieu."""
     class Meta:
         model = Equipment
-        fields = ['building', 'name', 'equipment_type', 'serial_number', 'installed_at']
+        fields = ['name', 'equipment_type', 'serial_number', 'installed_at']
         widgets = {
-            'building': forms.Select(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
             'name': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
             'equipment_type': forms.Select(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
             'serial_number': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
