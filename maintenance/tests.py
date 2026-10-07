@@ -308,6 +308,16 @@ class InterventionPhotoTestCase(TestCase):
             effective_start=now,
         )
 
+    def test_ticket_links_to_its_equipment_building_and_client(self):
+        """La fiche ticket mène aux fiches de l'équipement (historique), du lieu et du client (issue #29)."""
+        http = HttpClient()
+        http.login(username='mgr_photo', password='Password123!')
+        response = http.get(reverse('ticket_detail', kwargs={'pk': self.ticket.id}))
+        self.assertContains(response, f'href="{reverse("equipment_detail", args=[self.equipment.pk])}"', count=2)
+        self.assertContains(response, f'href="{reverse("building_detail", args=[self.building.pk])}"')
+        self.assertContains(response, f'href="{reverse("client_detail", args=[self.client_obj.pk])}"')
+        self.assertContains(response, "Voir la fiche de l'équipement")
+
     def test_export_pdf_button_prints_and_layout_has_print_stylesheet(self):
         """Le bouton « Exporter PDF » déclenche l'impression ; la mise en page masque menu et en-tête (issue #5)."""
         http = HttpClient()

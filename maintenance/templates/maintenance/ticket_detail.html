@@ -83,11 +83,11 @@
                 <div class="space-y-4">
                     <div>
                         <span class="text-[10px] font-black text-blue-600 uppercase block mb-1">Client</span>
-                        <p class="font-bold text-slate-800 text-lg">{{ ticket.equipment.building.client.name }}</p>
+                        <a href="{% url 'client_detail' ticket.equipment.building.client.pk %}" class="font-bold text-slate-800 text-lg hover:text-blue-600 hover:underline">{{ ticket.equipment.building.client.name }}</a>
                     </div>
                     <div>
                         <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Lieu</span>
-                        <p class="font-bold text-slate-700">{{ ticket.equipment.building.name }}</p>
+                        <a href="{% url 'building_detail' ticket.equipment.building.pk %}" class="font-bold text-slate-700 hover:text-blue-600 hover:underline">{{ ticket.equipment.building.name }}</a>
                         <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ ticket.equipment.building.address }}</p>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                 <div class="space-y-4">
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Modèle / Nom</span>
-                        <p class="font-black text-slate-800">{{ ticket.equipment.name }}</p>
+                        <a href="{% url 'equipment_detail' ticket.equipment.pk %}" class="font-black text-slate-800 hover:text-blue-600 hover:underline">{{ ticket.equipment.name }}</a>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -113,6 +113,9 @@
                             <p class="text-sm font-bold text-slate-700">{{ ticket.equipment.equipment_type.name }}</p>
                         </div>
                     </div>
+                    <a href="{% url 'equipment_detail' ticket.equipment.pk %}" class="flex items-center justify-center gap-2 w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-4 rounded-xl text-xs transition">
+                        <i class="las la-history text-base"></i> Voir la fiche de l'équipement
+                    </a>
                 </div>
             </div>
         </div>
