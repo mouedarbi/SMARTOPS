@@ -144,6 +144,9 @@ class InventoryWebViewsTestCase(TestCase):
         tickets_in_context = list(response.context['tickets'])
         self.assertIn(ticket1, tickets_in_context)
         self.assertIn(ticket2, tickets_in_context)
+        # Chaque intervention de l'historique ouvre la fiche de son ticket (issue #30).
+        for ticket in (ticket1, ticket2):
+            self.assertContains(response, f'href="{reverse("ticket_detail", args=[ticket.id])}"')
 
     def test_equipment_type_create_and_custom_field_addition(self):
         """F4 : Vérifie la création d'un type d'équipement et l'ajout de champs personnalisés (typés)."""

@@ -109,7 +109,7 @@
                         {% for ticket in tickets %}
                         <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition text-sm">
                             <td class="p-4 pl-8 font-bold text-slate-800">
-                                #{{ ticket.id }}
+                                <a href="{% url 'ticket_detail' ticket.id %}" class="text-blue-600 hover:underline">#{{ ticket.id }}</a>
                             </td>
                             <td class="p-4 font-semibold text-slate-600">
                                 {% if ticket.type == 'maintenance' %}
