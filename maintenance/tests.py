@@ -1083,3 +1083,29 @@ class TicketListCreatedAtTestCase(TestCase):
         self.assertEqual(ids({'sort': 'inconnu'}), [a.pk, b.pk])
         response = http.get(url, {'sort': 'created_at', 'order': 'desc', 'status': 'pending'})
         self.assertContains(response, 'status=pending&sort=created_at&order=asc')
+
+    def test_finished_ticket_is_not_shown_live(self):
+        """Une intervention terminée affiche « Réalisé le » avec sa date, pas « EN DIRECT » ; une en cours affiche « EN DIRECT »."""
+        CustomUser.objects.create_user(username='chef_live', password='Password123!', role='manager')
+        tech = CustomUser.objects.create_user(username='tech_live', password='Password123!', role='technician').technician_profile
+        client_obj = Client.objects.create(name='Client Live', address='1 rue Live')
+        building = Building.objects.create(client=client_obj, name='Site Live', address='1 rue Live')
+        equipment = Equipment.objects.create(
+            building=building, name='Groupe', equipment_type=EquipmentType.objects.create(name='Groupe'),
+            serial_number='GR-1', installed_at=date(2025, 1, 1),
+        )
+        planned = timezone.make_aware(timezone.datetime(2026, 9, 30, 12, 30))
+        real = timezone.make_aware(timezone.datetime(2026, 10, 1, 0, 7))
+        MaintenanceTicket.objects.create(
+            equipment=equipment, technician=tech, type='emergency', status='done',
+            planned_start=planned, planned_end=planned + timedelta(hours=1),
+            effective_start=real, effective_end=real + timedelta(minutes=7),
+        )
+        http = HttpClient()
+        http.login(username='chef_live', password='Password123!')
+        response = http.get(reverse('ticket_list'), {'status': 'done'})
+        self.assertNotContains(response, 'EN DIRECT')
+        self.assertContains(response, 'Réalisé le 01/10/2026')
+        self.assertContains(response, 'Prévu 30/09/2026 12:30')
+        MaintenanceTicket.objects.update(status='in_progress', effective_end=None)
+        self.assertContains(http.get(reverse('ticket_list'), {'status': 'in_progress'}), 'EN DIRECT depuis 00:07')
