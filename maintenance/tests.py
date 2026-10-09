@@ -396,7 +396,7 @@ class InterventionPhotoTestCase(TestCase):
     PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
 )
 class TicketListSectionsTestCase(TestCase):
-    """Liste des interventions : à replanifier, du jour, puis toutes les autres."""
+    """Liste des interventions : onglets « Toutes les interventions » et « À planifier »."""
 
     def setUp(self):
         from maintenance.services import reschedule_ticket
@@ -441,48 +441,46 @@ class TicketListSectionsTestCase(TestCase):
     def _ids(self, rows):
         return [t.pk for t in rows]
 
-    def test_sections_without_filter(self):
-        response = self.http.get(reverse('ticket_list'))
+    def test_to_plan_tab(self):
+        """Onglet « À planifier » : sans technicien (suites comprises) et planifiées en retard de moins de 7 jours."""
+        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
         ctx = response.context
-        self.assertEqual(self._ids(ctx['to_reschedule']), [self.follow_up.pk, self.late.pk])
-        self.assertEqual([t.reschedule_reason for t in ctx['to_reschedule']], ['follow_up', 'late'])
-        self.assertEqual(ctx['to_reschedule'][0].origin_id, self.origin.pk)
-
-        # Démarrée en avance (prévue demain) : en tête des interventions du jour.
-        of_the_day = self._ids(ctx['of_the_day'])
-        self.assertEqual(of_the_day[0], self.started_early.pk)
-        self.assertEqual(of_the_day, [self.started_early.pk, self.today.pk, self.done_today.pk])
+        self.assertEqual(ctx['tab'], 'a-planifier')
+        self.assertEqual(self._ids(ctx['to_plan']), [self.follow_up.pk, self.late.pk, self.unassigned.pk])
+        self.assertEqual([t.plan_reason for t in ctx['to_plan']], ['follow_up', 'late', 'unassigned'])
+        self.assertEqual(ctx['to_plan'][0].origin_id, self.origin.pk)
         self.assertEqual(ctx['older_late'], 1)
-
-        rest = self._ids(ctx['tickets'])
-        for ticket in (self.follow_up, self.late, self.started_early):
-            self.assertNotIn(ticket.pk, rest)
-        for ticket in (self.future, self.unassigned, self.done, self.origin, self.old_late):
-            self.assertIn(ticket.pk, rest)
-        self.assertNotIn(self.done_today.pk, rest)
-        self.assertEqual(ctx['unassigned_count'], 2)  # la suite + le ticket à venir non assigné
-
         html = response.content.decode()
-        self.assertIn('Interventions à replanifier', html)
         self.assertIn(f"Suite de l'intervention #{self.origin.pk}", html)
         self.assertIn('Créneau dépassé, non démarrée', html)
-        self.assertIn('Interventions du jour', html)
+        self.assertIn('Non attribué', html)
+        self.assertNotIn('name="technician"', html)  # pas de filtres dans cet onglet
 
-    def test_assigned_follow_up_leaves_the_reschedule_section(self):
+    def test_general_tab_lists_everything_with_filters(self):
+        """Onglet par défaut : toutes les interventions et le moteur de filtres ; plus de tableau du jour."""
+        response = self.http.get(reverse('ticket_list'))
+        self.assertEqual(response.context['tab'], 'toutes')
+        self.assertEqual(len(response.context['to_plan']), 3)  # compteur de l'onglet
+        rest = self._ids(response.context['tickets'])
+        for ticket in (self.follow_up, self.late, self.started_early, self.today, self.future,
+                       self.unassigned, self.done, self.origin, self.old_late, self.done_today):
+            self.assertIn(ticket.pk, rest)
+        html = response.content.decode()
+        self.assertIn('name="technician"', html)
+        self.assertNotIn('Interventions du jour', html)
+
+    def test_assigned_ticket_leaves_the_to_plan_tab(self):
         self.follow_up.technician = self.tech
-        self.follow_up.status = 'planned'
         self.follow_up.planned_start = timezone.now() + timedelta(days=2)
         self.follow_up.planned_end = self.follow_up.planned_start + timedelta(hours=1)
         self.follow_up.save()
-        response = self.http.get(reverse('ticket_list'))
-        self.assertEqual(self._ids(response.context['to_reschedule']), [self.late.pk])
+        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
+        self.assertEqual(self._ids(response.context['to_plan']), [self.late.pk, self.unassigned.pk])
 
     def test_filters_show_a_single_result_list(self):
         response = self.http.get(reverse('ticket_list'), {'status': 'in_progress'})
         self.assertTrue(response.context['filtering'])
-        self.assertEqual(response.context['to_reschedule'], [])
         self.assertEqual(self._ids(response.context['tickets']), [self.started_early.pk])
-        self.assertNotIn('Interventions du jour', response.content.decode())
 
     def test_unassigned_filter(self):
         response = self.http.get(reverse('ticket_list'), {'technician': 'none'})

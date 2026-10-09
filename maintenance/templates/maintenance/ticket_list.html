@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Tickets de Maintenance | SMARTOPS{% endblock %}
 {% block page_title %}Tickets de Maintenance{% endblock %}
@@ -18,6 +19,25 @@
         </a>
     </div>
 
+    <!-- Onglets -->
+    <div class="mb-6 flex gap-2 border-b border-slate-200">
+        <a href="{% url 'ticket_list' %}" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition {% if tab == 'toutes' %}border-blue-600 text-blue-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
+            <i class="las la-list"></i> {% trans "Toutes les interventions" %}
+        </a>
+        <a href="{% url 'ticket_list' %}?tab=a-planifier" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'a-planifier' %}border-orange-500 text-orange-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
+            <i class="las la-user-clock"></i> {% trans "À planifier" %}
+            <span class="px-2 py-0.5 rounded-full text-xs {% if to_plan %}bg-orange-100 text-orange-700{% else %}bg-slate-100 text-slate-400{% endif %}">{{ to_plan|length }}</span>
+        </a>
+    </div>
+
+    {% if tab == 'a-planifier' %}
+    <!-- File des tickets qui attendent le gestionnaire -->
+    <section>
+        <p class="text-slate-500 text-sm mb-4">{% trans "Tickets sans technicien (dont les suites d'interventions à replanifier) et interventions planifiées non démarrées dont le créneau est dépassé depuis moins de 7 jours, de la plus ancienne date prévue à la plus récente." %}</p>
+        {% if older_late %}<p class="text-sm font-semibold text-rose-600 mb-4"><i class="las la-history"></i> {{ older_late }} {% trans "autre(s) intervention(s) planifiée(s) jamais démarrée(s), créneau dépassé depuis plus de 7 jours (voir l'onglet Toutes les interventions)." %}</p>{% endif %}
+        {% include "maintenance/_ticket_table.html" with rows=to_plan show_reason=True empty_text="Aucun ticket à planifier" %}
+    </section>
+    {% else %}
     <!-- Filtres -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-6">
         <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
@@ -75,46 +95,9 @@
         </form>
     </div>
 
-    {% if not filtering %}
-    {% if to_reschedule %}
-    <!-- Interventions à replanifier -->
-    <section class="mb-10">
-        <div class="mb-4 flex items-start gap-3">
-            <div class="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0"><i class="las la-exclamation-triangle text-xl"></i></div>
-            <div>
-                <h3 class="text-lg font-black text-slate-800">Interventions à replanifier <span class="ml-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs align-middle">{{ to_reschedule|length }}</span></h3>
-                <p class="text-slate-500 text-sm">Interventions non réalisées, ou non démarrées à l'heure prévue au cours des 7 derniers jours : à réaffecter à un technicien.</p>
-            </div>
-        </div>
-        {% include "maintenance/_ticket_table.html" with rows=to_reschedule show_reason=True %}
-    </section>
-    {% endif %}
-
-    <!-- Interventions du jour -->
-    <section class="mb-10">
-        <div class="mb-4 flex items-start gap-3">
-            <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0"><i class="las la-calendar-day text-xl"></i></div>
-            <div>
-                <h3 class="text-lg font-black text-slate-800">Interventions du jour <span class="ml-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs align-middle">{{ of_the_day|length }}</span></h3>
-                <p class="text-slate-500 text-sm">Interventions en cours, interventions prévues aujourd'hui par heure de début, puis interventions terminées aujourd'hui.</p>
-            </div>
-        </div>
-        {% include "maintenance/_ticket_table.html" with rows=of_the_day empty_text="Aucune intervention en cours ni prévue aujourd'hui" %}
-    </section>
-    {% endif %}
-
-    <!-- Toutes les interventions -->
-    <div class="mb-4 flex items-end justify-between gap-4 flex-wrap">
-        <div>
-            <h3 class="text-lg font-black text-slate-800">{% if filtering %}Résultats{% else %}Toutes les interventions{% endif %}</h3>
-            {% if not filtering %}<p class="text-slate-500 text-sm">Autres interventions, par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur l'en-tête ID, Créé le ou Date prévue pour changer le tri.</p>{% endif %}
-            {% if older_late %}<p class="text-sm font-semibold text-rose-600 mt-1"><i class="las la-history"></i> Dont {{ older_late }} intervention{{ older_late|pluralize }} jamais démarrée{{ older_late|pluralize }} dont le créneau est dépassé depuis plus de 7 jours.</p>{% endif %}
-        </div>
-        {% if unassigned_count and filters.technician != 'none' %}
-        <a href="?technician=none" class="text-sm font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1">
-            <i class="las la-user-slash"></i> {{ unassigned_count }} intervention{{ unassigned_count|pluralize }} à venir sans technicien
-        </a>
-        {% endif %}
+    <div class="mb-4">
+        <h3 class="text-lg font-black text-slate-800">{% if filtering %}Résultats{% else %}Toutes les interventions{% endif %}</h3>
+        {% if not filtering %}<p class="text-slate-500 text-sm">Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur l'en-tête ID, Créé le ou Date prévue pour changer le tri.</p>{% endif %}
     </div>
     {% include "maintenance/_ticket_table.html" with rows=tickets sortable=True %}
 
@@ -153,6 +136,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}

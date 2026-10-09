@@ -19,7 +19,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm, InterventionPhotoForm
 from .calendars import assigned_ticket_ids, get_technician_calendar, ticket_event_bounds
-from .services import NOT_STARTED, local_day_range, older_late_count, tickets_of_the_day, tickets_to_reschedule
+from .services import local_day_range, older_late_count, tickets_to_plan
 from accounts.views import is_management_staff
 
 # Colonnes triables de la liste des interventions.
@@ -30,14 +30,17 @@ TICKET_LIST_SORTS = ('id', 'created_at', 'planned_start')
 @user_passes_test(is_management_staff)
 def ticket_list(request):
     """
-    Liste des tickets de maintenance, avec filtrage par technicien, date,
-    statut, lieu et client.
+    Liste des interventions en deux onglets :
+    - « À planifier » (?tab=a-planifier) : file des tickets qui attendent le gestionnaire ;
+    - « Toutes les interventions » (par défaut) : filtres par technicien, date, statut, lieu
+      et client, tri par colonne et pagination.
     """
     from inventory.models import Client, Building
 
     tickets = MaintenanceTicket.objects.select_related(
         'equipment', 'equipment__building', 'equipment__building__client', 'technician__user'
     ).order_by('-planned_start')
+    all_tickets = tickets
 
     # Tri de la liste complète par en-tête de colonne ; par défaut, date prévue la plus récente d'abord.
     sort = request.GET.get('sort')
@@ -68,15 +71,10 @@ def ticket_list(request):
     if client_id:
         tickets = tickets.filter(equipment__building__client_id=client_id)
 
-    # Sans filtre : interventions à replanifier et du jour en tête, le reste dans la liste complète.
-    # Avec un filtre : une seule liste, celle des résultats.
     filtering = any([technician_id, date_filter, status_filter, building_id, client_id])
-    to_reschedule, of_the_day, older_late = [], [], 0
-    if not filtering:
-        older_late = older_late_count(tickets)
-        to_reschedule = tickets_to_reschedule(tickets)
-        of_the_day = tickets_of_the_day(tickets, exclude_ids=[t.pk for t in to_reschedule])
-        tickets = tickets.exclude(pk__in=[t.pk for t in to_reschedule + of_the_day])
+    tab = 'a-planifier' if request.GET.get('tab') == 'a-planifier' else 'toutes'
+    # File « À planifier » : toujours calculée sans filtre, pour le compteur de l'onglet.
+    to_plan = tickets_to_plan(all_tickets)
     tickets = tickets.order_by(f"{'-' if order == 'desc' else ''}{sort}", '-pk')
 
     paginator = Paginator(tickets, 25)
@@ -98,10 +96,9 @@ def ticket_list(request):
         'sort': sort,
         'order': order,
         'filtering': filtering,
-        'to_reschedule': to_reschedule,
-        'of_the_day': of_the_day,
-        'older_late': older_late,
-        'unassigned_count': MaintenanceTicket.objects.filter(technician__isnull=True, status__in=NOT_STARTED).count(),
+        'tab': tab,
+        'to_plan': to_plan,
+        'older_late': older_late_count(all_tickets),
         'page_title': "Tickets de Maintenance",
         'technicians': Technician.objects.select_related('user').order_by('user__username'),
         'clients': Client.objects.order_by('name'),

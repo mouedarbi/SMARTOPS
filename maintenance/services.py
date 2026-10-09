@@ -13,7 +13,7 @@ import re
 
 from django.core.files import File
 from django.db import transaction
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db.models import Q
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -107,57 +107,34 @@ def local_day_range(day):
     return start, start + datetime.timedelta(days=1)
 
 
-def tickets_to_reschedule(queryset, now=None):
+def tickets_to_plan(queryset, now=None):
     """
-    Interventions à réaffecter sans attendre, avec leur motif (`reschedule_reason`) :
+    File « À planifier » : interventions qui attendent le gestionnaire, de la plus ancienne date
+    prévue à la plus récente, avec leur motif (`plan_reason`) :
     - « follow_up » : suite d'une intervention clôturée « à replanifier » (en attente, sans technicien),
       `origin_id` = numéro de l'intervention d'origine ;
-    - « late » : intervention non démarrée dont le créneau prévu s'est terminé dans les 7 derniers jours.
+    - « unassigned » : autre intervention en attente, sans technicien ;
+    - « late » : intervention planifiée jamais démarrée dont le créneau s'est terminé dans les 7 derniers jours.
     """
     now = now or timezone.now()
-    follow_ups = list(queryset.filter(
-        status='pending', technician__isnull=True, description__startswith=FOLLOW_UP_PREFIX,
-    ).order_by('planned_start'))
-    for ticket in follow_ups:
-        ticket.reschedule_reason = 'follow_up'
+    rows = list(queryset.filter(
+        Q(status='pending', technician__isnull=True)
+        | Q(status='planned', planned_end__lt=now, planned_end__gte=now - LATE_WINDOW),
+    ).order_by('planned_start', 'pk'))
+    for ticket in rows:
+        if ticket.status == 'planned':
+            ticket.plan_reason = 'late'
+            continue
         match = FOLLOW_UP_ORIGIN.match(ticket.description)
+        ticket.plan_reason = 'follow_up' if match else 'unassigned'
         ticket.origin_id = int(match.group(1)) if match else None
-
-    late = list(queryset.filter(
-        status__in=NOT_STARTED, planned_end__lt=now, planned_end__gte=now - LATE_WINDOW,
-    ).exclude(
-        pk__in=[t.pk for t in follow_ups],
-    ).order_by('planned_start'))
-    for ticket in late:
-        ticket.reschedule_reason = 'late'
-    return follow_ups + late
+    return rows
 
 
 def older_late_count(queryset, now=None):
-    """Interventions jamais démarrées dont le créneau s'est terminé il y a plus de 7 jours."""
+    """Interventions planifiées jamais démarrées dont le créneau s'est terminé il y a plus de 7 jours."""
     now = now or timezone.now()
-    return queryset.filter(status__in=NOT_STARTED, planned_end__lt=now - LATE_WINDOW).count()
-
-
-def tickets_of_the_day(queryset, now=None, exclude_ids=()):
-    """
-    Journée en cours : interventions en cours (quelle que soit leur date prévue), interventions
-    prévues aujourd'hui (heure locale) et pas encore démarrées, par heure de début, puis
-    interventions terminées aujourd'hui.
-    """
-    now = now or timezone.now()
-    day_start, day_end = local_day_range(timezone.localdate(now))
-    return list(queryset.filter(
-        Q(status='in_progress')
-        | Q(status__in=NOT_STARTED, planned_start__gte=day_start, planned_start__lt=day_end)
-        | Q(status='done', effective_end__gte=day_start, effective_end__lt=day_end),
-    ).exclude(pk__in=exclude_ids).annotate(
-        day_order=Case(
-            When(status='in_progress', then=Value(0)),
-            When(status='done', then=Value(2)),
-            default=Value(1), output_field=IntegerField(),
-        ),
-    ).order_by('day_order', 'planned_start'))
+    return queryset.filter(status='planned', planned_end__lt=now - LATE_WINDOW).count()
 
 
 def occupied_interval(ticket):
