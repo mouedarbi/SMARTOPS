@@ -189,6 +189,24 @@
             </div>
 
         </div>
+
+        {% if ticket.status == 'pending' or ticket.status == 'planned' %}
+        <!-- Dispatching : planning du technicien choisi, avec le créneau du ticket -->
+        <div id="dispatch-planning-section" class="mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100" hidden
+             data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}"
+             data-label-free="{% trans 'Créneau libre chez ce technicien.' %}"
+             data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                    <i class="las la-calendar-week text-lg"></i> {% trans "Planning du technicien" %}
+                </h4>
+                <p id="dispatch-slot-status" class="text-sm font-bold"></p>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">{% trans "Le créneau du ticket apparaît en vert s'il est libre, en rouge s'il chevauche une autre intervention. Cliquez sur un créneau libre pour y placer le ticket." %}</p>
+            <div id="dispatch-planning"></div>
+        </div>
+        {% include "maintenance/_planning_assets.html" %}
+        {% endif %}
     </form>
 </div>
 
@@ -297,6 +315,90 @@ document.addEventListener('DOMContentLoaded', function() {
             searchResults.classList.add('hidden');
         }
     });
+});
+</script>
+
+<script>
+// Dispatching : affiche le planning du technicien choisi et le créneau du ticket.
+document.addEventListener('DOMContentLoaded', function() {
+    const section = document.getElementById('dispatch-planning-section');
+    if (!section) return;
+    const technicianSelect = document.getElementById('id_technician');
+    const dateInput = document.getElementById('id_planned_date');
+    const timeSelect = document.getElementById('id_start_time_slot');
+    const durationSelect = document.getElementById('id_duration_seconds');
+    const statusLabel = document.getElementById('dispatch-slot-status');
+    const pad = n => String(n).padStart(2, '0');
+    let calendar = null;
+
+    function ticketSlot() {
+        if (!dateInput.value || !timeSelect.value) return null;
+        const start = new Date(dateInput.value + 'T' + timeSelect.value + ':00');
+        return {start: start, end: new Date(start.getTime() + Number(durationSelect.value) * 1000)};
+    }
+
+    // Créneau du ticket en arrière-plan : vert s'il est libre, rouge s'il chevauche une intervention.
+    function drawTicketSlot() {
+        if (!calendar) return;
+        const previous = calendar.getEventById('ticket-slot');
+        if (previous) previous.remove();
+        const slot = ticketSlot();
+        if (!slot) { statusLabel.textContent = ''; return; }
+        const conflict = calendar.getEvents().some(e =>
+            e.id !== 'ticket-slot' && e.start < slot.end && (e.end || e.start) > slot.start);
+        calendar.addEvent({
+            id: 'ticket-slot', start: slot.start, end: slot.end, display: 'background',
+            backgroundColor: conflict ? '#f43f5e' : '#10b981',
+        });
+        statusLabel.textContent = conflict ? section.dataset.labelConflict : section.dataset.labelFree;
+        statusLabel.className = 'text-sm font-bold ' + (conflict ? 'text-rose-600' : 'text-emerald-600');
+    }
+
+    function showPlanning() {
+        const technicianId = technicianSelect.value;
+        section.hidden = !technicianId;
+        if (!technicianId) return;
+        const url = section.dataset.eventsUrl + '?technician=' + technicianId + '&exclude=' + section.dataset.ticketId;
+        if (!calendar) {
+            calendar = new FullCalendar.Calendar(document.getElementById('dispatch-planning'), {
+                initialView: 'timeGridWeek',
+                initialDate: dateInput.value || undefined,
+                locale: 'fr',
+                headerToolbar: {left: 'prev,next today', center: 'title', right: 'timeGridWeek,timeGridDay'},
+                allDaySlot: false,
+                slotMinTime: '07:00:00',
+                slotMaxTime: '20:00:00',
+                snapDuration: '00:30:00',
+                selectable: true,
+                eventSources: [{id: 'technician', url: url}],
+                // Interventions du technicien chargées : on recolore le créneau du ticket.
+                loading: function(isLoading) { if (!isLoading) drawTicketSlot(); },
+                // Clic sur un créneau libre : il devient la date et l'heure de début du ticket.
+                select: function(info) {
+                    const start = info.start;
+                    const time = pad(start.getHours()) + ':' + pad(start.getMinutes());
+                    if ([...timeSelect.options].some(o => o.value === time)) {
+                        dateInput.value = start.getFullYear() + '-' + pad(start.getMonth() + 1) + '-' + pad(start.getDate());
+                        timeSelect.value = time;
+                        drawTicketSlot();
+                    }
+                    calendar.unselect();
+                },
+            });
+            calendar.render();
+        } else {
+            calendar.getEventSourceById('technician').remove();
+            calendar.addEventSource({id: 'technician', url: url});
+            calendar.updateSize();
+        }
+    }
+
+    technicianSelect.addEventListener('change', showPlanning);
+    [dateInput, timeSelect, durationSelect].forEach(el => el.addEventListener('change', function() {
+        if (calendar && dateInput.value) calendar.gotoDate(dateInput.value);
+        drawTicketSlot();
+    }));
+    showPlanning();
 });
 </script>
 {% endblock %}

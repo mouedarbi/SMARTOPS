@@ -439,6 +439,7 @@ def api_events(request):
     - ?technician=<pk> : les tickets copiés dans le calendrier de ce technicien, aux heures de
       ces copies (le réel dès qu'il existe).
     ?start= / ?end= (envoyés par FullCalendar) : uniquement la période affichée.
+    ?exclude=<pk> : sans ce ticket (le ticket en cours de dispatching).
     """
     range_start = _parse_calendar_bound(request.GET.get('start'))
     range_end = _parse_calendar_bound(request.GET.get('end'))
@@ -459,6 +460,9 @@ def api_events(request):
         if in_range:
             tickets = tickets.filter(planned_start__lt=range_end, planned_end__gt=range_start)
         bounds = lambda ticket: (ticket.planned_start, ticket.planned_end)
+    exclude_id = request.GET.get('exclude')
+    if exclude_id and exclude_id.isdigit():
+        tickets = tickets.exclude(pk=exclude_id)
     tickets = tickets.select_related('equipment', 'technician', 'equipment__building', 'equipment__building__client')
 
     events = []

@@ -990,3 +990,46 @@ class TicketStatusRuleTestCase(TestCase):
             self.assertEqual(ticket.status, expected)
         self.assertIn('[PLANIFIÉ]', assigned.event.title)
         self.assertTrue(all('[PLANIFIÉ]' in e.title for e in assignment_events(assigned)))
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class DispatchPlanningTestCase(TestCase):
+    """Écran de modification : le planning du technicien choisi s'affiche sous le formulaire."""
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='chef_dp', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(username='tech_dp', password='Password123!', role='technician').technician_profile
+        client_obj = Client.objects.create(name='Client Dp', address='1 rue Dp')
+        building = Building.objects.create(client=client_obj, name='Site Dp', address='1 rue Dp')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Clim', equipment_type=EquipmentType.objects.create(name='Clim'),
+            serial_number='CL-1', installed_at=date(2025, 1, 1),
+        )
+        self.start = timezone.make_aware(timezone.datetime(2026, 12, 17, 9, 0))
+        self.http = HttpClient()
+        self.http.login(username='chef_dp', password='Password123!')
+
+    def _ticket(self, **extra):
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='repair',
+            planned_start=self.start, planned_end=self.start + timedelta(hours=1), **extra,
+        )
+
+    def test_planning_section_only_when_dispatching(self):
+        """Présent en modification d'un ticket non démarré, absent à la création et sur un ticket démarré."""
+        self.assertContains(self.http.get(reverse('ticket_update', args=[self._ticket().pk])), 'id="dispatch-planning-section"')
+        self.assertNotContains(self.http.get(reverse('ticket_create')), 'id="dispatch-planning-section"')
+        started = self._ticket(technician=self.tech)
+        MaintenanceTicket.objects.filter(pk=started.pk).update(status='in_progress')
+        response = self.http.get(reverse('ticket_update', args=[started.pk]), follow=True)
+        self.assertNotContains(response, 'id="dispatch-planning-section"')
+
+    def test_events_exclude_ticket_being_dispatched(self):
+        """Le planning du technicien n'affiche pas le ticket en cours de modification."""
+        ticket = self._ticket(technician=self.tech)
+        other = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='repair',
+            planned_start=self.start.replace(hour=14), planned_end=self.start.replace(hour=15),
+        )
+        data = self.http.get(reverse('api_events'), {'technician': self.tech.pk, 'exclude': ticket.pk}).json()
+        self.assertEqual([e['id'] for e in data], [other.pk])
