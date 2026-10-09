@@ -198,7 +198,7 @@
              data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
-                    <i class="las la-calendar-week text-lg"></i> {% trans "Planning du technicien" %}
+                    <i class="las la-calendar-week text-lg"></i> {% trans "Planning de" %} <span id="dispatch-technician-name" class="text-slate-800 text-sm normal-case tracking-normal"></span>
                 </h4>
                 <p id="dispatch-slot-status" class="text-sm font-bold"></p>
             </div>
@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const technicianId = technicianSelect.value;
         section.hidden = !technicianId;
         if (!technicianId) return;
+        // Nom du technicien sur le planning : on voit quel calendrier est chargé, même vide.
+        document.getElementById('dispatch-technician-name').textContent =
+            technicianSelect.options[technicianSelect.selectedIndex].text;
         const url = section.dataset.eventsUrl + '?technician=' + technicianId + '&exclude=' + section.dataset.ticketId;
         if (!calendar) {
             calendar = new FullCalendar.Calendar(document.getElementById('dispatch-planning'), {
