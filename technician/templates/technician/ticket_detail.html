@@ -2,8 +2,8 @@
 {% load ticket_links %}
 
 {% block content %}
-<!-- Floating Action Button (Démarrer) -->
-{% if ticket.status == 'pending' or ticket.status == 'planned' %}
+<!-- Floating Action Button (Démarrer) : uniquement sur ses propres tickets -->
+{% if is_own and ticket.status == 'pending' or is_own and ticket.status == 'planned' %}
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
     <form id="start-intervention-form" method="post" action="{% url 'start_intervention' ticket.id %}">
         {% csrf_token %}
@@ -18,7 +18,7 @@
 {% endif %}
 
 <!-- Floating Action Button (Terminer) -->
-{% if ticket.status == 'in_progress' %}
+{% if is_own and ticket.status == 'in_progress' %}
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
     <a href="{% url 'stop_intervention' ticket.id %}" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-emerald-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
         <i class="fas fa-file-signature text-xs"></i>
@@ -28,6 +28,12 @@
 {% endif %}
 
 <div class="px-4 py-6">
+    {% if not is_own %}
+    <!-- Ticket lié (origine ou suite) assigné à un collègue : consultation seulement -->
+    <div class="mb-4 p-3 rounded-2xl bg-slate-100 text-slate-600 text-xs font-bold flex items-center gap-2">
+        <i class="fas fa-eye"></i> Intervention liée, en lecture seule{% if ticket.technician %} · {{ ticket.technician }}{% endif %}
+    </div>
+    {% endif %}
     <!-- Header Ticket -->
     <div class="flex items-center justify-between mb-6">
         <a href="{% url 'technician_dashboard' %}" class="h-10 w-10 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
@@ -145,7 +151,7 @@
                         <a href="{{ photo.image.url }}" target="_blank">
                             <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" loading="lazy" class="h-24 w-full object-cover">
                         </a>
-                        {% if photo.uploaded_by_id == user.id %}
+                        {% if is_own and photo.uploaded_by_id == user.id %}
                         <form method="post" class="absolute top-1 right-1" onsubmit="return confirm('Supprimer ?')">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete_photo">
@@ -159,6 +165,7 @@
                 </div>
                 {% endif %}
 
+                {% if is_own %}
                 <form method="post" enctype="multipart/form-data" class="space-y-3" id="photo-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="add_photo">
@@ -177,6 +184,7 @@
                     </label>
                     <p id="photo-status" class="hidden text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">Optimisation de la photo…</p>
                 </form>
+                {% endif %}
                 <script>
                 // Les photos de smartphone (plusieurs Mo) sont réduites avant l'envoi
                 // pour éviter le rejet « too large » et économiser la data mobile.

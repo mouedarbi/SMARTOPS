@@ -414,17 +414,43 @@ class RescheduleFollowUpTests(TestCase):
         follow_up.refresh_from_db()
         self.assertEqual(follow_up.status, 'in_progress')
 
-    def test_description_links_only_to_own_tickets(self):
+    def test_links_between_origin_and_follow_up(self):
+        """Origine et suite se lient dans les deux sens, en lecture seule si le ticket n'est pas le sien."""
         self.close_to_reschedule()
         follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
-        html = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id])).content.decode()
-        # Le ticket de suite n'est pas encore attribué : pas de lien
-        self.assertNotIn(reverse('technician_ticket_detail', args=[follow_up.id]), html)
+        origin_url = reverse('technician_ticket_detail', args=[self.ticket.id])
+        follow_up_url = reverse('technician_ticket_detail', args=[follow_up.id])
 
-        follow_up.technician = self.tech_profile
+        # Le technicien qui a clôturé voit le lien vers la suite (non attribuée), consultable sans actions.
+        self.assertIn(f'href="{follow_up_url}"', self.client_http.get(origin_url).content.decode())
+        html = self.client_http.get(follow_up_url).content.decode()
+        self.assertIn('lecture seule', html)
+        self.assertNotIn('id="start-intervention-form"', html)
+        self.assertNotIn('id="photo-form"', html)
+        self.assertEqual(self.client_http.post(follow_up_url, {'action': 'add_photo'}).status_code, 404)
+
+        # La suite est confiée à un collègue : il voit le lien vers l'intervention d'origine, en lecture seule.
+        colleague = User.objects.create_user(username='tech2', password='password123', role='technician')
+        follow_up.technician = colleague.technician_profile
         follow_up.save()
-        html = self.client_http.get(reverse('technician_ticket_detail', args=[follow_up.id])).content.decode()
-        self.assertIn(f'href="{reverse("technician_ticket_detail", args=[self.ticket.id])}"', html)
+        other = HttpClient()
+        other.login(username='tech2', password='password123')
+        html = other.get(follow_up_url).content.decode()
+        self.assertIn(f'href="{origin_url}"', html)
+        self.assertIn('id="start-intervention-form"', html)
+        html = other.get(origin_url).content.decode()
+        self.assertIn('lecture seule', html)
+        self.assertIn('Pièce manquante.', html)
+
+    def test_unrelated_ticket_stays_hidden(self):
+        """Un ticket sans lien avec les siens reste inaccessible au technicien."""
+        colleague = User.objects.create_user(username='tech3', password='password123', role='technician')
+        now = timezone.now()
+        foreign = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=colleague.technician_profile, type='repair',
+            planned_start=now, planned_end=now + timedelta(hours=1),
+        )
+        self.assertEqual(self.client_http.get(reverse('technician_ticket_detail', args=[foreign.id])).status_code, 404)
 
     def test_manager_cannot_edit_rescheduled_ticket(self):
         self.close_to_reschedule()

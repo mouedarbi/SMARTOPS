@@ -16,6 +16,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
+from django.http import Http404
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
@@ -163,11 +164,24 @@ def technician_profile(request):
         'now': timezone.now(),
     })
 
+def _related_ticket_ids(technician):
+    """
+    Tickets cités dans la description des tickets du technicien : l'intervention d'origine
+    d'un ticket de suite qui lui est confié, ou la suite d'une intervention qu'il a clôturée.
+    """
+    ids = set()
+    for description in MaintenanceTicket.objects.filter(technician=technician).values_list('description', flat=True):
+        ids |= referenced_ticket_ids(description)
+    return ids
+
+
 @login_required(login_url='technician_login')
 @user_passes_test(is_technician, login_url='technician_login')
 def technician_ticket_detail(request, pk):
     """
-    Vue détaillée d'une intervention pour le technicien.
+    Vue détaillée d'une intervention pour le technicien. Il peut aussi consulter, en lecture
+    seule, les tickets liés aux siens (intervention d'origine ou ticket de suite), même
+    assignés à un collègue.
     """
     try:
         tech_profile = request.user.technician_profile
@@ -175,8 +189,14 @@ def technician_ticket_detail(request, pk):
         messages.error(request, "Profil technicien introuvable.")
         return redirect('technician_dashboard')
 
-    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    is_own = ticket.technician_id == tech_profile.pk
+    related_ids = _related_ticket_ids(tech_profile)
+    if not is_own and ticket.pk not in related_ids:
+        raise Http404
 
+    if request.method == 'POST' and not is_own:
+        raise Http404
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'add_photo':
@@ -206,9 +226,11 @@ def technician_ticket_detail(request, pk):
         'ticket': ticket,
         'now': timezone.now(),
         'photos': ticket.photos.all(),
-        # Liens vers les tickets cités dans la description, limités à ceux du technicien
+        'is_own': is_own,
+        # Liens vers les tickets cités dans la description, limités à ceux qu'il peut ouvrir
         'linkable_ids': set(MaintenanceTicket.objects.filter(
-            technician=tech_profile, pk__in=referenced_ticket_ids(ticket.description),
+            Q(technician=tech_profile) | Q(pk__in=related_ids),
+            pk__in=referenced_ticket_ids(ticket.description),
         ).values_list('pk', flat=True)),
     }
     return render(request, 'technician/ticket_detail.html', context)
