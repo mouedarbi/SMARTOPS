@@ -19,7 +19,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm, InterventionPhotoForm
 from .calendars import assigned_ticket_ids, get_technician_calendar, ticket_event_bounds
-from .services import local_day_range, older_late_count, tickets_to_plan
+from .services import FOLLOW_UP_PREFIX, local_day_range, older_late_count, tickets_to_plan
 from accounts.views import is_management_staff
 
 # Colonnes triables de la liste des interventions.
@@ -155,6 +155,10 @@ def ticket_detail(request, pk):
         'closure': _build_closure_summary(ticket),
         'photos': ticket.photos.select_related('uploaded_by').all(),
         'timeline': _build_ticket_timeline(ticket),
+        # Clôturée « à replanifier » : le ticket de suite transmis au dispatching.
+        'follow_up': MaintenanceTicket.objects.filter(
+            description__startswith=f"{FOLLOW_UP_PREFIX}{ticket.id} ",
+        ).first() if ticket.status == 'to_reschedule' else None,
     }
     return render(request, 'maintenance/ticket_detail.html', context)
 
@@ -527,17 +531,20 @@ def api_events(request):
         status_label = ticket.get_status_display().upper()
         
         # Détermination de la couleur basée sur le statut
-        color = '#64748b' # Default (Slate 500)
+        # Mêmes repères que la liste des interventions : chaque statut a sa couleur.
+        color = '#f59e0b' # Planifié : Amber 500
         if ticket.status == 'in_progress':
             color = '#3b82f6' # Blue 500
         elif ticket.status == 'done':
             color = '#10b981' # Emerald 500
         elif ticket.status == 'to_reschedule':
-            color = '#f59e0b' # Amber 500
+            color = '#ea580c' # Orange 600 : clôturée, travail non effectué
         elif ticket.status == 'pending':
-            color = '#f59e0b' # Amber 500 (orange)
+            color = '#94a3b8' # Slate 400 : en attente, sans technicien
+        elif ticket.status == 'canceled':
+            color = '#f43f5e' # Rose 500
         elif ticket.type == 'emergency':
-            color = '#ef4444' # Red 500
+            color = '#ef4444' # Red 500 : urgence planifiée
 
         events.append({
             'id': ticket.id,

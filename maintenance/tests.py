@@ -893,6 +893,20 @@ class TechnicianCalendarTestCase(TestCase):
         http.login(username='chef_cal', password='Password123!')
         return http
 
+    def test_closed_to_reschedule_is_shown_closed(self):
+        """Clôturée « à replanifier » : bandeau orange « travail non effectué » avec le ticket de suite, couleurs distinctes au planning."""
+        from maintenance.services import reschedule_ticket
+        ticket = self._ticket(self.tech)
+        ticket.status, ticket.effective_start = 'in_progress', timezone.now() - timedelta(minutes=5)
+        ticket.save()
+        follow_up = reschedule_ticket(ticket, report='Pièce manquante')
+        response = self.http_manager().get(reverse('ticket_detail', args=[ticket.pk]))
+        self.assertContains(response, 'Clôturée : travail non effectué, à replanifier')
+        self.assertNotContains(response, 'Travail en cours')
+        self.assertContains(response, reverse('ticket_detail', args=[follow_up.pk]))
+        colors = {e['id']: e['backgroundColor'] for e in self.http_manager().get(reverse('api_events')).json()}
+        self.assertNotEqual(colors[ticket.pk], colors[follow_up.pk])
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketStatusRuleTestCase(TestCase):
     """« En attente » / « Planifié » sont fixés par le système selon le technicien ; la gestion ne choisit pas le statut."""
