@@ -1035,6 +1035,14 @@ class DispatchPlanningTestCase(TestCase):
         self.assertEqual([e['id'] for e in data], [other.pk])
 
 
+    def test_reassign_button_only_when_planned(self):
+        """Le bouton « Réassigner » mène au choix du technicien, seulement pour un ticket planifié."""
+        ticket = self._ticket(technician=self.tech)
+        response = self.http.get(reverse('ticket_detail', args=[ticket.pk]))
+        self.assertContains(response, reverse('ticket_update', args=[ticket.pk]) + '#reassigner')
+        self.assertContains(self.http.get(reverse('ticket_update', args=[ticket.pk])), 'id="reassigner"')
+        self.assertNotContains(self.http.get(reverse('ticket_detail', args=[self._ticket().pk])), '#reassigner')
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketListCreatedAtTestCase(TestCase):
     """La liste des interventions affiche la date de création de chaque ticket."""

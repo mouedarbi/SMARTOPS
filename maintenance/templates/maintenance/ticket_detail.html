@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load ticket_links %}
+{% load ticket_links i18n %}
 
 {% block title %}Intervention #{{ ticket.id }} | SMARTOPS{% endblock %}
 {% block page_title %}Intervention #{{ ticket.id }}{% endblock %}
@@ -33,6 +33,12 @@
             <a href="{% url 'ticket_update' ticket.id %}" class="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition flex items-center gap-2">
                 <i class="las la-edit text-xl"></i>
                 Modifier la planification
+            </a>
+            {% endif %}
+            {% if ticket.status == 'planned' %}
+            <a href="{% url 'ticket_update' ticket.id %}#reassigner" class="px-6 py-3 bg-amber-50 text-amber-700 font-bold rounded-2xl border border-amber-200 hover:bg-amber-100 transition flex items-center gap-2">
+                <i class="las la-user-edit text-xl"></i>
+                {% trans "Réassigner" %}
             </a>
             {% endif %}
             <button type="button" onclick="window.print()" title="Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2">

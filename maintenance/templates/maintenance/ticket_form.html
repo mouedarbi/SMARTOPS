@@ -103,7 +103,7 @@
                             {{ form.equipment }}
                         </div>
                         {% if ticket %}
-                        <div>
+                        <div id="reassigner">
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Technicien assigné</label>
                             {{ form.technician }}
                         </div>
@@ -397,6 +397,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     technicianSelect.addEventListener('change', showPlanning);
+    // Arrivée par le bouton « Réassigner » : on place le curseur sur le choix du technicien.
+    if (window.location.hash === '#reassigner') technicianSelect.focus();
     [dateInput, timeSelect, durationSelect].forEach(el => el.addEventListener('change', function() {
         if (calendar && dateInput.value) calendar.gotoDate(dateInput.value);
         drawTicketSlot();
