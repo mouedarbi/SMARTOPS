@@ -342,13 +342,20 @@ def technician_list(request):
     return render(request, 'maintenance/technician_list.html', context)
 from .forms import MaintenanceTicketForm, TechnicianForm
 
+# Onglets de la fiche technicien.
+TECHNICIAN_TABS = ('planning', 'interventions', 'statistiques', 'profil')
+
+
 @login_required
 @user_passes_test(is_management_staff)
 def technician_detail(request, pk):
     """
-    Détail et édition d'un technicien avec statistiques de performance.
+    Fiche d'un technicien en onglets (?tab=) : planning (par défaut), interventions,
+    statistiques et profil (compétences, disponibilité).
     """
     technician = get_object_or_404(Technician, pk=pk)
+    tab = request.GET.get('tab')
+    tab = tab if tab in TECHNICIAN_TABS else 'planning'
     tickets = technician.tickets.all()
     
     # Calcul des statistiques
@@ -368,13 +375,23 @@ def technician_detail(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Profil de {technician} mis à jour.")
-            return redirect('technician_list')
+            return redirect(f"{reverse('technician_detail', args=[technician.pk])}?tab=profil")
+        tab = 'profil'
     else:
         form = TechnicianForm(instance=technician)
+
+    # Onglet Interventions : toutes celles du technicien, la date prévue la plus récente d'abord.
+    interventions = Paginator(
+        tickets.select_related('equipment', 'equipment__building', 'equipment__building__client', 'technician__user')
+        .order_by('-planned_start', '-pk'),
+        25,
+    ).get_page(request.GET.get('page'))
 
     context = {
         'technician': technician,
         'form': form,
+        'tab': tab,
+        'interventions': interventions,
         'events_url': f"{reverse('api_events')}?technician={technician.pk}",
         'page_title': f"Profil Technicien : {technician}",
         'stats': {

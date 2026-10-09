@@ -872,6 +872,27 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertEqual(api.get(reverse('api_me')).json()['calendar_slug'], get_technician_calendar(self.tech).slug)
 
 
+    def test_technician_page_tabs(self):
+        """Fiche technicien en onglets : planning par défaut, interventions, statistiques, profil."""
+        ticket = self._ticket(self.tech)
+        url = reverse('technician_detail', args=[self.tech.pk])
+        self.assertContains(self.http_manager().get(url), 'technician-planning')
+        http = self.http_manager()
+        response = http.get(url, {'tab': 'interventions'})
+        self.assertEqual([t.pk for t in response.context['interventions']], [ticket.pk])
+        self.assertNotContains(response, 'technician-planning')
+        self.assertContains(http.get(url, {'tab': 'statistiques'}), 'Taux de succès')
+        self.assertContains(http.get(url, {'tab': 'profil'}), 'specialties_str')
+        response = http.post(f"{url}?tab=profil", {'specialties_str': 'Froid, Gaz', 'is_active': 'on'})
+        self.assertRedirects(response, f"{url}?tab=profil")
+        self.tech.refresh_from_db()
+        self.assertEqual(self.tech.specialties, ['Froid', 'Gaz'])
+
+    def http_manager(self):
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        return http
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketStatusRuleTestCase(TestCase):
     """« En attente » / « Planifié » sont fixés par le système selon le technicien ; la gestion ne choisit pas le statut."""
