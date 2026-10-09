@@ -3,7 +3,7 @@ Fichier : services.py
 Projet : SMARTOPS (Core Application)
 Application : licensing
 Auteur : Mohamed Ouedarbi
-Version : 1.1
+Version : 1.2
 Description : Service de gestion des licences avec Hardware Binding (UUID).
               Communique avec la Marketplace SMARTOPS_PORTAL.
 """
@@ -16,6 +16,9 @@ from .models import Plugin
 from system.models import SystemConfiguration
 
 logger = logging.getLogger(__name__)
+
+# Version du Core déclarée au Portail (à dynamiser plus tard).
+CORE_VERSION = "1.0.0"
 
 class LicenseService:
     """
@@ -78,10 +81,37 @@ class LicenseService:
             return {"success": False, "error": "La Marketplace est injoignable."}
 
     @classmethod
+    def _installation_auth_headers(cls, sys_config):
+        """
+        Renvoie l'en-tête d'authentification de l'installation auprès du Portail.
+        Au premier appel, enregistre l'installation (/register/) et conserve le secret reçu.
+        Renvoie (headers, None) ou (None, message d'erreur).
+        """
+        if not sys_config.installation_secret:
+            response = requests.post(
+                f"{settings.MARKETPLACE_URL}/api/licensing/register/",
+                json={"installation_uuid": str(sys_config.installation_uuid), "core_version": CORE_VERSION},
+                timeout=15
+            )
+            if response.status_code == 409:
+                return None, cls._portal_error(
+                    response, "Cette installation est déjà enregistrée sur le Portail. Contactez le support."
+                )
+            if response.status_code != 201:
+                return None, cls._portal_error(response, f"Enregistrement refusé par le Portail ({response.status_code})")
+            secret = response.json().get('installation_secret')
+            if not isinstance(secret, str) or not secret:
+                return None, "Réponse d'enregistrement invalide du Portail."
+            sys_config.installation_secret = secret
+            sys_config.save(update_fields=['installation_secret'])
+        return {"Authorization": f"Bearer {sys_config.installation_secret}"}, None
+
+    @classmethod
     def sync_with_portal(cls):
         """
         Synchronise l'installation avec le Portail (Télémétrie + Updates).
         Permet de déclarer la machine et de vérifier les mises à jour des modules.
+        L'installation s'authentifie avec le secret reçu à son enregistrement.
         """
         sys_config = SystemConfiguration.get_instance()
         installation_uuid = str(sys_config.installation_uuid)
@@ -98,21 +128,28 @@ class LicenseService:
         payload = {
             "installation_uuid": installation_uuid,
             "company_name": sys_config.company_name,
-            "core_version": "1.0.0", # À dynamiser plus tard
+            "core_version": CORE_VERSION,
             "installed_modules": installed_modules
         }
         
         try:
-            response = requests.post(api_endpoint, json=payload, timeout=15)
+            headers, error = cls._installation_auth_headers(sys_config)
+            if error:
+                return {"success": False, "error": error}
+            response = requests.post(api_endpoint, json=payload, headers=headers, timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 # Mise à jour de la date de synchro locale
                 sys_config.last_sync_portal = models.functions.Now() # Django shortcut
                 sys_config.save()
                 return data
+            elif response.status_code == 401:
+                return {"success": False, "error": "Installation non reconnue par le Portail. Contactez le support."}
+            elif response.status_code == 429:
+                return {"success": False, "error": "Trop de synchronisations : réessayez dans quelques minutes."}
             else:
                 return {"success": False, "error": f"Erreur Portail ({response.status_code})"}
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValueError):
             return {"success": False, "error": "Le Portail est injoignable."}
 
     @classmethod

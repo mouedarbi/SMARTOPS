@@ -3,7 +3,7 @@ Fichier : models.py
 Projet : SMARTOPS (Core Application)
 Application : system
 Auteur : Mohamed Ouedarbi
-Version : 1.0
+Version : 1.1
 Description : Modèle de configuration centrale de l'application SMARTOPS. 
               Gère l'identité unique de l'installation (UUID) et les données 
               de l'entreprise pour les rapports et factures.
@@ -27,6 +27,15 @@ class SystemConfiguration(models.Model):
     )
     installed_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'Installation")
     last_sync_portal = models.DateTimeField(null=True, blank=True, verbose_name="Dernière Synchro Portail")
+    # Secret remis par le Portail à l'enregistrement de l'installation, présenté à chaque
+    # synchronisation (Authorization: Bearer). Jamais affiché ni modifiable dans l'interface.
+    installation_secret = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        editable=False,
+        verbose_name="Secret d'installation"
+    )
     
     # Informations Entreprise (Pour les rapports)
     company_name = models.CharField(max_length=255, verbose_name="Nom de la Société")

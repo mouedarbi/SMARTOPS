@@ -3,7 +3,7 @@ Fichier : tests.py
 Projet : SMARTOPS (Core Application)
 Application : licensing
 Auteur : Mohamed Ouedarbi
-Version : 1.0
+Version : 1.1
 Description : Tests unitaires du module de licensing, validation de plugins et communication mockée.
 """
 
@@ -97,6 +97,56 @@ class LicensingUnitTestCase(TestCase):
         result = LicenseService.validate_key_with_portal("second-license-uuid")
         self.assertFalse(result.get("success"))
         self.assertEqual(result.get("error"), mock_response.json.return_value["error"])
+
+    @staticmethod
+    def portal_response(status_code, payload=None):
+        response = MagicMock()
+        response.status_code = status_code
+        response.json.return_value = payload or {}
+        return response
+
+    @patch('requests.post')
+    def test_sync_registers_the_installation_then_sends_its_secret(self, mock_post):
+        """Premier contact : enregistrement, secret conservé puis présenté en Bearer à la synchronisation."""
+        mock_post.side_effect = [
+            self.portal_response(201, {"success": True, "installation_secret": "secret-recu"}),
+            self.portal_response(200, {"success": True, "updates_available": False, "module_updates": []}),
+        ]
+        result = LicenseService.sync_with_portal()
+        self.assertTrue(result.get("success"))
+        self.assertTrue(mock_post.call_args_list[0].args[0].endswith('/api/licensing/register/'))
+        self.assertEqual(mock_post.call_args_list[1].kwargs['headers'], {"Authorization": "Bearer secret-recu"})
+        self.sys_config.refresh_from_db()
+        self.assertEqual(self.sys_config.installation_secret, "secret-recu")
+
+    @patch('requests.post')
+    def test_sync_reuses_the_stored_secret(self, mock_post):
+        self.sys_config.installation_secret = "secret-existant"
+        self.sys_config.save()
+        mock_post.return_value = self.portal_response(200, {"success": True, "module_updates": []})
+        LicenseService.sync_with_portal()
+        self.assertEqual(mock_post.call_count, 1)
+        self.assertEqual(mock_post.call_args.kwargs['headers'], {"Authorization": "Bearer secret-existant"})
+
+    @patch('requests.post')
+    def test_sync_reports_registration_refused(self, mock_post):
+        """Installation déjà enregistrée sur le Portail sans secret local : erreur claire, pas de synchronisation."""
+        mock_post.return_value = self.portal_response(409, {"success": False})
+        result = LicenseService.sync_with_portal()
+        self.assertFalse(result.get("success"))
+        self.assertIn("déjà enregistrée", result.get("error"))
+        self.assertEqual(mock_post.call_count, 1)
+        self.sys_config.refresh_from_db()
+        self.assertEqual(self.sys_config.installation_secret, "")
+
+    @patch('requests.post')
+    def test_sync_reports_unrecognised_installation_and_rate_limit(self, mock_post):
+        self.sys_config.installation_secret = "secret-perime"
+        self.sys_config.save()
+        mock_post.return_value = self.portal_response(401)
+        self.assertIn("non reconnue", LicenseService.sync_with_portal().get("error"))
+        mock_post.return_value = self.portal_response(429)
+        self.assertIn("Trop de synchronisations", LicenseService.sync_with_portal().get("error"))
 
     @patch('licensing.views.requests.get')
     @patch('licensing.views.LicenseService.validate_key_with_portal')
