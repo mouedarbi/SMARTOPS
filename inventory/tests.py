@@ -295,3 +295,61 @@ class EquipmentCustomFieldsFormTests(TestCase):
                      f'cf_{self.capacity.pk}': 'pas un nombre'})
         equipment = Equipment.objects.get(serial_number='DF-1')
         self.assertEqual(equipment.custom_fields, {'Autonomie pile (ans)': 7.5, 'Date de fabrication': '2025-06-01'})
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class EquipmentPublicReportTests(TestCase):
+    """Page publique du certificat (scan QR) : conformité et échéances, sans propriétaire ni interventions."""
+
+    def setUp(self):
+        from datetime import date, timedelta
+        from django.utils import timezone
+        from accounts.models import CustomUser
+        from maintenance.models import MaintenanceTicket
+        from system.models import SystemConfiguration
+        self.timedelta, self.timezone, self.Ticket = timedelta, timezone, MaintenanceTicket
+        client = Client.objects.create(name='Hôtel Confidentiel', address='1 rue Secrète')
+        building = Building.objects.create(client=client, name='Aile Est', address='12 avenue Privée')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Extincteur couloir', equipment_type=EquipmentType.objects.create(name='Extincteur'),
+            serial_number='SN-EXT-001-01-1234', installed_at=date(2024, 3, 1),
+        )
+        self.tech = CustomUser.objects.create_user(
+            username='tech_pub', password='x', role='technician', first_name='Jeanne', last_name='Martin',
+        ).technician_profile
+        config = SystemConfiguration.get_instance()
+        config.company_name, config.company_phone = 'Maintenance SA', '+32 2 000 00 00'
+        config.save()
+        self.url = reverse('equipment_public_report', args=[self.equipment.serial_number])
+
+    def _done(self, type_, days_ago):
+        end = self.timezone.now() - self.timedelta(days=days_ago)
+        return self.Ticket.objects.create(
+            equipment=self.equipment, technician=self.tech, type=type_, status='done',
+            planned_start=end - self.timedelta(hours=1), planned_end=end,
+            effective_start=end - self.timedelta(hours=1), effective_end=end,
+            intervention_report='Rapport confidentiel',
+        )
+
+    def test_only_maintenance_makes_the_device_compliant(self):
+        self._done('repair', 10)
+        self.assertContains(self.client.get(self.url), 'NON CONFORME')
+        self._done('maintenance', 30)
+        self.assertNotContains(self.client.get(self.url), 'NON CONFORME')
+        self.assertContains(self.client.get(self.url), 'CONFORME')
+
+    def test_expired_maintenance_is_not_compliant(self):
+        self._done('maintenance', 400)
+        response = self.client.get(self.url)
+        self.assertContains(response, 'NON CONFORME')
+        self.assertContains(response, 'Visite expirée')
+
+    def test_no_owner_location_or_intervention_data(self):
+        self._done('maintenance', 30)
+        response = self.client.get(self.url)
+        for private in ('Hôtel Confidentiel', '12 avenue Privée', 'Aile Est', 'Extincteur couloir',
+                        'Jeanne', 'Martin', 'Rapport confidentiel', 'INT-'):
+            self.assertNotContains(response, private)
+        self.assertContains(response, 'SN-EXT-001-01-1234')
+        self.assertContains(response, '01/03/2024')
+        self.assertContains(response, 'Maintenance SA')

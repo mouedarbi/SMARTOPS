@@ -90,217 +90,83 @@
             </div>
         </div>
 
-        <!-- 2. Titre du document & Statut d'homologation -->
+        <!-- 2. Statut de conformité (seule information de suivi publiée) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <div class="md:col-span-2">
                 <div class="inline-block px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-wider rounded mb-1">
                     Contrôle Technique Périodique
                 </div>
-                <h2 class="text-xl font-black text-slate-900 uppercase tracking-wide">
-                    Certificat de Conformité & Visite Technique
-                </h2>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-wide">Certificat de Visite</h2>
                 <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Attestation officielle de contrôle et de vérification technique délivrée suite à l'intervention réalisée sur l'équipement désigné ci-après.
+                    Conformité établie d'après la dernière visite de maintenance préventive enregistrée pour cet appareil.
                 </p>
             </div>
-
-            <!-- Bloc tampon / Homologation -->
-            <div class="border-2 {% if is_compliant and not has_active_issue %}border-emerald-600 bg-emerald-50/70{% elif has_active_issue %}border-amber-500 bg-amber-50/70{% else %}border-rose-600 bg-rose-50/70{% endif %} p-4 text-center rounded">
+            <div class="border-2 {% if is_compliant %}border-emerald-600 bg-emerald-50/70{% else %}border-rose-600 bg-rose-50/70{% endif %} p-4 text-center rounded">
                 <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Statut de l'Appareil</div>
-                {% if is_compliant and not has_active_issue %}
+                {% if is_compliant %}
                     <div class="text-base font-black text-emerald-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-check-circle text-xl text-emerald-600"></i> APPAREIL CONFORME
+                        <i class="las la-check-circle text-xl text-emerald-600"></i> CONFORME
                     </div>
-                    <div class="text-[11px] font-bold text-emerald-700 mt-0.5">Visite technique validée</div>
-                {% elif has_active_issue %}
-                    <div class="text-base font-black text-amber-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-tools text-xl text-amber-600"></i> INTERVENTION EN COURS
-                    </div>
-                    <div class="text-[11px] font-bold text-amber-700 mt-0.5">Ticket de travail actif</div>
                 {% else %}
                     <div class="text-base font-black text-rose-800 flex items-center justify-center gap-1.5">
-                        <i class="las la-times-circle text-xl text-rose-600"></i> VISITE REQUISE
+                        <i class="las la-times-circle text-xl text-rose-600"></i> NON CONFORME
                     </div>
-                    <div class="text-[11px] font-bold text-rose-700 mt-0.5">Périodicité dépassée</div>
+                    <div class="text-[11px] font-bold text-rose-700 mt-0.5">{% if last_visit_date %}Visite expirée{% else %}Aucune visite de maintenance enregistrée{% endif %}</div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- 3. Identification de l'Équipement & Localisation (Tableau formel) -->
+        <!-- 3. Identification de l'appareil (sans propriétaire ni emplacement) -->
         <div class="space-y-2">
             <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
-                <i class="las la-cube text-blue-600"></i> 1. Identification de l'Équipement & Emplacement
+                <i class="las la-cube text-blue-600"></i> 1. Identification de l'Appareil
             </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-xs pt-2">
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Désignation</span>
-                    <span class="font-bold text-slate-900">{{ equipment.name }}</span>
-                </div>
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Numéro de Série (S/N)</span>
-                    <span class="font-mono font-bold text-blue-800 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded">{{ equipment.serial_number }}</span>
-                </div>
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Catégorie / Type</span>
-                    <span class="font-semibold text-slate-800">{{ equipment.equipment_type.name }}</span>
-                </div>
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Date de Mise en Service</span>
-                    <span class="font-semibold text-slate-800">{{ equipment.installed_at|date:"d/m/Y" }}</span>
-                </div>
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Client Exploitant</span>
-                    <span class="font-semibold text-slate-800">{{ equipment.building.client.name }}</span>
-                </div>
-                <div class="flex justify-between border-b border-slate-100 py-1.5">
-                    <span class="font-bold text-slate-500 uppercase text-[11px]">Lieu</span>
-                    <span class="font-semibold text-slate-800">{{ equipment.building.name }}</span>
-                </div>
-            </div>
-
-            <div class="text-[11px] text-slate-600 bg-blue-50/50 p-3 rounded border border-blue-100 mt-2 flex items-start gap-2">
-                <i class="las la-map-marker text-blue-600 text-base mt-0.5"></i>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs">
                 <div>
-                    <strong>Adresse d'implantation :</strong> {{ equipment.building.address }}
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Numéro de série</span>
+                    <span class="font-mono font-bold text-slate-900">{{ equipment.serial_number }}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Type d'appareil</span>
+                    <span class="font-bold text-slate-900">{{ equipment.equipment_type.name }}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Première installation</span>
+                    <span class="font-bold text-slate-900">{{ equipment.installed_at|date:"d/m/Y" }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- 4. Périodicité & Échéances de Contrôle -->
+        <!-- 4. Échéances -->
         <div class="space-y-2">
             <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
-                <i class="las la-calendar-alt text-blue-600"></i> 2. Périodicité & Échéances de Contrôle
+                <i class="las la-calendar-alt text-blue-600"></i> 2. Périodicité & Échéances
             </h3>
-
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-center">
                 <div class="border border-slate-200 bg-slate-50 p-3 rounded">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Date du Dernier Contrôle</span>
-                    <span class="text-sm font-black text-slate-900 block mt-1">
-                        {% if last_visit_date %}{{ last_visit_date|date:"d F Y" }}{% else %}Non renseigné{% endif %}
-                    </span>
-                    <span class="text-[10px] text-slate-500">Heure : {{ last_visit_date|date:"H:i"|default:"--" }}</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Dernière visite de maintenance</span>
+                    <span class="text-sm font-black text-slate-900 block mt-1">{% if last_visit_date %}{{ last_visit_date|date:"d/m/Y" }}{% else %}Aucune{% endif %}</span>
                 </div>
-
                 <div class="border border-slate-200 bg-slate-50 p-3 rounded">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Fréquence de Vérification</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Fréquence de vérification</span>
                     <span class="text-sm font-black text-slate-900 block mt-1">Annuelle (12 mois)</span>
-                    <span class="text-[10px] text-slate-500">Contrôle préventif périodique</span>
                 </div>
-
                 <div class="border-2 {% if is_compliant %}border-emerald-400 bg-emerald-50/50{% else %}border-rose-400 bg-rose-50/50{% endif %} p-3 rounded">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase block">Prochaine Échéance Limite</span>
-                    <span class="text-sm font-black {% if is_compliant %}text-emerald-800{% else %}text-rose-800{% endif %} block mt-1">
-                        {% if next_due_date %}{{ next_due_date|date:"d F Y" }}{% else %}À planifier{% endif %}
-                    </span>
-                    <span class="text-[10px] text-slate-500">Avant renouvellement</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase block">{% if is_compliant %}Valable jusqu'au{% else %}Expiré depuis le{% endif %}</span>
+                    <span class="text-sm font-black {% if is_compliant %}text-emerald-800{% else %}text-rose-800{% endif %} block mt-1">{% if next_due_date %}{{ next_due_date|date:"d/m/Y" }}{% else %}—{% endif %}</span>
                 </div>
             </div>
         </div>
 
-        <!-- 5. Rapport Technique & Constats de l'Intervenant -->
-        <div class="space-y-2">
-            <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
-                <i class="las la-file-signature text-blue-600"></i> 3. Dernier Rapport d'Intervention & Constats
-            </h3>
-
-            {% if latest_maintenance or latest_ticket %}
-                {% with ticket=latest_maintenance|default:latest_ticket %}
-                    <div class="border border-slate-200 p-4 space-y-3 bg-white text-xs rounded">
-                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                            <div>
-                                <span class="font-bold text-slate-700">Réf. Intervention :</span>
-                                <span class="font-mono font-bold text-blue-700">INT-{{ ticket.id }}</span>
-                                <span class="text-slate-300 mx-1.5">|</span>
-                                <span class="font-semibold text-slate-600">Nature : {{ ticket.get_type_display }}</span>
-                            </div>
-                            <div>
-                                <span class="font-bold text-slate-700">Technicien intervenant :</span>
-                                <span class="font-semibold text-slate-900">{{ ticket.technician|default:"Technicien certifié SmartOps" }}</span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <span class="font-bold text-slate-700 block mb-1">Conclusions & Observations techniques :</span>
-                            <div class="bg-slate-50 p-3.5 rounded border border-slate-200 text-slate-800 leading-relaxed whitespace-pre-line font-mono text-[11px]">
-{% if ticket.intervention_report %}{{ ticket.intervention_report }}{% else %}Contrôle technique préventif standard exécuté conformément aux procédures de maintenance et aux spécifications du fabricant. Aucun dysfonctionnement constaté lors de l'inspection.{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endwith %}
-            {% else %}
-                <p class="text-xs text-slate-500 italic p-4 border border-dashed border-slate-300 text-center rounded">
-                    Aucun historique d'intervention enregistré pour cet équipement.
-                </p>
+        <!-- 5. Justificatifs : sur demande auprès de la société de maintenance -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 leading-relaxed">
+            <p>Les rapports d'intervention justifiant ce statut sont disponibles sur demande auprès de la société de maintenance{% if config.company_name %} :{% else %}.{% endif %}</p>
+            {% if config.company_name %}
+            <p class="mt-1 font-bold text-slate-800">{{ config.company_name }}{% if config.company_phone %} · {{ config.company_phone }}{% endif %}{% if config.company_email %} · {{ config.company_email }}{% endif %}</p>
             {% endif %}
         </div>
 
-        <!-- 6. Historique Réglementaire des Interventions (Tableau) -->
-        {% if history_tickets %}
-            <div class="space-y-2">
-                <h3 class="text-xs font-black uppercase tracking-wider text-blue-900 border-b-2 border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <i class="las la-history text-blue-600"></i> 4. Registre des 5 Dernières Visites Validées
-                </h3>
-
-                <table class="w-full text-left text-xs border border-slate-200 border-collapse rounded overflow-hidden">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
-                            <th class="py-2.5 px-3 border-r border-slate-200">Réf. Ticket</th>
-                            <th class="py-2.5 px-3 border-r border-slate-200">Date d'intervention</th>
-                            <th class="py-2.5 px-3 border-r border-slate-200">Nature de l'acte</th>
-                            <th class="py-2.5 px-3 border-r border-slate-200">Intervenant</th>
-                            <th class="py-2.5 px-3 text-center">Résultat</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 text-slate-700 text-[11px]">
-                        {% for t in history_tickets %}
-                            <tr class="hover:bg-slate-50/50">
-                                <td class="py-2 px-3 font-mono font-bold text-blue-700 border-r border-slate-200">INT-{{ t.id }}</td>
-                                <td class="py-2 px-3 border-r border-slate-200">{{ t.effective_end|default:t.planned_end|date:"d/m/Y H:i" }}</td>
-                                <td class="py-2 px-3 border-r border-slate-200 font-medium">{{ t.get_type_display }}</td>
-                                <td class="py-2 px-3 border-r border-slate-200">{{ t.technician|default:"Technicien SmartOps" }}</td>
-                                <td class="py-2 px-3 text-center font-bold text-emerald-700">VALIDE</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endif %}
-
-        <!-- 7. Blocs d'émargement & Signatures officielles -->
-        <div class="grid grid-cols-2 gap-6 pt-4 border-t-2 border-slate-200 text-xs">
-            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between rounded bg-slate-50/30">
-                <div>
-                    <span class="font-bold text-slate-800 uppercase text-[10px] block">Visa du Responsable Technique</span>
-                    <span class="text-[11px] text-slate-500">Validation numérique SmartOps Platform</span>
-                </div>
-                <div class="text-[10px] font-mono text-slate-400 mt-4 flex items-center gap-1">
-                    <i class="las la-check text-blue-600"></i> Signature électronique certifiée
-                </div>
-            </div>
-
-            <div class="border border-slate-200 p-4 min-h-[110px] flex flex-col justify-between rounded bg-slate-50/30">
-                <div>
-                    <span class="font-bold text-slate-800 uppercase text-[10px] block">Visa du Consultant / Auditeur</span>
-                    <span class="text-[11px] text-slate-500">Pour consultation & contrôle de conformité</span>
-                </div>
-                <div class="text-[10px] font-mono text-slate-400 mt-4">
-                    Date du contrôle : {% now "d/m/Y" %}
-                </div>
-            </div>
-        </div>
-
-        <!-- 8. Bas de page certifié -->
-        <div class="border-t border-slate-200 pt-4 flex flex-col sm:flex-row justify-between items-center text-[10px] text-slate-500 gap-2">
-            <div class="flex items-center gap-1.5">
-                <div class="h-2 w-2 rounded-full bg-blue-600"></div>
-                Document officiel certifié généré par la plateforme <strong>SMARTOPS</strong>.
-            </div>
-            <div class="font-mono text-slate-400">
-                Identifiant : SHA256-{{ equipment.serial_number|slugify }}
-            </div>
-        </div>
-
+        <p class="text-[10px] text-slate-400 text-center">Statut calculé automatiquement à la date d'édition du document.</p>
     </div>
 
 </body>
