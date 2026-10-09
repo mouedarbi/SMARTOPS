@@ -82,19 +82,20 @@ class MaintenanceTicketForm(forms.ModelForm):
 
     class Meta:
         model = MaintenanceTicket
-        fields = ['equipment', 'technician', 'type', 'status', 'description']
-        labels = {
-            'status': "Statut de l'intervention",
-        }
+        # Le statut est fixé par le système (voir MaintenanceTicket.save()).
+        fields = ['equipment', 'technician', 'type', 'description']
         widgets = {
             'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'status': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
             'description': forms.Textarea(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        # À la création, pas de technicien : le ticket naît « En attente » et s'assigne en modification.
+        if not self.instance.pk:
+            del self.fields['technician']
+
         # 1. État par défaut (vide)
         self.fields['equipment'].queryset = Equipment.objects.none()
         self.fields['equipment'].choices = [('', '--- Choisir un équipement ---')]
@@ -166,7 +167,7 @@ class MaintenanceTicketForm(forms.ModelForm):
         cleaned_data['planned_start'], cleaned_data['planned_end'] = start, end
 
         # Conflit de planning : seulement pour une intervention pas encore démarrée, avec un technicien.
-        if cleaned_data.get('status') in NOT_STARTED:
+        if self.instance.status in NOT_STARTED:
             conflict = find_schedule_conflict(cleaned_data.get('technician'), start, end, exclude_pk=self.instance.pk)
             if conflict:
                 message = schedule_conflict_message(conflict)

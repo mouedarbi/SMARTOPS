@@ -260,15 +260,18 @@ class TicketAPITestCase(TestCase):
         now = timezone.now()
         r = self.api.post('/api/v1/tickets/', {
             'equipment': self.ticket.equipment.id,
-            'technician': tech_profile.id,
             'type': 'repair',
-            # Après self.ticket (même technicien, 2 h) : pas de conflit de planning.
             'planned_start': (now + timedelta(hours=2)).isoformat(),
             'planned_end': (now + timedelta(hours=5)).isoformat(),
             'description': 'Panne de climatisation signalée au 2ème étage.'
         })
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(r.data['status'], 'pending')
         self.assertEqual(MaintenanceTicket.objects.filter(description__contains='Panne de climatisation').count(), 1)
+        # Assignation par une modification : le ticket passe « Planifié ».
+        r = self.api.patch(f"/api/v1/tickets/{r.data['id']}/", {'technician': tech_profile.id})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data['status'], 'planned')
 
     def test_start_intervention_with_geolocation(self):
         """Vérifie le démarrage d'intervention avec enregistrement des coordonnées GPS."""
@@ -356,8 +359,7 @@ class RolePermissionsAPITestCase(TestCase):
     def ticket_payload(self):
         now = timezone.now()
         return {
-            'equipment': self.equipment.id, 'technician': self.tech_a.id, 'type': 'repair',
-            # Après ticket_a (même technicien) : pas de conflit de planning.
+            'equipment': self.equipment.id, 'type': 'repair',
             'planned_start': (now + timedelta(hours=2)).isoformat(), 'planned_end': (now + timedelta(hours=3)).isoformat(),
         }
 

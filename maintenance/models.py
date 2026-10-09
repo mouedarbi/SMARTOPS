@@ -45,6 +45,10 @@ class Technician(models.Model):
         verbose_name_plural = _("Techniciens")
 
 
+# Statuts d'une intervention pas encore démarrée, fixés par le système selon le technicien.
+NOT_STARTED = ('pending', 'planned')
+
+
 class MaintenanceTicket(models.Model):
     """
     Ticket d'intervention lié à un équipement et un technicien.
@@ -105,6 +109,19 @@ class MaintenanceTicket(models.Model):
 
         if errors:
             raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        """
+        Tant que l'intervention n'a pas démarré, son statut découle de l'assignation :
+        « Planifié » avec un technicien, « En attente » sans. Les statuts terrain
+        (en cours, terminé, à replanifier) et l'annulation ne sont jamais recalculés.
+        """
+        if self.status in NOT_STARTED:
+            self.status = 'planned' if self.technician_id else 'pending'
+            update_fields = kwargs.get('update_fields')
+            if update_fields is not None and 'technician' in update_fields:
+                kwargs['update_fields'] = {*update_fields, 'status'}
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Ticket #{self.id} - {self.equipment.name} ({self.get_status_display()})"

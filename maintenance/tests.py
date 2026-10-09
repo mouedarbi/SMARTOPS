@@ -57,16 +57,14 @@ class MaintenanceTicketModelTestCase(TestCase):
         now = timezone.now()
         ticket = MaintenanceTicket.objects.create(
             equipment=self.equipment,
-            technician=self.tech_profile,
             type='maintenance',
             planned_start=now,
             planned_end=now + timedelta(hours=2),
-            status='pending'
         )
         self.assertEqual(ticket.status, 'pending')
 
-        # Transition: planned
-        ticket.status = 'planned'
+        # Transition: planned, dès qu'un technicien est assigné
+        ticket.technician = self.tech_profile
         ticket.save()
         self.assertEqual(ticket.status, 'planned')
 
@@ -192,9 +190,9 @@ class MaintenanceWebViewsTestCase(TestCase):
             'client': self.client_obj.id,
             'building': self.building.id,
             'equipment': self.equipment.id,
-            'technician': self.tech1.id,
+            'technician': self.tech1.id,  # ignoré : pas de technicien à la création
             'type': 'maintenance',
-            'status': 'planned',
+            'status': 'done',  # ignoré : le statut est fixé par le système
             'planned_date': '2026-09-15',
             'start_time_slot': '10:00',
             'duration_seconds': 7200,
@@ -207,8 +205,8 @@ class MaintenanceWebViewsTestCase(TestCase):
         ticket = MaintenanceTicket.objects.filter(description__contains='Maintenance préventive semestrielle').first()
         self.assertIsNotNone(ticket)
         self.assertEqual(ticket.equipment, self.equipment)
-        self.assertEqual(ticket.technician, self.tech1)
-        self.assertEqual(ticket.status, 'planned')
+        self.assertIsNone(ticket.technician)
+        self.assertEqual(ticket.status, 'pending')
         local_start = timezone.localtime(ticket.planned_start)
         local_end = timezone.localtime(ticket.planned_end)
         self.assertEqual(local_start.strftime('%Y-%m-%d %H:%M'), '2026-09-15 10:00')
@@ -541,10 +539,19 @@ class ScheduleConflictTestCase(TestCase):
         data.update(overrides)
         return data
 
+    def _unassigned_ticket(self):
+        """Ticket « En attente » (créé sans technicien), à assigner par le formulaire de modification."""
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='maintenance',
+            planned_start=self.start.replace(hour=16), planned_end=self.start.replace(hour=17),
+        )
+
     def test_form_refuses_overlapping_slot(self):
-        response = self.http.post(reverse('ticket_create'), self._form_data())
+        ticket = self._unassigned_ticket()
+        response = self.http.post(reverse('ticket_update', args=[ticket.pk]), self._form_data())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(MaintenanceTicket.objects.count(), 1)
+        ticket.refresh_from_db()
+        self.assertIsNone(ticket.technician)
         html = response.content.decode()
         self.assertIn('Conflit de planning', html)
         self.assertIn(f'#{self.existing.pk}', html)
@@ -557,7 +564,8 @@ class ScheduleConflictTestCase(TestCase):
             self._form_data(technician=self.other_tech.id),
             self._form_data(technician=''),
         ):
-            response = self.http.post(reverse('ticket_create'), data)
+            ticket = self._unassigned_ticket()
+            response = self.http.post(reverse('ticket_update', args=[ticket.pk]), data)
             self.assertEqual(response.status_code, 302, data)
         self.assertEqual(MaintenanceTicket.objects.count(), 4)
 
@@ -593,15 +601,21 @@ class ScheduleConflictTestCase(TestCase):
 
     def test_api_refuses_overlapping_slot(self):
         payload = {
-            'equipment': self.equipment.id, 'technician': self.tech.id, 'type': 'repair',
+            'equipment': self.equipment.id, 'type': 'repair',
             'planned_start': self.start.replace(hour=10).isoformat(), 'planned_end': self.start.replace(hour=11).isoformat(),
         }
-        response = self.api.post('/api/v1/tickets/', payload, format='json')
+        created = self.api.post('/api/v1/tickets/', payload, format='json')
+        self.assertEqual(created.status_code, 201)
+        url = f"/api/v1/tickets/{created.data['id']}/"
+        response = self.api.patch(url, {'technician': self.tech.id}, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertIn('Conflit de planning', str(response.data['planned_start']))
-        payload['planned_start'] = self.start.replace(hour=11).isoformat()
-        payload['planned_end'] = self.start.replace(hour=12).isoformat()
-        self.assertEqual(self.api.post('/api/v1/tickets/', payload, format='json').status_code, 201)
+        response = self.api.patch(url, {
+            'technician': self.tech.id,
+            'planned_start': self.start.replace(hour=11).isoformat(), 'planned_end': self.start.replace(hour=12).isoformat(),
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'planned')
 
     def test_api_patch_onto_another_slot_is_refused(self):
         other = MaintenanceTicket.objects.create(
@@ -857,3 +871,122 @@ class TechnicianCalendarTestCase(TestCase):
         api.force_authenticate(self.tech.user)
         self.assertEqual(len(api.get(reverse('api_my_interventions')).json()), 1)
         self.assertEqual(api.get(reverse('api_me')).json()['calendar_slug'], get_technician_calendar(self.tech).slug)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class TicketStatusRuleTestCase(TestCase):
+    """« En attente » / « Planifié » sont fixés par le système selon le technicien ; la gestion ne choisit pas le statut."""
+
+    def setUp(self):
+        from rest_framework.test import APIClient
+        self.manager = CustomUser.objects.create_user(username='chef_st', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(username='tech_st', password='Password123!', role='technician').technician_profile
+        self.client_obj = Client.objects.create(name='Client St', address='1 rue St')
+        self.building = Building.objects.create(client=self.client_obj, name='Site St', address='1 rue St')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Ventilo', equipment_type=EquipmentType.objects.create(name='Ventilo'),
+            serial_number='VE-1', installed_at=date(2025, 1, 1),
+        )
+        self.start = timezone.make_aware(timezone.datetime(2026, 12, 16, 9, 0))
+        self.http = HttpClient()
+        self.http.login(username='chef_st', password='Password123!')
+        self.api = APIClient()
+        self.api.force_authenticate(self.manager)
+
+    def _ticket(self, **extra):
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='repair',
+            planned_start=self.start, planned_end=self.start + timedelta(hours=1), **extra,
+        )
+
+    def _update_data(self, **overrides):
+        data = {
+            'client': self.client_obj.id, 'building': self.building.id, 'equipment': self.equipment.id,
+            'type': 'repair', 'planned_date': '2026-12-16', 'start_time_slot': '09:00', 'duration_seconds': 3600,
+            'description': '',
+        }
+        data.update(overrides)
+        return data
+
+    def test_create_form_has_no_status_nor_technician(self):
+        """Écran de création : ni liste de statuts ni technicien ; le statut affiché est « En attente »."""
+        response = self.http.get(reverse('ticket_create'))
+        form = response.context['form']
+        self.assertNotIn('status', form.fields)
+        self.assertNotIn('technician', form.fields)
+        self.assertContains(response, 'En attente')
+
+    def test_assign_and_unassign_by_form(self):
+        """Assigner en modification donne « Planifié » ; vider le technicien ramène à « En attente »."""
+        ticket = self._ticket()
+        self.assertIn('technician', self.http.get(reverse('ticket_update', args=[ticket.pk])).context['form'].fields)
+        self.http.post(reverse('ticket_update', args=[ticket.pk]), self._update_data(technician=self.tech.pk, status='done'))
+        ticket.refresh_from_db()
+        self.assertEqual((ticket.technician, ticket.status), (self.tech, 'planned'))
+        self.http.post(reverse('ticket_update', args=[ticket.pk]), self._update_data(technician=''))
+        ticket.refresh_from_db()
+        self.assertEqual((ticket.technician, ticket.status), (None, 'pending'))
+
+    def test_model_rule(self):
+        """Le modèle recalcule En attente / Planifié, même si un autre statut « pas commencé » est donné."""
+        self.assertEqual(self._ticket(technician=self.tech, status='pending').status, 'planned')
+        self.assertEqual(self._ticket(status='planned').status, 'pending')
+        ticket = self._ticket(technician=self.tech)
+        ticket.technician = None
+        ticket.save(update_fields=['technician'])
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, 'pending')
+
+    def test_field_statuses_are_never_recalculated(self):
+        """En cours, Terminé, À replanifier et Annulé ne sont pas touchés par la règle."""
+        for status in ('in_progress', 'done', 'to_reschedule', 'canceled'):
+            ticket = self._ticket(status=status)
+            ticket.save()
+            ticket.refresh_from_db()
+            self.assertEqual(ticket.status, status)
+
+    def test_follow_up_ticket_stays_pending(self):
+        """Le ticket de suite d'une clôture « à replanifier » naît « En attente », sans technicien."""
+        from maintenance.services import reschedule_ticket
+        ticket = self._ticket(technician=self.tech)
+        ticket.status, ticket.effective_start = 'in_progress', timezone.now() - timedelta(hours=1)
+        ticket.save()
+        follow_up = reschedule_ticket(ticket, report='Pièce manquante')
+        self.assertEqual((follow_up.status, follow_up.technician), ('pending', None))
+
+    def test_api_status_is_read_only_and_technician_refused_at_creation(self):
+        """API : le statut envoyé est ignoré, un technicien à la création est refusé, l'assignation fixe le statut."""
+        payload = {
+            'equipment': self.equipment.id, 'type': 'repair', 'status': 'done',
+            'planned_start': self.start.isoformat(), 'planned_end': (self.start + timedelta(hours=1)).isoformat(),
+        }
+        refused = self.api.post('/api/v1/tickets/', {**payload, 'technician': self.tech.pk}, format='json')
+        self.assertEqual(refused.status_code, 400)
+        self.assertIn('technician', refused.data)
+        created = self.api.post('/api/v1/tickets/', payload, format='json')
+        self.assertEqual((created.status_code, created.data['status']), (201, 'pending'))
+        url = f"/api/v1/tickets/{created.data['id']}/"
+        self.assertEqual(self.api.patch(url, {'technician': self.tech.pk}, format='json').data['status'], 'planned')
+        self.assertEqual(self.api.patch(url, {'status': 'done'}, format='json').data['status'], 'planned')
+        self.assertEqual(self.api.patch(url, {'technician': None}, format='json').data['status'], 'pending')
+
+    def test_data_migration_aligns_statuses(self):
+        """La migration 0005 corrige les statuts incohérents et le titre de leurs événements."""
+        import importlib
+        from django.apps import apps
+        from maintenance.calendars import assignment_events
+        migration = importlib.import_module('maintenance.migrations.0005_align_not_started_status')
+        assigned = self._ticket(technician=self.tech)
+        unassigned = self._ticket()
+        done = self._ticket(technician=self.tech, status='done')
+        # État d'avant : statuts posés sans passer par save().
+        MaintenanceTicket.objects.filter(pk=assigned.pk).update(status='pending')
+        MaintenanceTicket.objects.filter(pk=unassigned.pk).update(status='planned')
+        assigned.event.title = assigned.event.title.replace('[PLANIFIÉ]', '[EN ATTENTE]')
+        assigned.event.save()
+        migration.align_not_started_status(apps, None)
+        for ticket, expected in ((assigned, 'planned'), (unassigned, 'pending'), (done, 'done')):
+            ticket.refresh_from_db()
+            self.assertEqual(ticket.status, expected)
+        self.assertIn('[PLANIFIÉ]', assigned.event.title)
+        self.assertTrue(all('[PLANIFIÉ]' in e.title for e in assignment_events(assigned)))

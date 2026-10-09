@@ -18,13 +18,12 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .calendars import assigned_ticket_ids, get_technician_calendar
-from .models import MaintenanceTicket, InterventionPhoto
+from .models import NOT_STARTED, MaintenanceTicket, InterventionPhoto
 
 
 # Début de la description d'un ticket de suite créé par reschedule_ticket().
 FOLLOW_UP_PREFIX = "Suite de l'intervention #"
 FOLLOW_UP_ORIGIN = re.compile(r"^Suite de l'intervention #(\d+)")
-NOT_STARTED = ('pending', 'planned')
 # Retards montrés dans « Interventions à replanifier » ; les plus anciens restent dans la liste complète.
 LATE_WINDOW = datetime.timedelta(days=7)
 

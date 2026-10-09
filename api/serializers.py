@@ -152,15 +152,19 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
             'photos',
             'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'effective_start', 'effective_end', 'created_at', 'updated_at']
+        # Le statut est fixé par le système (assignation) ou par le technicien (start / stop).
+        read_only_fields = ['id', 'status', 'effective_start', 'effective_end', 'created_at', 'updated_at']
 
     def validate(self, attrs):
         """
-        Vérifie que la fin prévue suit le début prévu et refuse un conflit de
+        Refuse un technicien à la création (on l'assigne par une modification),
+        vérifie que la fin prévue suit le début prévu et refuse un conflit de
         planning avec une autre intervention du même technicien.
         """
         attrs = super().validate(attrs)
         instance = self.instance
+        if instance is None and attrs.get('technician'):
+            raise serializers.ValidationError({'technician': "Un ticket est créé sans technicien ; assignez-le ensuite en le modifiant."})
 
         def current(field):
             return attrs[field] if field in attrs else getattr(instance, field, None)
@@ -170,7 +174,7 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'planned_end': "La date de fin prévue doit être postérieure à la date de début prévue."})
 
         # Conflit de planning : seulement pour une intervention pas encore démarrée, avec un technicien.
-        status = current('status') or 'pending'
+        status = instance.status if instance else 'pending'
         if status in NOT_STARTED:
             conflict = find_schedule_conflict(current('technician'), start, end, exclude_pk=getattr(instance, 'pk', None))
             if conflict:
