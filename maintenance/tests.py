@@ -1033,3 +1033,27 @@ class DispatchPlanningTestCase(TestCase):
         )
         data = self.http.get(reverse('api_events'), {'technician': self.tech.pk, 'exclude': ticket.pk}).json()
         self.assertEqual([e['id'] for e in data], [other.pk])
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class TicketListCreatedAtTestCase(TestCase):
+    """La liste des interventions affiche la date de création de chaque ticket."""
+
+    def test_created_at_column(self):
+        CustomUser.objects.create_user(username='chef_ca', password='Password123!', role='manager')
+        client_obj = Client.objects.create(name='Client Ca', address='1 rue Ca')
+        building = Building.objects.create(client=client_obj, name='Site Ca', address='1 rue Ca')
+        equipment = Equipment.objects.create(
+            building=building, name='Porte', equipment_type=EquipmentType.objects.create(name='Porte'),
+            serial_number='PO-CA', installed_at=date(2025, 1, 1),
+        )
+        start = timezone.make_aware(timezone.datetime(2026, 12, 18, 9, 0))
+        ticket = MaintenanceTicket.objects.create(equipment=equipment, type='repair', planned_start=start, planned_end=start + timedelta(hours=1))
+        created = timezone.make_aware(timezone.datetime(2026, 10, 9, 14, 25))
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(created_at=created)
+        http = HttpClient()
+        http.login(username='chef_ca', password='Password123!')
+        response = http.get(reverse('ticket_list'))
+        self.assertContains(response, 'Créé le')
+        self.assertContains(response, '09/10/2026')
+        self.assertContains(response, '14:25')

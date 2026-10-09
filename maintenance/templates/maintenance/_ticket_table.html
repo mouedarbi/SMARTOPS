@@ -1,4 +1,5 @@
 {# Tableau d'interventions partagé par les sections de la liste (rows, show_reason, empty_text). #}
+{% load i18n %}
     <div class="bg-white rounded-3xl shadow-sm border {% if show_reason %}border-orange-200{% else %}border-slate-100{% endif %} overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -7,6 +8,7 @@
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Créé le" %}</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Date Prévue</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
                     {% if show_reason %}<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Motif</th>{% endif %}
@@ -44,6 +46,12 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex flex-col">
+                            <span class="font-bold text-slate-700 text-sm">{{ ticket.created_at|date:"d/m/Y" }}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.created_at|date:"H:i" }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
                             {% if ticket.effective_start %}
                                 <span class="font-bold text-blue-600 text-sm">EN DIRECT : {{ ticket.effective_start|date:"H:i" }}{% if ticket.effective_end %} - {{ ticket.effective_end|date:"H:i" }}{% endif %}</span>
                                 <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tight line-through">Prévu: {{ ticket.planned_start|date:"H:i" }}</span>
@@ -76,7 +84,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if show_reason %}8{% else %}7{% endif %}" class="px-6 py-12 text-center">
+                    <td colspan="{% if show_reason %}9{% else %}8{% endif %}" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center opacity-30">
                             <i class="las la-clipboard-list text-6xl"></i>
                             <p class="mt-4 font-bold tracking-tight">{{ empty_text|default:"Aucun ticket trouvé" }}</p>
