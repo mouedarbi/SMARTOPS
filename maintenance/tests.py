@@ -907,6 +907,12 @@ class TechnicianCalendarTestCase(TestCase):
         colors = {e['id']: e['backgroundColor'] for e in self.http_manager().get(reverse('api_events')).json()}
         self.assertNotEqual(colors[ticket.pk], colors[follow_up.pk])
 
+    def test_ticket_links_to_technician_page(self):
+        """Depuis la fiche d'un ticket, le nom du technicien ouvre sa fiche (onglet Planning)."""
+        ticket = self._ticket(self.tech)
+        response = self.http_manager().get(reverse('ticket_detail', args=[ticket.pk]))
+        self.assertContains(response, f'href="{reverse("technician_detail", args=[self.tech.pk])}"')
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketStatusRuleTestCase(TestCase):
     """« En attente » / « Planifié » sont fixés par le système selon le technicien ; la gestion ne choisit pas le statut."""

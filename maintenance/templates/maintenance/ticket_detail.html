@@ -174,7 +174,12 @@
                                         <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black">
                                             {{ ticket.technician.user.username|slice:":1"|upper }}
                                         </div>
-                                        <span class="font-bold text-slate-800">{{ ticket.technician }}</span>
+                                        {% if ticket.technician %}
+                                        {# Fiche du technicien, ouverte sur son planning #}
+                                        <a href="{% url 'technician_detail' ticket.technician.pk %}" class="font-bold text-slate-800 hover:text-blue-600 hover:underline">{{ ticket.technician }}</a>
+                                        {% else %}
+                                        <span class="font-bold text-slate-400">{% trans "Non assigné" %}</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div>
@@ -261,7 +266,7 @@
                         {% if ticket.effective_end %}
                         <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             Clôturé le {{ ticket.effective_end|date:"d/m/Y à H:i" }}
-                            {% if ticket.technician %} · {{ ticket.technician }}{% endif %}
+                            {% if ticket.technician %} · <a href="{% url 'technician_detail' ticket.technician.pk %}" class="hover:text-blue-600 hover:underline">{{ ticket.technician }}</a>{% endif %}
                         </p>
                         {% endif %}
                     </div>
