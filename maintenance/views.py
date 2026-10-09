@@ -22,6 +22,10 @@ from .calendars import assigned_ticket_ids, get_technician_calendar, ticket_even
 from .services import NOT_STARTED, local_day_range, older_late_count, tickets_of_the_day, tickets_to_reschedule
 from accounts.views import is_management_staff
 
+# Colonnes triables de la liste des interventions.
+TICKET_LIST_SORTS = ('id', 'created_at', 'planned_start')
+
+
 @login_required
 @user_passes_test(is_management_staff)
 def ticket_list(request):
@@ -34,6 +38,11 @@ def ticket_list(request):
     tickets = MaintenanceTicket.objects.select_related(
         'equipment', 'equipment__building', 'equipment__building__client', 'technician__user'
     ).order_by('-planned_start')
+
+    # Tri de la liste complète par en-tête de colonne ; par défaut, date prévue la plus récente d'abord.
+    sort = request.GET.get('sort')
+    sort = sort if sort in TICKET_LIST_SORTS else 'planned_start'
+    order = 'asc' if request.GET.get('order') == 'asc' else 'desc'
 
     technician_id = request.GET.get('technician') or ''
     date_filter = request.GET.get('date') or ''
@@ -68,6 +77,7 @@ def ticket_list(request):
         to_reschedule = tickets_to_reschedule(tickets)
         of_the_day = tickets_of_the_day(tickets, exclude_ids=[t.pk for t in to_reschedule])
         tickets = tickets.exclude(pk__in=[t.pk for t in to_reschedule + of_the_day])
+    tickets = tickets.order_by(f"{'-' if order == 'desc' else ''}{sort}", '-pk')
 
     paginator = Paginator(tickets, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -75,11 +85,18 @@ def ticket_list(request):
     # Pour préserver les filtres actifs dans les liens de pagination.
     querystring = request.GET.copy()
     querystring.pop('page', None)
+    # Pour les liens de tri : filtres actifs, sans le tri ni la page.
+    sort_querystring = querystring.copy()
+    sort_querystring.pop('sort', None)
+    sort_querystring.pop('order', None)
 
     context = {
         'tickets': page_obj,
         'page_obj': page_obj,
         'querystring': querystring.urlencode(),
+        'sort_querystring': sort_querystring.urlencode(),
+        'sort': sort,
+        'order': order,
         'filtering': filtering,
         'to_reschedule': to_reschedule,
         'of_the_day': of_the_day,

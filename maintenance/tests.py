@@ -1057,3 +1057,29 @@ class TicketListCreatedAtTestCase(TestCase):
         self.assertContains(response, 'Créé le')
         self.assertContains(response, '09/10/2026')
         self.assertContains(response, '14:25')
+
+    def test_sort_by_created_at(self):
+        """Tri par en-tête : date de création décroissante puis croissante ; par défaut, date prévue décroissante."""
+        CustomUser.objects.create_user(username='chef_tri', password='Password123!', role='manager')
+        client_obj = Client.objects.create(name='Client Tri', address='1 rue Tri')
+        building = Building.objects.create(client=client_obj, name='Site Tri', address='1 rue Tri')
+        equipment = Equipment.objects.create(
+            building=building, name='Pompe', equipment_type=EquipmentType.objects.create(name='Pompe'),
+            serial_number='PO-TRI', installed_at=date(2025, 1, 1),
+        )
+        base = timezone.make_aware(timezone.datetime(2027, 3, 1, 9, 0))
+        # a : prévu le plus tard, créé le plus tôt ; b : l'inverse.
+        a = MaintenanceTicket.objects.create(equipment=equipment, type='repair', planned_start=base + timedelta(days=5), planned_end=base + timedelta(days=5, hours=1))
+        b = MaintenanceTicket.objects.create(equipment=equipment, type='repair', planned_start=base, planned_end=base + timedelta(hours=1))
+        MaintenanceTicket.objects.filter(pk=a.pk).update(created_at=base - timedelta(days=10))
+        MaintenanceTicket.objects.filter(pk=b.pk).update(created_at=base - timedelta(days=1))
+        http = HttpClient()
+        http.login(username='chef_tri', password='Password123!')
+        url = reverse('ticket_list')
+        ids = lambda params: [t.pk for t in http.get(url, params).context['tickets'] if t.pk in (a.pk, b.pk)]
+        self.assertEqual(ids({}), [a.pk, b.pk])
+        self.assertEqual(ids({'sort': 'created_at', 'order': 'desc'}), [b.pk, a.pk])
+        self.assertEqual(ids({'sort': 'created_at', 'order': 'asc'}), [a.pk, b.pk])
+        self.assertEqual(ids({'sort': 'inconnu'}), [a.pk, b.pk])
+        response = http.get(url, {'sort': 'created_at', 'order': 'desc', 'status': 'pending'})
+        self.assertContains(response, 'status=pending&sort=created_at&order=asc')

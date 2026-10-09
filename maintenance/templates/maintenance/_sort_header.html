@@ -1,0 +1,6 @@
+{# En-tête de colonne triable (field, label) : 1er clic = décroissant, puis bascule. Utilise sort, order, sort_querystring. #}
+<a href="?{% if sort_querystring %}{{ sort_querystring }}&{% endif %}sort={{ field }}&order={% if sort == field and order == 'desc' %}asc{% else %}desc{% endif %}"
+   class="inline-flex items-center gap-1 hover:text-blue-600 {% if sort == field %}text-blue-600{% endif %}">
+    {{ label }}
+    {% if sort == field %}<i class="las {% if order == 'desc' %}la-arrow-down{% else %}la-arrow-up{% endif %}"></i>{% else %}<i class="las la-sort text-slate-300"></i>{% endif %}
+</a>

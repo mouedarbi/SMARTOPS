@@ -1,15 +1,15 @@
-{# Tableau d'interventions partagé par les sections de la liste (rows, show_reason, empty_text). #}
+{# Tableau d'interventions partagé par les sections de la liste (rows, show_reason, empty_text, sortable). #}
 {% load i18n %}
     <div class="bg-white rounded-3xl shadow-sm border {% if show_reason %}border-orange-200{% else %}border-slate-100{% endif %} overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100">
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">ID</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% if sortable %}{% include "maintenance/_sort_header.html" with field="id" label="ID" %}{% else %}ID{% endif %}</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Créé le" %}</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Date Prévue</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Créé le" as created_label %}{% if sortable %}{% include "maintenance/_sort_header.html" with field="created_at" label=created_label %}{% else %}{{ created_label }}{% endif %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Date Prévue" as planned_label %}{% if sortable %}{% include "maintenance/_sort_header.html" with field="planned_start" label=planned_label %}{% else %}{{ planned_label }}{% endif %}</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
                     {% if show_reason %}<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Motif</th>{% endif %}
                     <th class="px-6 py-4 text-right"></th>
