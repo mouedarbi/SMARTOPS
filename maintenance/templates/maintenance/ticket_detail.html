@@ -32,11 +32,11 @@
             {% if ticket.status == 'pending' or ticket.status == 'planned' %}
             <a href="{% url 'ticket_update' ticket.id %}" class="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition flex items-center gap-2">
                 <i class="las la-edit text-xl"></i>
-                Modifier la planification
+                {% if ticket.status == 'planned' %}{% trans "Modifier la description" %}{% else %}Modifier la planification{% endif %}
             </a>
             {% endif %}
             {% if ticket.status == 'planned' %}
-            <a href="{% url 'ticket_update' ticket.id %}#reassigner" class="px-6 py-3 bg-amber-50 text-amber-700 font-bold rounded-2xl border border-amber-200 hover:bg-amber-100 transition flex items-center gap-2">
+            <a href="{% url 'ticket_reassign' ticket.id %}" class="px-6 py-3 bg-amber-50 text-amber-700 font-bold rounded-2xl border border-amber-200 hover:bg-amber-100 transition flex items-center gap-2">
                 <i class="las la-user-edit text-xl"></i>
                 {% trans "Réassigner" %}
             </a>

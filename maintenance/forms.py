@@ -89,8 +89,20 @@ class MaintenanceTicketForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
         }
 
-    def __init__(self, *args, **kwargs):
+    # Champs modifiables selon l'écran, pour un ticket « Planifié » :
+    # « Modifier » ne touche qu'à la description, « Réassigner » au technicien et au créneau.
+    EDITABLE_FIELDS = {
+        'description': {'description'},
+        'reassign': {'technician', 'planned_date', 'start_time_slot', 'duration_seconds'},
+    }
+
+    def __init__(self, *args, mode=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if mode:
+            for name, field in self.fields.items():
+                if name not in self.EDITABLE_FIELDS[mode]:
+                    field.disabled = True
+                    field.required = False
 
         # À la création, pas de technicien : le ticket naît « En attente » et s'assigne en modification.
         if not self.instance.pk:

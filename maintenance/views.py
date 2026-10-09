@@ -248,28 +248,51 @@ def _build_closure_summary(ticket):
 @user_passes_test(is_management_staff)
 def ticket_update(request, pk):
     """
-    Vue d'édition (Planification) du ticket.
+    Modification du ticket. En attente : planification complète (technicien, créneau...).
+    Planifié : description seulement ; le technicien se change par « Réassigner ».
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
-    
+
     # Sécurité : Pas d'édition si déjà commencé/fini
     if ticket.status in ['in_progress', 'done', 'canceled', 'to_reschedule']:
         messages.warning(request, "Cette intervention ne peut plus être modifiée car elle est déjà en cours ou clôturée.")
         return redirect('ticket_detail', pk=ticket.id)
 
+    mode = 'description' if ticket.status == 'planned' else None
+    return _ticket_edit(request, ticket, mode, f"Planification #{ticket.id}", f"Intervention #{ticket.id} reprogrammée.")
+
+
+@login_required
+@user_passes_test(is_management_staff)
+def ticket_reassign(request, pk):
+    """
+    Réassignation d'un ticket « Planifié » : choix d'un autre technicien (et du créneau),
+    avec son planning. Vider le technicien remet le ticket « En attente ».
+    """
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    if ticket.status != 'planned':
+        messages.warning(request, "Seule une intervention planifiée peut être réassignée.")
+        return redirect('ticket_detail', pk=ticket.id)
+    return _ticket_edit(request, ticket, 'reassign', f"Réassignation #{ticket.id}", f"Intervention #{ticket.id} réassignée.")
+
+
+def _ticket_edit(request, ticket, mode, page_title, success_message):
+    """Formulaire de ticket limité aux champs de l'écran (mode), enregistré puis renvoyé à la fiche."""
     if request.method == 'POST':
-        form = MaintenanceTicketForm(request.POST, instance=ticket)
+        form = MaintenanceTicketForm(request.POST, instance=ticket, mode=mode)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Intervention #{ticket.id} reprogrammée.")
+            messages.success(request, success_message)
             return redirect('ticket_detail', pk=ticket.id)
     else:
-        form = MaintenanceTicketForm(instance=ticket)
-    
+        form = MaintenanceTicketForm(instance=ticket, mode=mode)
+
     context = {
         'ticket': ticket,
         'form': form,
-        'page_title': f"Planification #{ticket.id}"
+        'mode': mode,
+        'technician_editable': 'technician' in form.fields and not form.fields['technician'].disabled,
+        'page_title': page_title,
     }
     return render(request, 'maintenance/ticket_form.html', context)
 

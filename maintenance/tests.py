@@ -225,7 +225,8 @@ class MaintenanceWebViewsTestCase(TestCase):
             description='Dépannage PAC'
         )
 
-        url = reverse('ticket_update', kwargs={'pk': ticket.id})
+        # Ticket planifié : le changement de technicien passe par « Réassigner ».
+        url = reverse('ticket_reassign', kwargs={'pk': ticket.id})
         data = {
             'client': self.client_obj.id,
             'building': self.building.id,
@@ -594,7 +595,7 @@ class ScheduleConflictTestCase(TestCase):
             equipment=self.equipment, technician=self.tech, type='maintenance', status='planned',
             planned_start=self.start.replace(hour=14), planned_end=self.start.replace(hour=15),
         )
-        response = self.http.post(reverse('ticket_update', args=[other.pk]), self._form_data(start_time_slot='09:30'))
+        response = self.http.post(reverse('ticket_reassign', args=[other.pk]), self._form_data(start_time_slot='09:30'))
         self.assertEqual(response.status_code, 200)
         other.refresh_from_db()
         self.assertEqual(timezone.localtime(other.planned_start).hour, 14)
@@ -731,7 +732,7 @@ class TechnicianCalendarTestCase(TestCase):
 
         http = HttpClient()
         http.login(username='chef_cal', password='Password123!')
-        response = http.post(reverse('ticket_update', args=[ticket.pk]), {
+        response = http.post(reverse('ticket_reassign', args=[ticket.pk]), {
             'client': self.equipment.building.client_id, 'building': self.equipment.building_id,
             'equipment': self.equipment.pk, 'technician': '', 'type': 'repair', 'status': 'planned',
             'planned_date': '2026-12-15', 'start_time_slot': '09:00', 'duration_seconds': 3600, 'description': '',
@@ -923,7 +924,7 @@ class TicketStatusRuleTestCase(TestCase):
         self.http.post(reverse('ticket_update', args=[ticket.pk]), self._update_data(technician=self.tech.pk, status='done'))
         ticket.refresh_from_db()
         self.assertEqual((ticket.technician, ticket.status), (self.tech, 'planned'))
-        self.http.post(reverse('ticket_update', args=[ticket.pk]), self._update_data(technician=''))
+        self.http.post(reverse('ticket_reassign', args=[ticket.pk]), self._update_data(technician=''))
         ticket.refresh_from_db()
         self.assertEqual((ticket.technician, ticket.status), (None, 'pending'))
 
@@ -1036,12 +1037,34 @@ class DispatchPlanningTestCase(TestCase):
 
 
     def test_reassign_button_only_when_planned(self):
-        """Le bouton « Réassigner » mène au choix du technicien, seulement pour un ticket planifié."""
+        """« Réassigner » n'existe que pour un ticket planifié et ouvre le choix du technicien avec son planning."""
         ticket = self._ticket(technician=self.tech)
-        response = self.http.get(reverse('ticket_detail', args=[ticket.pk]))
-        self.assertContains(response, reverse('ticket_update', args=[ticket.pk]) + '#reassigner')
-        self.assertContains(self.http.get(reverse('ticket_update', args=[ticket.pk])), 'id="reassigner"')
-        self.assertNotContains(self.http.get(reverse('ticket_detail', args=[self._ticket().pk])), '#reassigner')
+        reassign_url = reverse('ticket_reassign', args=[ticket.pk])
+        self.assertContains(self.http.get(reverse('ticket_detail', args=[ticket.pk])), reassign_url)
+        response = self.http.get(reassign_url)
+        self.assertFalse(response.context['form'].fields['technician'].disabled)
+        self.assertTrue(response.context['form'].fields['description'].disabled)
+        self.assertContains(response, 'id="dispatch-planning-section"')
+        pending = self._ticket()
+        self.assertNotContains(self.http.get(reverse('ticket_detail', args=[pending.pk])), reverse('ticket_reassign', args=[pending.pk]))
+        self.assertRedirects(self.http.get(reverse('ticket_reassign', args=[pending.pk])), reverse('ticket_detail', args=[pending.pk]))
+
+    def test_planned_edit_changes_description_only(self):
+        """« Modifier » un ticket planifié ne change que la description : ni technicien, ni créneau."""
+        other = CustomUser.objects.create_user(username='tech_dp2', password='Password123!', role='technician').technician_profile
+        ticket = self._ticket(technician=self.tech)
+        response = self.http.get(reverse('ticket_update', args=[ticket.pk]))
+        self.assertTrue(response.context['form'].fields['technician'].disabled)
+        self.assertNotContains(response, 'id="dispatch-planning-section"')
+        self.http.post(reverse('ticket_update', args=[ticket.pk]), {
+            'client': self.equipment.building.client_id, 'building': self.equipment.building_id,
+            'equipment': self.equipment.pk, 'technician': other.pk, 'type': 'emergency',
+            'planned_date': '2026-12-20', 'start_time_slot': '15:00', 'duration_seconds': 7200,
+            'description': 'Bruit anormal au démarrage',
+        })
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.description, 'Bruit anormal au démarrage')
+        self.assertEqual((ticket.technician, ticket.type, ticket.planned_start), (self.tech, 'repair', self.start))
 
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketListCreatedAtTestCase(TestCase):

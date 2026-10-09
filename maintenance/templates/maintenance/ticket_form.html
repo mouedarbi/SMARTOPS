@@ -102,8 +102,8 @@
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Équipement sélectionné</label>
                             {{ form.equipment }}
                         </div>
-                        {% if ticket %}
-                        <div id="reassigner">
+                        {% if ticket and mode != 'description' %}
+                        <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Technicien assigné</label>
                             {{ form.technician }}
                         </div>
@@ -169,7 +169,7 @@
                 <div class="flex flex-col gap-3">
                     <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
-                        {% if ticket %}Enregistrer les modifications{% else %}Ajouter le ticket{% endif %}
+                        {% if mode == 'reassign' %}{% trans "Réassigner" %}{% elif ticket %}Enregistrer les modifications{% else %}Ajouter le ticket{% endif %}
                     </button>
                     <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
                         Annuler
@@ -190,10 +190,10 @@
 
         </div>
 
-        {% if ticket.status == 'pending' or ticket.status == 'planned' %}
+        {% if technician_editable %}
         <!-- Dispatching : planning du technicien choisi, avec le créneau du ticket -->
         <div id="dispatch-planning-section" class="mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100" hidden
-             data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}"
+             data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}"{% if mode == 'reassign' %} data-focus-technician{% endif %}
              data-label-free="{% trans 'Créneau libre chez ce technicien.' %}"
              data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -397,8 +397,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     technicianSelect.addEventListener('change', showPlanning);
-    // Arrivée par le bouton « Réassigner » : on place le curseur sur le choix du technicien.
-    if (window.location.hash === '#reassigner') technicianSelect.focus();
+    // Écran « Réassigner » : le curseur va directement sur le choix du technicien.
+    if ('focusTechnician' in section.dataset) technicianSelect.focus();
     [dateInput, timeSelect, durationSelect].forEach(el => el.addEventListener('change', function() {
         if (calendar && dateInput.value) calendar.gotoDate(dateInput.value);
         drawTicketSlot();
