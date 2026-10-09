@@ -729,6 +729,9 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertEqual(event.pk, global_event.pk)
         self.assertEqual(event.calendar.slug, GLOBAL_CALENDAR_SLUG)
         self.assertEqual(Event.objects.count(), 1)
+        api = http.get(reverse('api_events'), {'technician': self.tech.pk}).json()
+        self.assertEqual(api, [])
+        self.assertEqual([e['id'] for e in http.get(reverse('api_events')).json()], [ticket.pk])
 
         ticket.technician = self.other_tech
         ticket.save()
@@ -813,3 +816,30 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertEqual(orphan_copies, [])
         self.assertEqual(Event.objects.count(), 3)
         self.assertEqual(self.Calendar.objects.count(), 3)
+
+    def test_api_events_filters_by_technician_and_range(self):
+        """Le planning d'un technicien ne montre que ses tickets, sur la période demandée."""
+        mine = self._ticket(self.tech)
+        self._ticket(self.other_tech)
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        url = reverse('api_events')
+        self.assertEqual(len(http.get(url).json()), 2)
+        data = http.get(url, {'technician': self.tech.pk}).json()
+        self.assertEqual([e['id'] for e in data], [mine.pk])
+        outside = http.get(url, {'technician': self.tech.pk, 'start': '2027-01-04T00:00:00+01:00', 'end': '2027-01-11T00:00:00+01:00'})
+        self.assertEqual(outside.json(), [])
+        inside = http.get(url, {'start': '2026-12-14', 'end': '2026-12-21'})
+        self.assertEqual(len(inside.json()), 2)
+
+    def test_planning_pages_render(self):
+        """Le planning filtré et la fiche technicien affichent le calendrier du technicien."""
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        expected = f"{reverse('api_events')}?technician={self.tech.pk}"
+        response = http.get(reverse('maintenance_calendar'), {'technician': self.tech.pk})
+        self.assertEqual(response.context['events_url'], expected)
+        self.assertEqual(response.context['selected_technician'], self.tech)
+        response = http.get(reverse('technician_detail', args=[self.tech.pk]))
+        self.assertContains(response, 'technician-planning')
+        self.assertEqual(response.context['events_url'], expected)

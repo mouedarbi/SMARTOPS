@@ -14,10 +14,12 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm, InterventionPhotoForm
+from .calendars import assigned_ticket_ids, get_technician_calendar, ticket_event_bounds
 from .services import NOT_STARTED, local_day_range, older_late_count, tickets_of_the_day, tickets_to_reschedule
-from schedule.models import Calendar
 from accounts.views import is_management_staff
 
 @login_required
@@ -336,6 +338,7 @@ def technician_detail(request, pk):
     context = {
         'technician': technician,
         'form': form,
+        'events_url': f"{reverse('api_events')}?technician={technician.pk}",
         'page_title': f"Profil Technicien : {technician}",
         'stats': {
             'total': total_tickets,
@@ -351,10 +354,21 @@ def technician_detail(request, pk):
 @user_passes_test(is_management_staff)
 def maintenance_calendar(request):
     """
-    Vue calendrier pour la maintenance.
+    Vue calendrier pour la maintenance : tous les tickets, ou le calendrier d'un technicien (?technician=).
     """
+    technicians = Technician.objects.select_related('user').order_by('user__first_name', 'user__last_name', 'user__username')
+    selected_technician = None
+    events_url = reverse('api_events')
+    technician_id = request.GET.get('technician')
+    if technician_id:
+        selected_technician = technicians.filter(pk=technician_id).first() if technician_id.isdigit() else None
+        if selected_technician:
+            events_url += f"?technician={selected_technician.pk}"
     context = {
-        'page_title': "Planning de Maintenance"
+        'page_title': "Planning de Maintenance",
+        'technicians': technicians,
+        'selected_technician': selected_technician,
+        'events_url': events_url,
     }
     return render(request, 'maintenance/calendar.html', context)
 
@@ -402,20 +416,54 @@ def api_get_equipments(request):
         } for e in equipments]
     return JsonResponse(data, safe=False)
 
+def _parse_calendar_bound(value):
+    """Borne envoyée par FullCalendar (date ou date-heure ISO 8601), rendue « aware », ou None."""
+    if not value:
+        return None
+    parsed = parse_datetime(value)
+    if parsed is None:
+        day = parse_date(value)
+        if day is None:
+            return None
+        parsed = datetime.datetime.combine(day, datetime.time.min)
+    if timezone.is_naive(parsed):
+        parsed = timezone.make_aware(parsed)
+    return parsed
+
 @login_required
 @user_passes_test(is_management_staff)
 def api_events(request):
     """
-    Retourne les événements de maintenance au format JSON pour FullCalendar.
-    Priorise les temps réels pour un affichage "Live".
+    Retourne les tickets au format JSON pour FullCalendar.
+    - Vue globale : tous les tickets, à leur créneau prévu.
+    - ?technician=<pk> : les tickets copiés dans le calendrier de ce technicien, aux heures de
+      ces copies (le réel dès qu'il existe).
+    ?start= / ?end= (envoyés par FullCalendar) : uniquement la période affichée.
     """
-    tickets = MaintenanceTicket.objects.select_related('equipment', 'technician', 'equipment__building')
-    
+    range_start = _parse_calendar_bound(request.GET.get('start'))
+    range_end = _parse_calendar_bound(request.GET.get('end'))
+    in_range = range_start and range_end
+
+    technician_id = request.GET.get('technician')
+    if technician_id:
+        if not technician_id.isdigit():
+            return JsonResponse([], safe=False)
+        calendar = get_technician_calendar(get_object_or_404(Technician, pk=technician_id))
+        ticket_ids = assigned_ticket_ids(calendar)
+        if in_range:
+            ticket_ids = ticket_ids.filter(event__start__lt=range_end, event__end__gt=range_start)
+        tickets = MaintenanceTicket.objects.filter(pk__in=ticket_ids)
+        bounds = ticket_event_bounds
+    else:
+        tickets = MaintenanceTicket.objects.all()
+        if in_range:
+            tickets = tickets.filter(planned_start__lt=range_end, planned_end__gt=range_start)
+        bounds = lambda ticket: (ticket.planned_start, ticket.planned_end)
+    tickets = tickets.select_related('equipment', 'technician', 'equipment__building', 'equipment__building__client')
+
     events = []
     for ticket in tickets:
-        # Détermination des heures à afficher (Réel si dispo, sinon Prévu)
-        display_start = ticket.effective_start if ticket.effective_start else ticket.planned_start
-        display_end = ticket.effective_end if ticket.effective_end else ticket.planned_end
+        display_start, display_end = bounds(ticket)
 
         # Titre dynamique avec statut
         status_label = ticket.get_status_display().upper()

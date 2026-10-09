@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Planning de Maintenance | SMARTOPS{% endblock %}
 {% block page_title %}Planning de Maintenance{% endblock %}
@@ -19,76 +20,21 @@
         </div>
     </div>
 
+    <!-- Filtre technicien : chaque technicien a son propre calendrier -->
+    <form method="get" class="mb-6 flex items-center gap-3">
+        <label for="technician-filter" class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Planning" %}</label>
+        <select id="technician-filter" name="technician" onchange="this.form.submit()"
+                class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm">
+            <option value="">{% trans "Tous les techniciens" %}</option>
+            {% for tech in technicians %}
+            <option value="{{ tech.pk }}" {% if selected_technician and tech.pk == selected_technician.pk %}selected{% endif %}>{{ tech }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
     <!-- Calendar Container -->
     <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 min-h-[700px]">
-        <!-- FullCalendar CSS -->
-        <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
-        <!-- FullCalendar JS -->
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
-        <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
-
-        <div id='calendar'></div>
+        {% include "maintenance/_planning.html" with planning_id="calendar" %}
     </div>
 </div>
-
-<style>
-    :root {
-        --fc-border-color: #f1f5f9;
-        --fc-button-bg-color: #0f172a;
-        --fc-button-border-color: #0f172a;
-        --fc-button-hover-bg-color: #1e293b;
-        --fc-button-hover-border-color: #1e293b;
-        --fc-button-active-bg-color: #3b82f6;
-        --fc-button-active-border-color: #3b82f6;
-        --fc-event-bg-color: #3b82f6;
-        --fc-event-border-color: #3b82f6;
-    }
-    .fc .fc-toolbar-title {
-        font-weight: 900;
-        letter-spacing: -0.025em;
-        color: #1e293b;
-        text-transform: capitalize;
-    }
-    .fc .fc-col-header-cell-cushion {
-        font-size: 10px;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #94a3b8;
-        padding: 10px 0;
-    }
-    .fc-theme-standard td, .fc-theme-standard th {
-        border: 1px solid #f8fafc;
-    }
-    .fc-v-event {
-        border-radius: 8px;
-        padding: 2px 5px;
-        border: none;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            locale: 'fr',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            slotMinTime: '07:00:00',
-            slotMaxTime: '20:00:00',
-            events: '/maintenance/api/events/', // Endpoint à créer pour JSON
-            eventClick: function(info) {
-                if (info.event.id) {
-                    window.location.href = "/maintenance/tickets/" + info.event.id + "/";
-                }
-            }
-        });
-        calendar.render();
-    });
-</script>
 {% endblock %}

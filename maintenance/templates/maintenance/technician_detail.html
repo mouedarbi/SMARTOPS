@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ page_title }} | SMARTOPS{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
@@ -196,6 +197,17 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Planning du technicien : son propre calendrier -->
+    <div class="mt-10">
+        <div class="flex items-center justify-between mb-6">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Planning" %}</h4>
+            <a href="{% url 'maintenance_calendar' %}?technician={{ technician.pk }}" class="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800">{% trans "Ouvrir dans le planning" %}</a>
+        </div>
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            {% include "maintenance/_planning.html" with planning_id="technician-planning" %}
+        </div>
     </div>
 </div>
 {% endblock %}
