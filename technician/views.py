@@ -20,7 +20,7 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
 from maintenance.forms import InterventionPhotoForm
-from maintenance.services import reschedule_ticket, with_display_start
+from maintenance.services import reschedule_ticket, technician_tickets, with_display_start
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
@@ -84,8 +84,8 @@ def technician_dashboard(request):
         messages.error(request, "Profil technicien introuvable.")
         return redirect('login')
 
-    # Datation : début effectif si démarrée, sinon début prévu
-    tickets = with_display_start(MaintenanceTicket.objects.filter(technician=tech_profile))
+    # Interventions du calendrier du technicien, datées par leur début effectif si démarrées, sinon prévu
+    tickets = with_display_start(technician_tickets(tech_profile))
 
     tickets_today = tickets.filter(
         display_start__gte=today_start,

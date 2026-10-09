@@ -843,3 +843,17 @@ class TechnicianCalendarTestCase(TestCase):
         response = http.get(reverse('technician_detail', args=[self.tech.pk]))
         self.assertContains(response, 'technician-planning')
         self.assertEqual(response.context['events_url'], expected)
+
+    def test_technician_api_reads_calendar(self):
+        """L'API technicien lit son calendrier et expose son slug."""
+        from rest_framework.test import APIClient
+        from maintenance.calendars import get_technician_calendar
+        now = timezone.now()
+        MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='repair', status='planned',
+            planned_start=now, planned_end=now + timedelta(hours=1),
+        )
+        api = APIClient()
+        api.force_authenticate(self.tech.user)
+        self.assertEqual(len(api.get(reverse('api_my_interventions')).json()), 1)
+        self.assertEqual(api.get(reverse('api_me')).json()['calendar_slug'], get_technician_calendar(self.tech).slug)

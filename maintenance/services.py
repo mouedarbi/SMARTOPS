@@ -17,6 +17,7 @@ from django.db.models import Case, IntegerField, Q, Value, When
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
+from .calendars import assigned_ticket_ids, get_technician_calendar
 from .models import MaintenanceTicket, InterventionPhoto
 
 
@@ -34,6 +35,11 @@ def with_display_start(queryset):
     Sert à dater une intervention réalisée un autre jour que prévu.
     """
     return queryset.annotate(display_start=Coalesce('effective_start', 'planned_start'))
+
+
+def technician_tickets(technician):
+    """Tickets dont une copie de l'événement est dans le calendrier du technicien."""
+    return MaintenanceTicket.objects.filter(pk__in=assigned_ticket_ids(get_technician_calendar(technician)))
 
 
 def reschedule_ticket(ticket, report=None):

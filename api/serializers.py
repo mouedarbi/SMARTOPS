@@ -23,6 +23,7 @@ class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
+from maintenance.calendars import get_technician_calendar
 from maintenance.services import NOT_STARTED, find_schedule_conflict, schedule_conflict_message
 
 
@@ -32,6 +33,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
         read_only_fields = ['id']
+
+
+class MeSerializer(UserSerializer):
+    """Utilisateur authentifié, avec le slug de son calendrier s'il est technicien."""
+    calendar_slug = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ['calendar_slug']
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_calendar_slug(self, obj):
+        technician = getattr(obj, 'technician_profile', None) if obj.role == 'technician' else None
+        return get_technician_calendar(technician).slug if technician else None
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -87,10 +101,14 @@ class EquipmentSerializer(serializers.ModelSerializer):
 class TechnicianSerializer(serializers.ModelSerializer):
     """Technicien avec son compte utilisateur."""
     user = UserSerializer(read_only=True)
+    calendar_slug = serializers.SerializerMethodField()
 
     class Meta:
         model = Technician
-        fields = ['id', 'user', 'specialties', 'is_active']
+        fields = ['id', 'user', 'specialties', 'is_active', 'calendar_slug']
+
+    def get_calendar_slug(self, obj) -> str:
+        return get_technician_calendar(obj).slug
 
 
 class InterventionPhotoSerializer(serializers.ModelSerializer):

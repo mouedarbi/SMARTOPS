@@ -27,9 +27,10 @@ from accounts.security import get_client_ip
 from licensing.models import Plugin
 from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
-from maintenance.services import reschedule_ticket, with_display_start
+from maintenance.services import reschedule_ticket, technician_tickets, with_display_start
 
 from .serializers import (
+    MeSerializer,
     UserSerializer,
     ClientSerializer,
     BuildingSerializer,
@@ -55,10 +56,10 @@ class MeView(APIView):
     """Retourne les informations de l'utilisateur authentifié."""
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=UserSerializer)
+    @extend_schema(responses=MeSerializer)
     def get(self, request):
         """Renvoie l'utilisateur authentifié."""
-        serializer = UserSerializer(request.user)
+        serializer = MeSerializer(request.user)
         return Response(serializer.data)
 
 
@@ -283,7 +284,7 @@ class MyInterventionsView(APIView):
 
         # Datation : début effectif si démarrée, sinon début prévu
         range_end = week_end if request.query_params.get('range', 'today') == 'week' else today_end
-        tickets = with_display_start(MaintenanceTicket.objects.filter(technician=tech)).filter(
+        tickets = with_display_start(technician_tickets(tech)).filter(
             display_start__gte=today_start,
             display_start__lt=range_end,
         ).order_by('display_start')
