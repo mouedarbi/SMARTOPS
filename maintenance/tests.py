@@ -654,3 +654,162 @@ class TicketFormLocalTimeTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         ticket.refresh_from_db()
         self.assertEqual(ticket.planned_start, start)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class TechnicianCalendarTestCase(TestCase):
+    """Chaque technicien a son calendrier django-scheduler ; les événements de ses tickets y sont rangés."""
+
+    def setUp(self):
+        from schedule.models import Calendar
+        self.Calendar = Calendar
+        self.manager = CustomUser.objects.create_user(username='chef_cal', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(
+            username='tech_cal', password='Password123!', role='technician', first_name='Jean', last_name='Dupont',
+        ).technician_profile
+        self.other_tech = CustomUser.objects.create_user(
+            username='tech_cal2', password='Password123!', role='technician', first_name='Jean', last_name='Dupont',
+        ).technician_profile
+        client_obj = Client.objects.create(name='Client Cal', address='1 rue Cal')
+        building = Building.objects.create(client=client_obj, name='Site Cal', address='1 rue Cal')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Chaudière', equipment_type=EquipmentType.objects.create(name='Chaudière'),
+            serial_number='CH-1', installed_at=date(2025, 1, 1),
+        )
+        self.start = timezone.make_aware(timezone.datetime(2026, 12, 15, 9, 0))
+
+    def _ticket(self, technician, **extra):
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=technician, type='repair', status='planned',
+            planned_start=self.start, planned_end=self.start + timedelta(hours=1), **extra,
+        )
+
+    def test_new_technician_gets_own_calendar(self):
+        """Un nouveau technicien reçoit son calendrier ; deux homonymes ont des slugs différents."""
+        from maintenance.calendars import OWNER, get_technician_calendar
+        calendar = self.Calendar.objects.get_calendar_for_object(self.tech, distinction=OWNER)
+        other = self.Calendar.objects.get_calendar_for_object(self.other_tech, distinction=OWNER)
+        self.assertNotEqual(calendar.slug, other.slug)
+        self.assertEqual(get_technician_calendar(self.tech), calendar)
+
+    def _events(self, ticket):
+        """Événement global et copies du ticket."""
+        from maintenance.calendars import assignment_events
+        ticket.refresh_from_db()
+        return ticket.event, list(assignment_events(ticket))
+
+    def test_assignment_copies_event(self):
+        """Assigner : l'événement reste dans le global (créneau prévu) et une copie va chez le technicien."""
+        from maintenance.calendars import GLOBAL_CALENDAR_SLUG, get_technician_calendar
+        from schedule.models import EventRelation
+        ticket = self._ticket(self.tech)
+        event, copies = self._events(ticket)
+        self.assertEqual(event.calendar.slug, GLOBAL_CALENDAR_SLUG)
+        self.assertEqual(list(EventRelation.objects.get_events_for_object(ticket, 'ticket', inherit=False)), [event])
+        self.assertEqual([c.calendar for c in copies], [get_technician_calendar(self.tech)])
+
+    def test_unassign_then_reassign(self):
+        """Retirer le technicien supprime sa copie et ramène le ticket à l'état non assigné ; réassigner recrée une copie."""
+        from maintenance.calendars import GLOBAL_CALENDAR_SLUG, get_technician_calendar
+        from schedule.models import Event
+        ticket = self._ticket(self.tech)
+        global_event, _ = self._events(ticket)
+
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        response = http.post(reverse('ticket_update', args=[ticket.pk]), {
+            'client': self.equipment.building.client_id, 'building': self.equipment.building_id,
+            'equipment': self.equipment.pk, 'technician': '', 'type': 'repair', 'status': 'planned',
+            'planned_date': '2026-12-15', 'start_time_slot': '09:00', 'duration_seconds': 3600, 'description': '',
+        })
+        self.assertEqual(response.status_code, 302)
+        event, copies = self._events(ticket)
+        self.assertIsNone(ticket.technician)
+        self.assertEqual(copies, [])
+        self.assertEqual(event.pk, global_event.pk)
+        self.assertEqual(event.calendar.slug, GLOBAL_CALENDAR_SLUG)
+        self.assertEqual(Event.objects.count(), 1)
+
+        ticket.technician = self.other_tech
+        ticket.save()
+        event, copies = self._events(ticket)
+        self.assertEqual(event.pk, global_event.pk)
+        self.assertEqual([c.calendar for c in copies], [get_technician_calendar(self.other_tech)])
+
+    def test_direct_reassign_moves_copy_only(self):
+        """Réassigner directement : la copie change de calendrier, l'événement global ne bouge pas."""
+        from maintenance.calendars import get_technician_calendar
+        ticket = self._ticket(self.tech)
+        global_event, _ = self._events(ticket)
+        ticket.technician = self.other_tech
+        ticket.save()
+        event, copies = self._events(ticket)
+        self.assertEqual(event.pk, global_event.pk)
+        self.assertEqual([c.calendar for c in copies], [get_technician_calendar(self.other_tech)])
+
+    def test_saving_twice_keeps_single_event(self):
+        """Réenregistrer l'instance qui vient d'être créée ne crée ni second événement ni seconde copie."""
+        from schedule.models import Event
+        ticket = self._ticket(self.tech)
+        ticket.description = 'Fuite'
+        ticket.save()
+        self.assertEqual(Event.objects.count(), 2)
+
+    def test_copy_carries_real_hours(self):
+        """Le global garde le créneau prévu ; la copie suit le réel (démarré en retard, fin = début réel + durée prévue)."""
+        ticket = self._ticket(self.tech)
+        ticket.status = 'in_progress'
+        ticket.effective_start = self.start + timedelta(minutes=90)
+        ticket.save()
+        event, copies = self._events(ticket)
+        self.assertEqual((event.start, event.end), (ticket.planned_start, ticket.planned_end))
+        self.assertEqual(copies[0].start, ticket.effective_start)
+        self.assertEqual(copies[0].end, ticket.effective_start + timedelta(hours=1))
+
+    def test_ticket_deletion_removes_both_events(self):
+        """Supprimer un ticket supprime l'événement global et la copie."""
+        from schedule.models import Event
+        self._ticket(self.tech).delete()
+        self.assertEqual(Event.objects.count(), 0)
+
+    def test_removed_technician_loses_copies_only(self):
+        """Un technicien supprimé perd son calendrier et ses copies ; l'événement global reste pour une réassignation."""
+        from maintenance.calendars import GLOBAL_CALENDAR_SLUG
+        from schedule.models import Event
+        ticket = self._ticket(self.tech)
+        slug = self.Calendar.objects.get_calendar_for_object(self.tech, distinction='owner').slug
+        user = self.tech.user
+        user.role = 'manager'
+        user.save()
+        event, copies = self._events(ticket)
+        self.assertIsNone(ticket.technician)
+        self.assertEqual(copies, [])
+        self.assertEqual(event.calendar.slug, GLOBAL_CALENDAR_SLUG)
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertFalse(self.Calendar.objects.filter(slug=slug).exists())
+
+    def test_data_migration_backfills_and_is_idempotent(self):
+        """La migration crée les calendriers manquants et les copies, sans toucher au global ni dupliquer."""
+        import importlib
+        from django.apps import apps
+        from schedule.models import Event, EventRelation
+        from maintenance.calendars import GLOBAL_CALENDAR_SLUG, get_global_calendar, get_technician_calendar
+        migration = importlib.import_module('maintenance.migrations.0004_technician_calendars')
+        ticket = self._ticket(self.tech)
+        orphan = self._ticket(None)
+        # État d'avant : un événement par ticket dans le global, ni calendrier technicien, ni relation, ni copie.
+        self.Calendar.objects.exclude(slug=GLOBAL_CALENDAR_SLUG).delete()
+        EventRelation.objects.all().delete()
+        self.assertEqual(Event.objects.count(), 2)
+
+        migration.create_technician_calendars(apps, None)
+        migration.create_technician_calendars(apps, None)
+
+        event, copies = self._events(ticket)
+        self.assertEqual(event.calendar, get_global_calendar())
+        self.assertEqual([c.calendar for c in copies], [get_technician_calendar(self.tech)])
+        orphan_event, orphan_copies = self._events(orphan)
+        self.assertEqual(orphan_event.calendar, get_global_calendar())
+        self.assertEqual(orphan_copies, [])
+        self.assertEqual(Event.objects.count(), 3)
+        self.assertEqual(self.Calendar.objects.count(), 3)

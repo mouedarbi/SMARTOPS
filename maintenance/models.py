@@ -10,8 +10,8 @@ Description : Gestion des interventions techniques, des techniciens et
 
 from django.db import models
 from django.conf import settings
-from schedule.models import Event, Calendar
-from django.db.models.signals import post_save, post_delete
+from schedule.models import Event, Calendar, EventRelation
+from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from inventory.models import Equipment
 from datetime import timedelta
@@ -19,6 +19,9 @@ from django.utils import timezone
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+
+from .calendars import ASSIGNMENT, OWNER, TICKET, assignment_events, get_global_calendar, get_technician_calendar, ticket_event_bounds
+
 
 class Technician(models.Model):
     """
@@ -175,50 +178,78 @@ def delete_intervention_photo_file(sender, instance, **kwargs):
 @receiver(post_save, sender=MaintenanceTicket)
 def sync_maintenance_event(sender, instance, created, **kwargs):
     """
-    Crée ou met à jour l'événement dans le calendrier lors de la sauvegarde d'un ticket.
-    Priorise les temps réels (terrain) sur les temps prévus pour un affichage "Live".
+    Tient à jour les événements du ticket :
+    - l'événement global (créneau prévu), toujours dans le calendrier global ;
+    - sa copie dans le calendrier du technicien assigné (heures réelles dès qu'elles existent).
+    Retirer ou changer le technicien supprime la copie chez l'ancien.
     """
-    # Récupération ou création du calendrier principal de maintenance
-    calendar, _ = Calendar.objects.get_or_create(
-        slug="maintenance-globale",
-        defaults={'name': "Calendrier de Maintenance"}
-    )
-
-    # Détermination des heures à afficher (Réel si dispo, sinon Prévu)
-    display_start = instance.effective_start if instance.effective_start else instance.planned_start
-    display_end = instance.effective_end if instance.effective_end else instance.planned_end
-
     # Titre dynamique avec statut
     status_label = instance.get_status_display().upper()
-    event_title = f"[{status_label}] INT-{instance.id}: {instance.equipment.name}"
+    fields = {
+        'title': f"[{status_label}] INT-{instance.id}: {instance.equipment.name}",
+        'description': f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}\nStatut: {status_label}",
+    }
 
+    global_calendar = get_global_calendar()
     if created or not instance.event:
-        # Création de l'événement
         event = Event.objects.create(
-            title=event_title,
-            description=f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}\nStatut: {status_label}",
-            start=display_start,
-            end=display_end,
-            calendar=calendar
+            start=instance.planned_start, end=instance.planned_end, calendar=global_calendar, **fields
         )
+        EventRelation.objects.create_relation(event, instance, TICKET)
         # On met à jour l'instance sans redéclencher le signal
         MaintenanceTicket.objects.filter(pk=instance.pk).update(event=event)
+        instance.event = event
     else:
-        # Mise à jour de l'événement existant
-        event = instance.event
-        event.title = event_title
-        event.start = display_start
-        event.end = display_end
-        event.description = f"Type: {instance.get_type_display()}\nTechnicien: {instance.technician}\nStatut: {status_label}"
-        event.save()
+        _update_event(instance.event, instance.planned_start, instance.planned_end, global_calendar, fields)
+
+    copies = assignment_events(instance)
+    if instance.technician_id is None:
+        copies.delete()
+        return
+    calendar = get_technician_calendar(instance.technician)
+    copies.exclude(calendar=calendar).delete()
+    start, end = ticket_event_bounds(instance)
+    copy = copies.filter(calendar=calendar).first()
+    if copy:
+        _update_event(copy, start, end, calendar, fields)
+    else:
+        copy = Event.objects.create(start=start, end=end, calendar=calendar, **fields)
+        EventRelation.objects.create_relation(copy, instance, ASSIGNMENT)
+
+
+def _update_event(event, start, end, calendar, fields):
+    """Applique créneau, calendrier, titre et description à un événement existant."""
+    event.start, event.end, event.calendar = start, end, calendar
+    for name, value in fields.items():
+        setattr(event, name, value)
+    event.save()
 
 @receiver(post_delete, sender=MaintenanceTicket)
 def delete_maintenance_event(sender, instance, **kwargs):
     """
-    Supprime l'événement lié lors de la suppression d'un ticket.
+    Supprime l'événement global et la copie du technicien lors de la suppression d'un ticket.
     """
+    assignment_events(instance).delete()
     if instance.event:
         instance.event.delete()
+
+# --- SIGNALS POUR CALENDRIERS TECHNICIENS ---
+
+@receiver(post_save, sender=Technician)
+def create_technician_calendar(sender, instance, created, **kwargs):
+    """
+    Donne à chaque nouveau technicien son propre calendrier.
+    """
+    if created:
+        get_technician_calendar(instance)
+
+@receiver(pre_delete, sender=Technician)
+def delete_technician_calendar(sender, instance, **kwargs):
+    """
+    Supprime le calendrier d'un technicien et ses copies d'événements. Les événements du
+    calendrier global restent : les tickets pourront être réassignés.
+    """
+    Calendar.objects.get_calendars_for_object(instance, distinction=OWNER).delete()
 
 # --- SIGNALS POUR PROFILS TECHNICIENS ---
 
