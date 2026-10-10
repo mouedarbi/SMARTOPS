@@ -33,7 +33,8 @@
                             <div class="h-6 w-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px] font-black">
                                 {{ ticket.technician.user.username|slice:":1"|upper }}
                             </div>
-                            <span class="font-medium text-slate-600">{{ ticket.technician }}</span>
+                            {# Identifiant de connexion (le nom complet en infobulle) #}
+                            <span class="font-medium text-slate-600" title="{{ ticket.technician }}">{{ ticket.technician.user.username }}</span>
                         </div>
                         {% else %}
                         <span class="text-slate-300 italic text-sm">Non assigné</span>

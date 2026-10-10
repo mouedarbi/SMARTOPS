@@ -1254,3 +1254,21 @@ class ProtectedMediaTestCase(TestCase):
         self.assertEqual(self.http.get(self.url, HTTP_AUTHORIZATION=f'Bearer {token}').status_code, 200)
         self.http.login(username='chef_med', password='Password123!')
         self.assertEqual(self.http.get('/media/../manage.py').status_code, 404)
+
+    def test_list_shows_technician_username(self):
+        """La colonne Technicien de la liste affiche l'identifiant de connexion."""
+        CustomUser.objects.create_user(username='chef_un', password='Password123!', role='manager')
+        tech = CustomUser.objects.create_user(
+            username='technicien_99', password='Password123!', role='technician', first_name='Léa', last_name='Dupont',
+        ).technician_profile
+        client_obj = Client.objects.create(name='Client Un', address='1 rue Un')
+        building = Building.objects.create(client=client_obj, name='Site Un', address='1 rue Un')
+        equipment = Equipment.objects.create(
+            building=building, name='Porte', equipment_type=EquipmentType.objects.create(name='Porte'),
+            serial_number='PO-UN', installed_at=date(2025, 1, 1),
+        )
+        start = timezone.make_aware(timezone.datetime(2027, 1, 5, 9, 0))
+        MaintenanceTicket.objects.create(equipment=equipment, technician=tech, type='repair', planned_start=start, planned_end=start + timedelta(hours=1))
+        http = HttpClient()
+        http.login(username='chef_un', password='Password123!')
+        self.assertContains(http.get(reverse('ticket_list')), '>technicien_99</span>')
