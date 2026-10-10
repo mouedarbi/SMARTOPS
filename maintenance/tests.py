@@ -1111,6 +1111,39 @@ class DispatchPlanningTestCase(TestCase):
         response = self.http.get(reverse('ticket_update', args=[ticket.pk]))
         self.assertContains(response, f"{self.tech} (tech_dp)")
 
+    def test_cancel_ticket(self):
+        """Annulation par la gestion : motif obligatoire devenu rapport, sortie du planning du technicien."""
+        from maintenance.calendars import assignment_events
+        ticket = self._ticket(technician=self.tech)
+        url = reverse('ticket_cancel', args=[ticket.pk])
+        self.assertContains(self.http.get(reverse('ticket_detail', args=[ticket.pk])), url)
+        self.assertEqual(self.http.post(url, {'report': '  '}).status_code, 200)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, 'planned')
+
+        response = self.http.post(url, {'report': 'Le client a rappelé : la panne est résolue.'})
+        self.assertRedirects(response, reverse('ticket_detail', args=[ticket.pk]))
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, 'canceled')
+        self.assertEqual(ticket.intervention_report, 'Le client a rappelé : la panne est résolue.')
+        self.assertEqual(list(assignment_events(ticket)), [])
+        self.assertIsNotNone(ticket.event)
+        data = self.http.get(reverse('api_events'), {'technician': self.tech.pk}).json()
+        self.assertNotIn(ticket.pk, [e['id'] for e in data])
+
+    def test_cancel_only_before_start(self):
+        """Un ticket démarré ou clôturé ne peut pas être annulé ; une maintenance peut l'être, avec un avertissement."""
+        started = self._ticket(technician=self.tech)
+        MaintenanceTicket.objects.filter(pk=started.pk).update(status='in_progress')
+        url = reverse('ticket_cancel', args=[started.pk])
+        self.assertRedirects(self.http.post(url, {'report': 'x'}), reverse('ticket_detail', args=[started.pk]))
+        started.refresh_from_db()
+        self.assertEqual(started.status, 'in_progress')
+        maintenance = MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='maintenance', planned_start=self.start, planned_end=self.start + timedelta(hours=1),
+        )
+        self.assertContains(self.http.get(reverse('ticket_cancel', args=[maintenance.pk])), 'en principe obligatoire')
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketListCreatedAtTestCase(TestCase):
     """La liste des interventions affiche la date de création de chaque ticket."""

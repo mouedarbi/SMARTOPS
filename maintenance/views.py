@@ -265,6 +265,37 @@ def ticket_update(request, pk):
 
 @login_required
 @user_passes_test(is_management_staff)
+def ticket_cancel(request, pk):
+    """
+    Annulation par la gestion d'un ticket pas encore démarré (ex. le client rappelle : la panne est
+    résolue). Le motif, obligatoire, est enregistré comme rapport. Le ticket quitte le planning du
+    technicien ; il reste dans le planning global, en « Annulé ».
+    """
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    if ticket.status not in ('pending', 'planned'):
+        messages.warning(request, "Seule une intervention pas encore démarrée peut être annulée.")
+        return redirect('ticket_detail', pk=ticket.id)
+
+    report = ''
+    if request.method == 'POST':
+        report = (request.POST.get('report') or '').strip()
+        if report:
+            ticket.status = 'canceled'
+            ticket.intervention_report = report
+            ticket.save()
+            messages.success(request, f"Intervention #{ticket.id} annulée.")
+            return redirect('ticket_detail', pk=ticket.id)
+        messages.error(request, "Le motif de l'annulation est obligatoire.")
+
+    return render(request, 'maintenance/ticket_cancel.html', {
+        'ticket': ticket,
+        'report': report,
+        'page_title': f"Annulation #{ticket.id}",
+    })
+
+
+@login_required
+@user_passes_test(is_management_staff)
 def ticket_reassign(request, pk):
     """
     Réassignation d'un ticket « Planifié » : choix d'un autre technicien (et du créneau),

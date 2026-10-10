@@ -220,7 +220,8 @@ def sync_maintenance_event(sender, instance, created, **kwargs):
         _update_event(instance.event, instance.planned_start, instance.planned_end, global_calendar, fields)
 
     copies = assignment_events(instance)
-    if instance.technician_id is None:
+    # Sans technicien, ou annulé : plus rien dans le calendrier d'un technicien.
+    if instance.technician_id is None or instance.status == 'canceled':
         copies.delete()
         return
     calendar = get_technician_calendar(instance.technician)
