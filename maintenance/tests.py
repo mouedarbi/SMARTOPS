@@ -1105,6 +1105,12 @@ class DispatchPlanningTestCase(TestCase):
         self.assertEqual(ticket.description, 'Bruit anormal au démarrage')
         self.assertEqual((ticket.technician, ticket.type, ticket.planned_start), (self.tech, 'repair', self.start))
 
+    def test_technician_choices_show_username(self):
+        """La liste des techniciens affiche le nom suivi de l'identifiant de connexion."""
+        ticket = self._ticket()
+        response = self.http.get(reverse('ticket_update', args=[ticket.pk]))
+        self.assertContains(response, f"{self.tech} (tech_dp)")
+
 @override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
 class TicketListCreatedAtTestCase(TestCase):
     """La liste des interventions affiche la date de création de chaque ticket."""
