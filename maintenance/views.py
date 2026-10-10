@@ -30,9 +30,11 @@ TICKET_LIST_SORTS = ('id', 'created_at', 'planned_start')
 @user_passes_test(is_management_staff)
 def ticket_list(request):
     """
-    Liste des interventions en deux onglets :
-    - « À planifier » (?tab=a-planifier) : file des tickets qui attendent le gestionnaire ;
-    - « Toutes les interventions » (par défaut) : filtres par technicien, date, statut, lieu
+    Liste des interventions en trois onglets :
+    - « À planifier » (par défaut) : file des tickets qui attendent le gestionnaire ;
+    - « En cours » (?tab=en-cours) : interventions démarrées et pas encore clôturées, quelle que soit
+      leur date, du démarrage le plus ancien au plus récent (les clôtures oubliées remontent) ;
+    - « Toutes les interventions » (?tab=toutes) : filtres par technicien, date, statut, lieu
       et client, tri par colonne et pagination.
     """
     from inventory.models import Client, Building
@@ -72,7 +74,11 @@ def ticket_list(request):
         tickets = tickets.filter(equipment__building__client_id=client_id)
 
     filtering = any([technician_id, date_filter, status_filter, building_id, client_id])
-    tab = 'a-planifier' if request.GET.get('tab') == 'a-planifier' else 'toutes'
+    tab = request.GET.get('tab')
+    if tab not in ('a-planifier', 'en-cours', 'toutes'):
+        # Un lien filtré, trié ou paginé sans onglet vise la liste complète.
+        tab = 'toutes' if filtering or request.GET.get('sort') or request.GET.get('page') else 'a-planifier'
+    in_progress = list(all_tickets.filter(status='in_progress').order_by('effective_start', 'pk'))
     # File « À planifier » : toujours calculée sans filtre, pour le compteur de l'onglet.
     to_plan = tickets_to_plan(all_tickets)
     tickets = tickets.order_by(f"{'-' if order == 'desc' else ''}{sort}", '-pk')
@@ -98,6 +104,7 @@ def ticket_list(request):
         'filtering': filtering,
         'tab': tab,
         'to_plan': to_plan,
+        'in_progress': in_progress,
         'older_late': older_late_count(all_tickets),
         'page_title': "Tickets de Maintenance",
         'technicians': Technician.objects.select_related('user').order_by('user__username'),

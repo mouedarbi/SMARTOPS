@@ -19,14 +19,18 @@
         </a>
     </div>
 
-    <!-- Onglets -->
-    <div class="mb-6 flex gap-2 border-b border-slate-200">
-        <a href="{% url 'ticket_list' %}" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition {% if tab == 'toutes' %}border-blue-600 text-blue-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
-            <i class="las la-list"></i> {% trans "Toutes les interventions" %}
-        </a>
+    <!-- Onglets : À planifier (par défaut), En cours, Toutes les interventions -->
+    <div class="mb-6 flex flex-wrap gap-2 border-b border-slate-200">
         <a href="{% url 'ticket_list' %}?tab=a-planifier" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'a-planifier' %}border-orange-500 text-orange-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
             <i class="las la-user-clock"></i> {% trans "À planifier" %}
             <span class="px-2 py-0.5 rounded-full text-xs {% if to_plan %}bg-orange-100 text-orange-700{% else %}bg-slate-100 text-slate-400{% endif %}">{{ to_plan|length }}</span>
+        </a>
+        <a href="{% url 'ticket_list' %}?tab=en-cours" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'en-cours' %}border-blue-600 text-blue-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
+            <i class="las la-running"></i> {% trans "En cours" %}
+            <span class="px-2 py-0.5 rounded-full text-xs {% if in_progress %}bg-blue-100 text-blue-700{% else %}bg-slate-100 text-slate-400{% endif %}">{{ in_progress|length }}</span>
+        </a>
+        <a href="{% url 'ticket_list' %}?tab=toutes" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'toutes' %}border-slate-800 text-slate-800{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
+            <i class="las la-list"></i> {% trans "Toutes les interventions" %}
         </a>
     </div>
 
@@ -37,10 +41,17 @@
         {% if older_late %}<p class="text-sm font-semibold text-rose-600 mb-4"><i class="las la-history"></i> {{ older_late }} {% trans "autre(s) intervention(s) planifiée(s) jamais démarrée(s), créneau dépassé depuis plus de 7 jours (voir l'onglet Toutes les interventions)." %}</p>{% endif %}
         {% include "maintenance/_ticket_table.html" with rows=to_plan show_reason=True empty_text="Aucun ticket à planifier" %}
     </section>
+    {% elif tab == 'en-cours' %}
+    <!-- Interventions démarrées et pas encore clôturées -->
+    <section>
+        <p class="text-slate-500 text-sm mb-4">{% trans "Interventions démarrées par un technicien et pas encore clôturées, quelle que soit leur date, de la plus ancienne à la plus récente : une session ouverte depuis la veille signale une clôture oubliée." %}</p>
+        {% include "maintenance/_ticket_table.html" with rows=in_progress empty_text="Aucune intervention en cours" %}
+    </section>
     {% else %}
     <!-- Filtres -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-6">
         <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+            <input type="hidden" name="tab" value="toutes">
             <div>
                 <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Technicien</label>
                 <select name="technician" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
@@ -87,7 +98,7 @@
                     <i class="las la-filter"></i> Filtrer
                 </button>
                 {% if filters.technician or filters.date or filters.status or filters.building or filters.client %}
-                <a href="{% url 'ticket_list' %}" title="Réinitialiser les filtres" class="px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-xl transition flex items-center justify-center">
+                <a href="{% url 'ticket_list' %}?tab=toutes" title="Réinitialiser les filtres" class="px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-xl transition flex items-center justify-center">
                     <i class="las la-times"></i>
                 </a>
                 {% endif %}

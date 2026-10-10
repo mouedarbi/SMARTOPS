@@ -457,8 +457,9 @@ class TicketListSectionsTestCase(TestCase):
         self.assertNotIn('name="technician"', html)  # pas de filtres dans cet onglet
 
     def test_general_tab_lists_everything_with_filters(self):
-        """Onglet par défaut : toutes les interventions et le moteur de filtres ; plus de tableau du jour."""
-        response = self.http.get(reverse('ticket_list'))
+        """Onglet « Toutes les interventions » : toutes les interventions et le moteur de filtres ; plus de tableau du jour."""
+        self.assertEqual(self.http.get(reverse('ticket_list')).context['tab'], 'a-planifier')  # onglet par défaut
+        response = self.http.get(reverse('ticket_list'), {'tab': 'toutes'})
         self.assertEqual(response.context['tab'], 'toutes')
         self.assertEqual(len(response.context['to_plan']), 3)  # compteur de l'onglet
         rest = self._ids(response.context['tickets'])
@@ -468,6 +469,15 @@ class TicketListSectionsTestCase(TestCase):
         html = response.content.decode()
         self.assertIn('name="technician"', html)
         self.assertNotIn('Interventions du jour', html)
+
+    def test_in_progress_tab(self):
+        """Onglet « En cours » : interventions démarrées non clôturées, quelle que soit leur date, sans filtres."""
+        response = self.http.get(reverse('ticket_list'), {'tab': 'en-cours'})
+        self.assertEqual(self._ids(response.context['in_progress']), [self.started_early.pk])
+        self.assertNotIn('name="technician"', response.content.decode())
+
+    def test_filtered_link_without_tab_opens_the_full_list(self):
+        self.assertEqual(self.http.get(reverse('ticket_list'), {'technician': 'none'}).context['tab'], 'toutes')
 
     def test_assigned_ticket_leaves_the_to_plan_tab(self):
         self.follow_up.technician = self.tech
@@ -1304,4 +1314,4 @@ class ProtectedMediaTestCase(TestCase):
         MaintenanceTicket.objects.create(equipment=equipment, technician=tech, type='repair', planned_start=start, planned_end=start + timedelta(hours=1))
         http = HttpClient()
         http.login(username='chef_un', password='Password123!')
-        self.assertContains(http.get(reverse('ticket_list')), '>technicien_99</span>')
+        self.assertContains(http.get(reverse('ticket_list'), {'tab': 'toutes'}), '>technicien_99</span>')
