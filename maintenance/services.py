@@ -19,6 +19,7 @@ from django.utils import timezone
 
 from .calendars import assigned_ticket_ids, get_technician_calendar
 from .models import NOT_STARTED, MaintenanceTicket, InterventionPhoto
+from .templatetags.ticket_links import referenced_ticket_ids
 
 
 # Début de la description d'un ticket de suite créé par reschedule_ticket().
@@ -39,6 +40,17 @@ def with_display_start(queryset):
 def technician_tickets(technician):
     """Tickets dont une copie de l'événement est dans le calendrier du technicien."""
     return MaintenanceTicket.objects.filter(pk__in=assigned_ticket_ids(get_technician_calendar(technician)))
+
+
+def related_ticket_ids(technician):
+    """
+    Tickets cités dans la description des tickets du technicien : l'intervention d'origine
+    d'un ticket de suite qui lui est confié, ou la suite d'une intervention qu'il a clôturée.
+    """
+    ids = set()
+    for description in MaintenanceTicket.objects.filter(technician=technician).values_list('description', flat=True):
+        ids |= referenced_ticket_ids(description)
+    return ids
 
 
 def reschedule_ticket(ticket, report=None):

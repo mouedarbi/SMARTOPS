@@ -21,7 +21,7 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
 from maintenance.forms import InterventionPhotoForm
-from maintenance.services import reschedule_ticket, technician_tickets, with_display_start
+from maintenance.services import related_ticket_ids, reschedule_ticket, technician_tickets, with_display_start
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
@@ -164,17 +164,6 @@ def technician_profile(request):
         'now': timezone.now(),
     })
 
-def _related_ticket_ids(technician):
-    """
-    Tickets cités dans la description des tickets du technicien : l'intervention d'origine
-    d'un ticket de suite qui lui est confié, ou la suite d'une intervention qu'il a clôturée.
-    """
-    ids = set()
-    for description in MaintenanceTicket.objects.filter(technician=technician).values_list('description', flat=True):
-        ids |= referenced_ticket_ids(description)
-    return ids
-
-
 @login_required(login_url='technician_login')
 @user_passes_test(is_technician, login_url='technician_login')
 def technician_ticket_detail(request, pk):
@@ -191,7 +180,7 @@ def technician_ticket_detail(request, pk):
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     is_own = ticket.technician_id == tech_profile.pk
-    related_ids = _related_ticket_ids(tech_profile)
+    related_ids = related_ticket_ids(tech_profile)
     if not is_own and ticket.pk not in related_ids:
         raise Http404
 

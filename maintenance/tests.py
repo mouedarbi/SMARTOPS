@@ -1179,3 +1179,72 @@ class TicketListCreatedAtTestCase(TestCase):
         self.assertContains(response, 'Prévu 30/09/2026 12:30')
         MaintenanceTicket.objects.update(status='in_progress', effective_end=None)
         self.assertContains(http.get(reverse('ticket_list'), {'status': 'in_progress'}), 'EN DIRECT depuis 00:07')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class ProtectedMediaTestCase(TestCase):
+    """/media/ : photos visibles par la gestion et par les techniciens des tickets concernés, pas par les autres."""
+
+    def setUp(self):
+        import shutil, tempfile
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from maintenance.models import InterventionPhoto
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, ignore_errors=True)
+        override = override_settings(MEDIA_ROOT=media)
+        override.enable()
+        self.addCleanup(override.disable)
+
+        self.manager = CustomUser.objects.create_user(username='chef_med', password='Password123!', role='manager')
+        self.tech = CustomUser.objects.create_user(username='tech_med', password='Password123!', role='technician')
+        self.other = CustomUser.objects.create_user(username='tech_med2', password='Password123!', role='technician')
+        client_obj = Client.objects.create(name='Client Med', address='1 rue Med')
+        building = Building.objects.create(client=client_obj, name='Site Med', address='1 rue Med')
+        equipment = Equipment.objects.create(
+            building=building, name='Pompe', equipment_type=EquipmentType.objects.create(name='Pompe'),
+            serial_number='PO-MED', installed_at=date(2025, 1, 1),
+        )
+        start = timezone.now()
+        self.ticket = MaintenanceTicket.objects.create(
+            equipment=equipment, technician=self.tech.technician_profile, type='repair',
+            planned_start=start, planned_end=start + timedelta(hours=1),
+        )
+        photo = InterventionPhoto.objects.create(
+            ticket=self.ticket, uploaded_by=self.tech,
+            image=SimpleUploadedFile('vanne.jpg', b'photo-bytes', content_type='image/jpeg'),
+        )
+        self.url = photo.image.url
+        self.http = HttpClient()
+
+    def _get(self, username=None):
+        self.http.logout()
+        if username:
+            self.http.login(username=username, password='Password123!')
+        return self.http.get(self.url)
+
+    def test_access_rules(self):
+        self.assertEqual(self._get().status_code, 404)
+        self.assertEqual(self._get('tech_med2').status_code, 404)
+        for username in ('chef_med', 'tech_med'):
+            response = self._get(username)
+            self.assertEqual(response.status_code, 200, username)
+            self.assertEqual(response['X-Accel-Redirect'], '/protected-media/' + self.url[len('/media/'):])
+            self.assertEqual(response['Content-Type'], 'image/jpeg')
+
+    def test_technician_of_a_linked_ticket(self):
+        """Le technicien d'un ticket de suite voit les photos de l'intervention d'origine."""
+        start = timezone.now()
+        MaintenanceTicket.objects.create(
+            equipment=self.ticket.equipment, technician=self.other.technician_profile, type='repair',
+            planned_start=start, planned_end=start + timedelta(hours=1),
+            description=f"Suite de l'intervention #{self.ticket.pk} (à replanifier le …).",
+        )
+        self.assertEqual(self._get('tech_med2').status_code, 200)
+
+    def test_mobile_jwt_and_path_traversal(self):
+        from rest_framework_simplejwt.tokens import AccessToken
+        self.http.logout()
+        token = AccessToken.for_user(self.tech)
+        self.assertEqual(self.http.get(self.url, HTTP_AUTHORIZATION=f'Bearer {token}').status_code, 200)
+        self.http.login(username='chef_med', password='Password123!')
+        self.assertEqual(self.http.get('/media/../manage.py').status_code, 404)
