@@ -211,6 +211,7 @@
             </div>
             <p class="text-xs text-slate-400 mb-4">{% trans "Le créneau du ticket apparaît en vert s'il est libre, en rouge s'il chevauche une autre intervention. Cliquez sur un créneau libre pour y placer le ticket." %}</p>
             <div id="dispatch-planning"></div>
+            {% include "maintenance/_planning_legend.html" %}
         </div>
         {% include "maintenance/_planning_assets.html" %}
         {% endif %}

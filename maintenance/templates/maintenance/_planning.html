@@ -5,6 +5,7 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
 {% include "maintenance/_planning_assets.html" %}
 
 <div id="{{ planning_id }}"></div>
+{% include "maintenance/_planning_legend.html" %}
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

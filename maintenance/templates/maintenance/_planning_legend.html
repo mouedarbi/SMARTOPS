@@ -1,0 +1,19 @@
+{% load i18n %}
+{% comment %}
+Légende des tuiles du planning : bandeau = type d'intervention, fond = avancement.
+{% endcomment %}
+<div class="smo-legend">
+    <div class="smo-legend-group">
+        <span class="smo-legend-title">{% trans "Type" %}</span>
+        <span class="smo-legend-item smo-tile smo-type-maintenance"><span class="smo-legend-swatch is-band"></span>{% trans "Maintenance préventive" %}</span>
+        <span class="smo-legend-item smo-tile smo-type-repair"><span class="smo-legend-swatch is-band"></span>{% trans "Dépannage / Réparation" %}</span>
+        <span class="smo-legend-item smo-tile smo-type-emergency"><span class="smo-legend-swatch is-band"></span>{% trans "Urgence" %}</span>
+    </div>
+    <div class="smo-legend-group">
+        <span class="smo-legend-title">{% trans "Avancement" %}</span>
+        <span class="smo-legend-item"><span class="smo-legend-swatch" style="background:#ffffff"></span>{% trans "Planifié" %}</span>
+        <span class="smo-legend-item"><span class="smo-legend-swatch" style="background:#dcfce7"></span>{% trans "En cours" %}</span>
+        <span class="smo-legend-item"><span class="smo-legend-swatch" style="background:#f1f5f9"></span>{% trans "Terminé" %}</span>
+        <span class="smo-legend-item"><span class="smo-legend-swatch" style="background:#ffedd5"></span>{% trans "À replanifier" %}</span>
+    </div>
+</div>

@@ -941,8 +941,9 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertContains(response, 'Clôturée : travail non effectué, à replanifier')
         self.assertNotContains(response, 'Travail en cours')
         self.assertContains(response, reverse('ticket_detail', args=[follow_up.pk]))
-        colors = {e['id']: e['backgroundColor'] for e in self.http_manager().get(reverse('api_events')).json()}
-        self.assertNotEqual(colors[ticket.pk], colors[follow_up.pk])
+        classes = {e['id']: e['classNames'] for e in self.http_manager().get(reverse('api_events')).json()}
+        self.assertIn('smo-status-to_reschedule', classes[ticket.pk])
+        self.assertIn('smo-status-pending', classes[follow_up.pk])
 
     def test_ticket_links_to_technician_page(self):
         """Depuis la fiche d'un ticket, le nom du technicien ouvre sa fiche (onglet Planning)."""

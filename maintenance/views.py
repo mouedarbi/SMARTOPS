@@ -567,22 +567,6 @@ def api_events(request):
         # Titre dynamique avec statut
         status_label = ticket.get_status_display().upper()
         
-        # Détermination de la couleur basée sur le statut
-        # Mêmes repères que la liste des interventions : chaque statut a sa couleur.
-        color = '#f59e0b' # Planifié : Amber 500
-        if ticket.status == 'in_progress':
-            color = '#3b82f6' # Blue 500
-        elif ticket.status == 'done':
-            color = '#10b981' # Emerald 500
-        elif ticket.status == 'to_reschedule':
-            color = '#ea580c' # Orange 600 : clôturée, travail non effectué
-        elif ticket.status == 'pending':
-            color = '#94a3b8' # Slate 400 : en attente, sans technicien
-        elif ticket.status == 'canceled':
-            color = '#f43f5e' # Rose 500
-        elif ticket.type == 'emergency':
-            color = '#ef4444' # Red 500 : urgence planifiée
-
         events.append({
             'id': ticket.id,
             'title': f"[{status_label}] {ticket.equipment.name}",
@@ -594,8 +578,8 @@ def api_events(request):
                 'building': ticket.equipment.building.name,
                 'status': ticket.get_status_display(),
             },
-            'backgroundColor': color,
-            'borderColor': color,
+            # Tuile : bandeau de la couleur du type, fond selon le statut (styles dans _planning_assets.html).
+            'classNames': ['smo-tile', f'smo-type-{ticket.type}', f'smo-status-{ticket.status}'],
         })
     
     return JsonResponse(events, safe=False)
