@@ -452,16 +452,13 @@ def technician_detail(request, pk):
 @user_passes_test(is_management_staff)
 def maintenance_calendar(request):
     """
-    Vue calendrier pour la maintenance : tous les tickets, ou le calendrier d'un technicien (?technician=).
+    Planning d'un technicien à la fois (?technician=, le premier par défaut) : tous les techniciens
+    ensemble seraient illisibles. La vue d'ensemble se fait dans la liste des interventions.
     """
     technicians = Technician.objects.select_related('user').order_by('user__first_name', 'user__last_name', 'user__username')
-    selected_technician = None
-    events_url = reverse('api_events')
-    technician_id = request.GET.get('technician')
-    if technician_id:
-        selected_technician = technicians.filter(pk=technician_id).first() if technician_id.isdigit() else None
-        if selected_technician:
-            events_url += f"?technician={selected_technician.pk}"
+    technician_id = request.GET.get('technician') or ''
+    selected_technician = (technicians.filter(pk=technician_id).first() if technician_id.isdigit() else None) or technicians.first()
+    events_url = f"{reverse('api_events')}?technician={selected_technician.pk}" if selected_technician else None
     context = {
         'page_title': "Planning de Maintenance",
         'technicians': technicians,

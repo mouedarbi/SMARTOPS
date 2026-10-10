@@ -885,6 +885,15 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertContains(response, 'technician-planning')
         self.assertEqual(response.context['events_url'], expected)
 
+    def test_planning_shows_one_technician_at_a_time(self):
+        """Pas de vue « tous les techniciens » au Planning : un technicien par défaut, jamais le planning global."""
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        response = http.get(reverse('maintenance_calendar'))
+        self.assertIsNotNone(response.context['selected_technician'])
+        self.assertIn('?technician=', response.context['events_url'])
+        self.assertNotContains(response, 'Tous les techniciens')
+
     def test_technician_api_reads_calendar(self):
         """L'API technicien lit son calendrier et expose son slug."""
         from rest_framework.test import APIClient
