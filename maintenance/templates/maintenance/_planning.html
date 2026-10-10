@@ -19,6 +19,8 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
             },
             slotMinTime: '07:00:00',
             slotMaxTime: '20:00:00',
+            // Interventions qui se chevauchent (urgence) : côte à côte, chacune sur la moitié de la largeur.
+            slotEventOverlap: false,
             events: '{{ events_url|escapejs }}',
             eventClick: function(info) {
                 if (info.event.id) {

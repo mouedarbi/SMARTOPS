@@ -322,6 +322,8 @@ def _ticket_edit(request, ticket, mode, page_title, success_message):
         if form.is_valid():
             form.save()
             messages.success(request, success_message)
+            if form.overlap_warning:
+                messages.warning(request, form.overlap_warning)
             return redirect('ticket_detail', pk=ticket.id)
     else:
         form = MaintenanceTicketForm(instance=ticket, mode=mode)

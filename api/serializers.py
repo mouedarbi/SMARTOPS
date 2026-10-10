@@ -177,7 +177,8 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
         status = instance.status if instance else 'pending'
         if status in NOT_STARTED:
             conflict = find_schedule_conflict(current('technician'), start, end, exclude_pk=getattr(instance, 'pk', None))
-            if conflict:
+            # Une urgence peut chevaucher le planning du technicien.
+            if conflict and current('type') != 'emergency':
                 raise serializers.ValidationError({'planned_start': f"Conflit de planning : {schedule_conflict_message(conflict)}"})
         return attrs
 

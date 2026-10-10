@@ -91,6 +91,9 @@ class MaintenanceTicketForm(forms.ModelForm):
 
     # Champs modifiables selon l'écran, pour un ticket « Planifié » :
     # « Modifier » ne touche qu'à la description, « Réassigner » au technicien et au créneau.
+    # Message d'avertissement quand une urgence chevauche le planning (renseigné par clean()).
+    overlap_warning = None
+
     EDITABLE_FIELDS = {
         'description': {'description'},
         'reassign': {'technician', 'planned_date', 'start_time_slot', 'duration_seconds'},
@@ -170,9 +173,11 @@ class MaintenanceTicketForm(forms.ModelForm):
     def clean(self):
         """
         Calcule le début et la fin prévus (heure locale) et refuse un conflit de
-        planning avec une autre intervention du même technicien.
+        planning avec une autre intervention du même technicien, sauf pour une urgence :
+        elle peut chevaucher le planning (avertissement dans `overlap_warning`).
         """
         cleaned_data = super().clean()
+        self.overlap_warning = None
         planned_date = cleaned_data.get('planned_date')
         start_time_str = cleaned_data.get('start_time_slot')
         duration_sec = cleaned_data.get('duration_seconds')
@@ -186,7 +191,12 @@ class MaintenanceTicketForm(forms.ModelForm):
         # Conflit de planning : seulement pour une intervention pas encore démarrée, avec un technicien.
         if self.instance.status in NOT_STARTED:
             conflict = find_schedule_conflict(cleaned_data.get('technician'), start, end, exclude_pk=self.instance.pk)
-            if conflict:
+            if conflict and cleaned_data.get('type') == 'emergency':
+                self.overlap_warning = (
+                    f"Urgence placée en chevauchement : {schedule_conflict_message(conflict)} "
+                    "Les créneaux prévus ne bougent pas ; le décalage réel se lira dans les heures réelles."
+                )
+            elif conflict:
                 message = schedule_conflict_message(conflict)
                 ticket_ref = f"#{conflict.pk}"
                 before, after = message.split(ticket_ref, 1)

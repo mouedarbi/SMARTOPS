@@ -193,14 +193,21 @@
         {% if technician_editable %}
         <!-- Dispatching : planning du technicien choisi, avec le créneau du ticket -->
         <div id="dispatch-planning-section" class="mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100" hidden
-             data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}"{% if mode == 'reassign' %} data-focus-technician{% endif %}
+             data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}" data-ticket-type="{{ ticket.type }}"{% if mode == 'reassign' %} data-focus-technician{% endif %}
              data-label-free="{% trans 'Créneau libre chez ce technicien.' %}"
-             data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}">
+             data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}"
+             data-label-overlap="{% trans 'Chevauchement autorisé pour une urgence : les deux interventions s’affichent côte à côte.' %}"
+             data-label-day-full="{% trans 'Journée complète : choisissez un autre jour.' %}">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
                     <i class="las la-calendar-week text-lg"></i> {% trans "Planning de" %} <span id="dispatch-technician-name" class="text-slate-800 text-sm normal-case tracking-normal"></span>
                 </h4>
-                <p id="dispatch-slot-status" class="text-sm font-bold"></p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <p id="dispatch-slot-status" class="text-sm font-bold"></p>
+                    <button type="button" id="dispatch-end-of-day" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-black transition">
+                        <i class="las la-step-forward"></i> {% trans "Placer en fin de journée" %}
+                    </button>
+                </div>
             </div>
             <p class="text-xs text-slate-400 mb-4">{% trans "Le créneau du ticket apparaît en vert s'il est libre, en rouge s'il chevauche une autre intervention. Cliquez sur un créneau libre pour y placer le ticket." %}</p>
             <div id="dispatch-planning"></div>
@@ -346,12 +353,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!slot) { statusLabel.textContent = ''; return; }
         const conflict = calendar.getEvents().some(e =>
             e.id !== 'ticket-slot' && e.start < slot.end && (e.end || e.start) > slot.start);
+        // Une urgence peut chevaucher le planning : orange au lieu de rouge.
+        const typeSelect = document.getElementById('id_type');
+        const ticketType = typeSelect && !typeSelect.disabled ? typeSelect.value : section.dataset.ticketType;
+        const overlapAllowed = conflict && ticketType === 'emergency';
         calendar.addEvent({
             id: 'ticket-slot', start: slot.start, end: slot.end, display: 'background',
-            backgroundColor: conflict ? '#f43f5e' : '#10b981',
+            backgroundColor: overlapAllowed ? '#f59e0b' : (conflict ? '#f43f5e' : '#10b981'),
         });
-        statusLabel.textContent = conflict ? section.dataset.labelConflict : section.dataset.labelFree;
-        statusLabel.className = 'text-sm font-bold ' + (conflict ? 'text-rose-600' : 'text-emerald-600');
+        statusLabel.textContent = overlapAllowed ? section.dataset.labelOverlap
+            : (conflict ? section.dataset.labelConflict : section.dataset.labelFree);
+        statusLabel.className = 'text-sm font-bold ' + (overlapAllowed ? 'text-amber-600' : (conflict ? 'text-rose-600' : 'text-emerald-600'));
     }
 
     function showPlanning() {
@@ -371,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 allDaySlot: false,
                 slotMinTime: '07:00:00',
                 slotMaxTime: '20:00:00',
+                slotEventOverlap: false,
                 snapDuration: '00:30:00',
                 selectable: true,
                 eventSources: [{id: 'technician', url: url}],
@@ -396,9 +409,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Dépannage dans un planning plein : début = fin de la dernière intervention du jour choisi,
+    // arrondie à la demi-heure suivante (premier créneau du jour s'il n'a rien).
+    document.getElementById('dispatch-end-of-day').addEventListener('click', function() {
+        if (!calendar || !dateInput.value) return;
+        const dayStart = new Date(dateInput.value + 'T00:00:00');
+        const dayEnd = new Date(dayStart.getTime() + 24 * 3600 * 1000);
+        let last = null;
+        calendar.getEvents().forEach(e => {
+            if (e.id === 'ticket-slot' || e.start < dayStart || e.start >= dayEnd) return;
+            const end = e.end || e.start;
+            if (!last || end > last) last = end;
+        });
+        let time = timeSelect.options[0].value;
+        if (last) {
+            const minutes = Math.ceil((last.getHours() * 60 + last.getMinutes()) / 30) * 30;
+            time = pad(Math.floor(minutes / 60)) + ':' + pad(minutes % 60);
+        }
+        if (![...timeSelect.options].some(o => o.value === time)) {
+            statusLabel.textContent = section.dataset.labelDayFull;
+            statusLabel.className = 'text-sm font-bold text-rose-600';
+            return;
+        }
+        timeSelect.value = time;
+        drawTicketSlot();
+    });
+
     technicianSelect.addEventListener('change', showPlanning);
     // Écran « Réassigner » : le curseur va directement sur le choix du technicien.
     if ('focusTechnician' in section.dataset) technicianSelect.focus();
+    const typeField = document.getElementById('id_type');
+    if (typeField) typeField.addEventListener('change', drawTicketSlot);
     [dateInput, timeSelect, durationSelect].forEach(el => el.addEventListener('change', function() {
         if (calendar && dateInput.value) calendar.gotoDate(dateInput.value);
         drawTicketSlot();

@@ -626,6 +626,24 @@ class ScheduleConflictTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['status'], 'planned')
 
+    def test_emergency_may_overlap_with_a_warning(self):
+        """Une urgence peut chevaucher le planning du technicien : enregistrée, avec un avertissement."""
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, type='emergency',
+            planned_start=self.start.replace(hour=16), planned_end=self.start.replace(hour=17),
+        )
+        response = self.http.post(reverse('ticket_update', args=[ticket.pk]), self._form_data(type='emergency'), follow=True)
+        ticket.refresh_from_db()
+        self.assertEqual((ticket.technician, ticket.status), (self.tech, 'planned'))
+        self.assertContains(response, 'Urgence placée en chevauchement')
+        created = self.api.post('/api/v1/tickets/', {
+            'equipment': self.equipment.id, 'type': 'emergency',
+            'planned_start': self.start.replace(hour=9, minute=30).isoformat(),
+            'planned_end': self.start.replace(hour=10, minute=30).isoformat(),
+        }, format='json')
+        response = self.api.patch(f"/api/v1/tickets/{created.data['id']}/", {'technician': self.tech.id}, format='json')
+        self.assertEqual(response.status_code, 200)
+
     def test_api_patch_onto_another_slot_is_refused(self):
         other = MaintenanceTicket.objects.create(
             equipment=self.equipment, technician=self.tech, type='maintenance', status='planned',
