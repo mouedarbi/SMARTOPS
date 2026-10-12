@@ -115,6 +115,30 @@ Feuilles de style et scripts FullCalendar partagés par les plannings.
     }
     .smo-status-canceled .fc-event-title { text-decoration: line-through; }
 
+    /* Vues Semaine et Jour : au survol, une tuile courte (intervention de quelques minutes)
+       reprend une taille lisible et passe au-dessus des autres, avec tout son texte. */
+    .fc .fc-timegrid-event-harness:hover { z-index: 20 !important; }
+    .fc .fc-timegrid-event-harness > .fc-timegrid-event.smo-tile:hover {
+        bottom: auto;
+        height: auto;
+        min-height: max(100%, 4.5rem);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-main { height: auto; }
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-main-frame {
+        height: auto;
+        flex-direction: column;
+        overflow: visible;
+    }
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-time::after { content: none; }
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-time,
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-title {
+        max-height: none;
+        overflow: visible;
+        white-space: normal;
+    }
+    .fc .fc-timegrid-event.smo-tile:hover .fc-event-title { font-size: inherit; }
+
     /* Planning avec sa légende à gauche (au-dessus sur écran étroit). */
     .smo-planning-layout { display: flex; flex-direction: column; gap: 1.5rem; }
     .smo-planning-main { flex: 1; min-width: 0; }
