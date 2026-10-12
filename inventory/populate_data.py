@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
+from inventory.addresses import parse_address
 from maintenance.models import Technician
 
 User = get_user_model()
@@ -219,7 +220,8 @@ def run_population():
         building, _ = Building.objects.get_or_create(
             client=client,
             name=f"Site principal - {client.name}",
-            defaults={"address": client.address}
+            # Adresse structurée (rue, numéro, code postal, ville, pays) découpée depuis celle du client.
+            defaults={"address": client.address, **(parse_address(client.address) or {})}
         )
         
         # Création de 10 équipements de catégories aléatoires pour ce lieu

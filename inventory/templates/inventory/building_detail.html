@@ -44,12 +44,20 @@
             <div class="pt-4 border-t border-slate-50">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Adresse du lieu</label>
                 <p class="text-sm font-bold text-slate-700 mt-1 whitespace-pre-line">{{ building.address }}</p>
+                {% if not building.is_address_complete %}<span class="ml-1 inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider">Adresse à compléter</span>{% endif %}
             </div>
-            
-            {% if building.address %}
+
+            {% if building.access_notes %}
             <div class="pt-4 border-t border-slate-50">
-                <a href="https://www.google.com/maps/search/?api=1&query={{ building.address|urlencode }}" target="_blank" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-center py-3 rounded-xl text-xs transition">
-                    <i class="las la-map-marker text-sm mr-1"></i> Ouvrir dans Google Maps
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Accès / complément</label>
+                <p class="text-sm font-bold text-slate-700 mt-1 whitespace-pre-line">{{ building.access_notes }}</p>
+            </div>
+            {% endif %}
+
+            {% if building.navigation_url %}
+            <div class="pt-4 border-t border-slate-50">
+                <a href="{{ building.navigation_url }}" target="_blank" rel="noopener" class="block w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-center py-3 rounded-xl text-xs transition">
+                    <i class="las la-directions text-sm mr-1"></i> Itinéraire
                 </a>
             </div>
             {% endif %}

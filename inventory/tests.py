@@ -197,7 +197,8 @@ class CreationFromParentTests(TestCase):
 
     def test_building_is_created_for_the_client_of_the_url(self):
         response = self.http.post(reverse('building_create') + f'?client={self.alpha.pk}',
-                                  {'name': 'Entrepôt', 'address': 'Rue du Port 2', 'client': self.beta.pk})
+                                  {'name': 'Entrepôt', 'street': 'Rue du Port', 'house_number': '2', 'postal_code': '1000',
+                                   'city': 'Bruxelles', 'country': 'BE', 'client': self.beta.pk})
         self.assertRedirects(response, reverse('client_detail', args=[self.alpha.pk]), fetch_redirect_response=False)
         self.assertEqual(Building.objects.get(name='Entrepôt').client, self.alpha)
 
@@ -209,7 +210,8 @@ class CreationFromParentTests(TestCase):
 
     def test_building_update_never_changes_its_client(self):
         self.http.post(reverse('building_update', args=[self.building.pk]),
-                       {'name': 'Siège rénové', 'address': 'Rue Royale 10', 'client': self.beta.pk})
+                       {'name': 'Siège rénové', 'street': 'Rue Royale', 'house_number': '10', 'postal_code': '1000',
+                        'city': 'Bruxelles', 'country': 'BE', 'client': self.beta.pk})
         self.building.refresh_from_db()
         self.assertEqual((self.building.name, self.building.client), ('Siège rénové', self.alpha))
 
@@ -353,3 +355,108 @@ class EquipmentPublicReportTests(TestCase):
         self.assertContains(response, 'SN-EXT-001-01-1234')
         self.assertContains(response, '01/03/2024')
         self.assertContains(response, 'Maintenance SA')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class StructuredAddressTests(TestCase):
+    """Adresse d'un lieu en champs séparés (format OpenStreetMap) et lien d'itinéraire du technicien."""
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='gestion_adr', password='Password123!', role='manager')
+        self.client_obj = Client.objects.create(name="Hôtel Ibis", address="Rue Neuve 1, 1000 Bruxelles, Belgique",
+                                                contact_name="Marc", email="ibis@example.be", phone="0",
+                                                vat_number="BE0111222333")
+        self.http = HttpClient()
+        self.http.login(username='gestion_adr', password='Password123!')
+
+    def test_parse_and_format(self):
+        from .addresses import parse_address, format_address
+        parts = parse_address('Rue de la Loi 12 bte 3, 1000 Bruxelles, Belgique')
+        self.assertEqual(parts, {'street': 'Rue de la Loi', 'house_number': '12', 'box': '3',
+                                 'postal_code': '1000', 'city': 'Bruxelles', 'country': 'BE'})
+        self.assertEqual(format_address(**parts), 'Rue de la Loi 12 bte 3, 1000 Bruxelles, Belgique')
+        self.assertEqual(parse_address('Meir 16, 2000 Anvers')['country'], 'BE')
+        for text in ('Test', 'rue de la poste 56 1000 Bruxelles', 'rue de la praire 25',
+                     '24 rue de la poste 128 à 1000 Bruxelles'):
+            self.assertIsNone(parse_address(text), text)
+
+    def test_full_address_and_navigation_link_are_composed(self):
+        building = Building.objects.create(client=self.client_obj, name="Hôtel", street="Rue Neuve",
+                                           house_number="1", postal_code="1000", city="Bruxelles")
+        self.assertEqual(building.address, 'Rue Neuve 1, 1000 Bruxelles, Belgique')
+        self.assertTrue(building.is_address_complete)
+        self.assertEqual(building.navigation_url,
+                         'https://www.google.com/maps/dir/?api=1&destination=Rue+Neuve+1%2C+1000+Bruxelles%2C+Belgique')
+
+    def test_old_free_address_is_kept_and_flagged(self):
+        building = Building.objects.create(client=self.client_obj, name="Ancien", address="rue de la praire 25")
+        self.assertEqual(building.address, 'rue de la praire 25')
+        self.assertFalse(building.is_address_complete)
+        response = self.http.get(reverse('building_detail', args=[building.pk]))
+        self.assertContains(response, 'Adresse à compléter')
+
+    def test_form_requires_structured_address(self):
+        url = reverse('building_create') + f'?client={self.client_obj.pk}'
+        response = self.http.post(url, {'name': 'Dépôt', 'street': 'Rue du Port', 'country': 'BE'})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Building.objects.filter(name='Dépôt').exists())
+        response = self.http.post(url, {'name': 'Dépôt', 'street': 'Rue du Port', 'house_number': '2',
+                                        'postal_code': '10A0', 'city': 'Bruxelles', 'country': 'BE'})
+        self.assertContains(response, 'Code postal invalide')
+        self.http.post(url, {'name': 'Dépôt', 'street': 'Rue du Port', 'house_number': '2', 'box': '4',
+                             'postal_code': '1000', 'city': 'Bruxelles', 'country': 'BE',
+                             'access_notes': 'Quai de livraison'})
+        building = Building.objects.get(name='Dépôt')
+        self.assertEqual(building.address, 'Rue du Port 2 bte 4, 1000 Bruxelles, Belgique')
+        self.assertEqual(building.access_notes, 'Quai de livraison')
+
+    def test_data_migration_splits_existing_addresses(self):
+        import importlib
+        from django.apps import apps
+        migration = importlib.import_module('inventory.migrations.0005_adresse_structuree_lieu')
+        ok = Building.objects.create(client=self.client_obj, name="A", address="Meir 16, 2000 Anvers, Belgique")
+        bad = Building.objects.create(client=self.client_obj, name="B", address="24 rue de la poste 128 à 1000 Bruxelles")
+        migration.split_addresses(apps, None)
+        ok.refresh_from_db()
+        bad.refresh_from_db()
+        self.assertEqual((ok.street, ok.house_number, ok.postal_code, ok.city, ok.country),
+                         ('Meir', '16', '2000', 'Anvers', 'BE'))
+        self.assertTrue(ok.is_address_complete)
+        self.assertEqual(bad.street, '24 rue de la poste 128 à 1000 Bruxelles')
+        self.assertFalse(bad.is_address_complete)
+        self.assertEqual(bad.address, '24 rue de la poste 128 à 1000 Bruxelles')
+
+    def test_technician_page_has_navigation_link_and_access_notes(self):
+        from maintenance.models import Technician
+        building = Building.objects.create(client=self.client_obj, name="Hôtel", street="Rue Neuve",
+                                           house_number="1", postal_code="1000", city="Bruxelles",
+                                           access_notes="Code porte 1234")
+        equipment = Equipment.objects.create(building=building, name="Clim", serial_number="SN-ADR",
+                                             equipment_type=EquipmentType.objects.create(name="HVAC-ADR"),
+                                             installed_at=date(2024, 1, 1))
+        tech_user = CustomUser.objects.create_user(username='tech_adr', password='Password123!', role='technician')
+        ticket = MaintenanceTicket.objects.create(
+            equipment=equipment, technician=Technician.objects.get(user=tech_user), type='maintenance',
+            planned_start=timezone.now(), planned_end=timezone.now() + timedelta(hours=1))
+        http = HttpClient()
+        http.login(username='tech_adr', password='Password123!')
+        response = http.get(reverse('technician_ticket_detail', args=[ticket.pk]))
+        self.assertContains(response, building.navigation_url.replace('&', '&amp;'))
+        self.assertContains(response, 'Code porte 1234')
+        self.assertContains(response, '1000 Bruxelles')
+
+    def test_api_exposes_structured_address(self):
+        from rest_framework.test import APIClient
+        building = Building.objects.create(client=self.client_obj, name="Hôtel", street="Rue Neuve",
+                                           house_number="1", postal_code="1000", city="Bruxelles")
+        api = APIClient()
+        token = api.post('/api/v1/auth/token/', {'username': 'gestion_adr', 'password': 'Password123!'}).data['access']
+        api.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        data = api.get(f'/api/v1/buildings/{building.pk}/').data
+        self.assertEqual(data['address'], 'Rue Neuve 1, 1000 Bruxelles, Belgique')
+        self.assertEqual((data['street'], data['postal_code'], data['country']), ('Rue Neuve', '1000', 'BE'))
+        self.assertTrue(data['is_address_complete'])
+        self.assertTrue(data['navigation_url'].startswith('https://www.google.com/maps/dir/?api=1&destination='))

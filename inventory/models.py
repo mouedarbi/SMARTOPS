@@ -10,6 +10,8 @@ Description : Modèles d'équipement avec gestion dynamique des champs personnal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .addresses import COUNTRY_CHOICES, format_address, navigation_url
+
 class Client(models.Model):
     """
     Représente un client de la plateforme.
@@ -36,6 +38,17 @@ class Building(models.Model):
     """
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='buildings', verbose_name=_("Client"))
     name = models.CharField(max_length=255, verbose_name=_("Nom du lieu"))
+    # Adresse structurée (balises addr:* d'OpenStreetMap) : c'est la destination du technicien.
+    street = models.CharField(max_length=255, blank=True, verbose_name=_("Rue"))
+    house_number = models.CharField(max_length=20, blank=True, verbose_name=_("Numéro"))
+    box = models.CharField(max_length=20, blank=True, verbose_name=_("Boîte"))
+    postal_code = models.CharField(max_length=10, blank=True, verbose_name=_("Code postal"))
+    city = models.CharField(max_length=100, blank=True, verbose_name=_("Ville"))
+    country = models.CharField(max_length=2, choices=COUNTRY_CHOICES, default='BE', verbose_name=_("Pays"))
+    access_notes = models.TextField(blank=True, verbose_name=_("Accès / complément"),
+                                    help_text=_("Étage, code de porte, entrée, consignes d'accès."))
+    # Adresse complète sur une ligne, recomposée à chaque enregistrement à partir des champs
+    # ci-dessus (recherche, API, affichage). Une ancienne adresse non découpée y reste telle quelle.
     address = models.TextField(verbose_name=_("Adresse du lieu"))
 
     class Meta:
@@ -44,6 +57,23 @@ class Building(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.client.name})"
+
+    def save(self, *args, **kwargs):
+        """Recompose l'adresse complète dès que l'adresse structurée est renseignée."""
+        if self.street:
+            self.address = format_address(self.street, self.house_number, self.box,
+                                          self.postal_code, self.city, self.country)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_address_complete(self):
+        """Vrai si rue, numéro, code postal et ville sont renseignés (sinon : « Adresse à compléter »)."""
+        return all((self.street, self.house_number, self.postal_code, self.city))
+
+    @property
+    def navigation_url(self):
+        """Lien d'itinéraire vers le lieu (Google Maps), ou None sans adresse."""
+        return navigation_url(self.address) if self.address else None
 
 class EquipmentType(models.Model):
     """

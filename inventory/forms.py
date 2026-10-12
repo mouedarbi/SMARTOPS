@@ -28,14 +28,37 @@ class ClientForm(forms.ModelForm):
 
 class BuildingForm(forms.ModelForm):
     """Formulaire pour la création et l'édition d'un lieu. Le client est fixé par la vue :
-    un lieu se crée depuis la fiche de son client et n'en change jamais."""
+    un lieu se crée depuis la fiche de son client et n'en change jamais.
+    L'adresse est saisie champ par champ (format OpenStreetMap) pour que l'itinéraire du
+    technicien mène au bon endroit ; l'adresse complète est recomposée par le modèle."""
+    REQUIRED_ADDRESS_FIELDS = ('street', 'house_number', 'postal_code', 'city', 'country')
+
     class Meta:
         model = Building
-        fields = ['name', 'address']
+        fields = ['name', 'street', 'house_number', 'box', 'postal_code', 'city', 'country', 'access_notes']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
-            'address': forms.Textarea(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'rows': 2}),
+            'street': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': 'Rue de la Loi'}),
+            'house_number': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '12'}),
+            'box': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '3'}),
+            'postal_code': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '1000', 'inputmode': 'numeric'}),
+            'city': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': 'Bruxelles'}),
+            'country': forms.Select(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl bg-white'}),
+            'access_notes': forms.Textarea(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'rows': 2,
+                                                  'placeholder': 'Ex. : 2e étage, code porte 1234, entrée par le quai de livraison'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in self.REQUIRED_ADDRESS_FIELDS:
+            self.fields[name].required = True
+
+    def clean_postal_code(self):
+        """Code postal en chiffres (4 en Belgique, 5 en France ou en Allemagne)."""
+        value = self.cleaned_data['postal_code'].strip()
+        if not value.isdigit() or not 4 <= len(value) <= 5:
+            raise forms.ValidationError("Code postal invalide (4 ou 5 chiffres).")
+        return value
 
 class EquipmentForm(forms.ModelForm):
     """Formulaire pour la création d'équipement. Le lieu est fixé par la vue : un équipement se

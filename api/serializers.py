@@ -61,13 +61,25 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class BuildingSerializer(serializers.ModelSerializer):
-    """Lieu d'un client, avec le nom du client."""
+    """
+    Lieu d'un client, avec le nom du client. Adresse structurée (balises addr:* d'OpenStreetMap)
+    et `address`, l'adresse complète sur une ligne (recomposée dès que `street` est renseignée ;
+    conservée pour les anciennes versions de l'application mobile). `navigation_url` : lien
+    d'itinéraire vers le lieu.
+    """
     client_name = serializers.CharField(source='client.name', read_only=True)
+    is_address_complete = serializers.BooleanField(read_only=True)
+    navigation_url = serializers.CharField(read_only=True, allow_null=True)
 
     class Meta:
         model = Building
-        fields = ['id', 'client', 'client_name', 'name', 'address']
+        fields = [
+            'id', 'client', 'client_name', 'name', 'address',
+            'street', 'house_number', 'box', 'postal_code', 'city', 'country', 'access_notes',
+            'is_address_complete', 'navigation_url',
+        ]
         read_only_fields = ['id']
+        extra_kwargs = {'address': {'required': False}}
 
 
 class EquipmentTypeFieldSerializer(serializers.ModelSerializer):

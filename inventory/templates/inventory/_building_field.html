@@ -1,0 +1,5 @@
+{% comment %}Un champ du formulaire de lieu : libellé, saisie, aide et erreurs.{% endcomment %}
+<label for="{{ field.id_for_label }}" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{{ field.label }}{% if field.field.required %} <span class="text-rose-500">*</span>{% endif %}</label>
+{{ field }}
+{% if field.help_text %}<p class="mt-1 text-xs text-slate-400">{{ field.help_text }}</p>{% endif %}
+{% for error in field.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}

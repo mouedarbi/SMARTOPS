@@ -81,7 +81,7 @@
                             {{ building.client.name }}
                         </a>
                     </td>
-                    <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}</td>
+                    <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}{% if not building.is_address_complete %}<span class="ml-1 inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider">Adresse à compléter</span>{% endif %}</td>
                     <td class="p-4 text-right pr-8 text-sm">
                         <a href="{% url 'building_detail' building.pk %}" class="bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-bold py-1.5 px-3 rounded-lg text-xs border border-slate-100 transition mr-2">
                             Détails

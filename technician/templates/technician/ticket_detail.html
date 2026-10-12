@@ -95,15 +95,24 @@
                     </div>
                     <div>
                         <p class="font-bold text-slate-800">{{ ticket.equipment.building.name }}</p>
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ ticket.equipment.building.address }}<br>{{ ticket.equipment.building.zip_code }} {{ ticket.equipment.building.city }}</p>
+                        {% with building=ticket.equipment.building %}
+                        {% if building.is_address_complete %}
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ building.street }} {{ building.house_number }}{% if building.box %} bte {{ building.box }}{% endif %}<br>{{ building.postal_code }} {{ building.city }}</p>
+                        {% else %}
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ building.address }}</p>
+                        {% endif %}
+                        {% if building.access_notes %}<p class="mt-2 text-xs font-bold text-amber-700 whitespace-pre-line"><i class="fas fa-door-open mr-1"></i>{{ building.access_notes }}</p>{% endif %}
+                        {% endwith %}
                     </div>
                 </div>
-                <a href="https://www.google.com/maps/search/?api=1&query={{ ticket.equipment.building.address|urlencode }}+{{ ticket.equipment.building.city|urlencode }}" 
-                   target="_blank"
+                {% if ticket.equipment.building.navigation_url %}
+                <a href="{{ ticket.equipment.building.navigation_url }}"
+                   target="_blank" rel="noopener"
                    class="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold tracking-wider active:scale-[0.98] transition-all">
                     <i class="fas fa-directions"></i>
-                    OUVRIR DANS MAPS
+                    ITINÉRAIRE
                 </a>
+                {% endif %}
             </div>
         </section>
 
