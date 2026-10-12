@@ -173,3 +173,39 @@ class DashboardDateBadgeTests(TestCase):
         badge = html[start:html.index('</span>', start)]
         text = badge[badge.index('>') + 1:].replace('</i>', '').strip()
         self.assertIn(str(timezone.now().year), text)
+
+
+@override_settings(SECURE_SSL_REDIRECT=False, PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher'])
+class DashboardTranslationTests(TestCase):
+    """Étape 2 de la traduction : tableau de bord en FR / NL / EN, statuts et types compris."""
+
+    def test_dashboard_in_three_languages(self):
+        from datetime import date, timedelta
+        from django.utils import timezone
+        from system.models import SystemConfiguration
+        from inventory.models import Client, Building, EquipmentType, Equipment
+        from maintenance.models import MaintenanceTicket
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Ma Société'
+        config.save()
+        building = Building.objects.create(client=Client.objects.create(name='C', address='a'), name='B', address='a')
+        equipment = Equipment.objects.create(building=building, name='Clim 1', serial_number='SN-T',
+                                             equipment_type=EquipmentType.objects.create(name='HVAC'),
+                                             installed_at=date(2024, 1, 1))
+        MaintenanceTicket.objects.create(equipment=equipment, type='repair', planned_start=timezone.now(),
+                                         planned_end=timezone.now() + timedelta(hours=1))
+        user = get_user_model().objects.create_user(username='manager_i18n', password='password123', role='manager')
+        self.client.login(username='manager_i18n', password='password123')
+        expected = {
+            'fr': ('Bonjour, manager_i18n', 'Dernières Interventions', 'Dépannage / Réparation', 'Non assigné', 'En attente'),
+            'nl': ('Hallo, manager_i18n', 'Laatste interventies', 'Panne / Herstelling', 'Niet toegewezen', 'In afwachting'),
+            'en': ('Hello, manager_i18n', 'Latest work orders', 'Breakdown / Repair', 'Unassigned', 'Pending'),
+        }
+        for language, texts in expected.items():
+            user.language = language
+            user.save()
+            response = self.client.get(reverse('dashboard'))
+            for text in texts:
+                self.assertContains(response, text, msg_prefix=language)
+            # La colonne Équipement affiche bien le nom de l'appareil.
+            self.assertContains(response, 'Clim 1')

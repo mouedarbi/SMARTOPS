@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Dashboard | SMARTOPS{% endblock %}
-{% block page_title %}Tableau de Bord Principal{% endblock %}
+{% block title %}{% trans "Tableau de Bord" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Tableau de Bord Principal" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -12,8 +13,8 @@
     <!-- En-tête de bienvenue -->
     <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <h1 class="text-4xl font-black text-slate-900 tracking-tight">Bonjour, {{ user.username }}</h1>
-            <p class="text-slate-500 text-lg mt-1 font-medium italic">Gérez votre activité de maintenance aujourd'hui.</p>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">{% blocktrans with name=user.username %}Bonjour, {{ name }}{% endblocktrans %}</h1>
+            <p class="text-slate-500 text-lg mt-1 font-medium italic">{% trans "Gérez votre activité de maintenance aujourd'hui." %}</p>
         </div>
         <div class="flex items-center gap-4">
             <span class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
@@ -31,7 +32,7 @@
                 <i class="las la-hard-hat text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Interventions</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Interventions" %}</p>
                 <p class="text-2xl font-black text-slate-800">{{ stats.tickets_count }}</p>
             </div>
         </a>
@@ -42,7 +43,7 @@
                 <i class="las la-tools text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Équipements</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Équipements" %}</p>
                 <p class="text-2xl font-black text-slate-800">{{ stats.equipment_count }}</p>
             </div>
         </a>
@@ -53,7 +54,7 @@
                 <i class="las la-building text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Lieux</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Lieux" %}</p>
                 <p class="text-2xl font-black text-slate-800">{{ stats.buildings_count }}</p>
             </div>
         </a>
@@ -64,7 +65,7 @@
                 <i class="las la-users text-2xl"></i>
             </div>
             <div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Clients</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Clients" %}</p>
                 <p class="text-2xl font-black text-slate-800">{{ stats.clients_count }}</p>
             </div>
         </div>
@@ -78,9 +79,9 @@
                 <div class="p-8 border-b border-slate-50 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                         <i class="las la-history text-2xl text-blue-600"></i>
-                        Dernières Interventions
+                        {% trans "Dernières Interventions" %}
                     </h3>
-                    <a href="{% url 'ticket_list' %}" class="text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 transition">Voir tout</a>
+                    <a href="{% url 'ticket_list' %}" class="text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 transition">{% trans "Voir tout" %}</a>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -88,9 +89,9 @@
                         <thead>
                             <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50">
                                 <th class="px-8 py-4">ID</th>
-                                <th class="px-8 py-4">Équipement</th>
-                                <th class="px-8 py-4">Technicien</th>
-                                <th class="px-8 py-4">Statut</th>
+                                <th class="px-8 py-4">{% trans "Équipement" %}</th>
+                                <th class="px-8 py-4">{% trans "Technicien" %}</th>
+                                <th class="px-8 py-4">{% trans "Statut" %}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
@@ -98,11 +99,11 @@
                             <tr class="hover:bg-slate-50/50 transition cursor-pointer" onclick="window.location='{% url 'ticket_detail' ticket.id %}'">
                                 <td class="px-8 py-4 font-black text-slate-400">#{{ ticket.id }}</td>
                                 <td class="px-8 py-4">
-                                    <p class="font-bold text-slate-800 text-sm">{{ ticket.equipment.nom }}</p>
+                                    <p class="font-bold text-slate-800 text-sm">{{ ticket.equipment.name }}</p>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ ticket.get_type_display }}</p>
                                 </td>
                                 <td class="px-8 py-4">
-                                    <span class="text-sm font-medium text-slate-600">{{ ticket.technician|default:"Non assigné" }}</span>
+                                    <span class="text-sm font-medium text-slate-600">{% if ticket.technician %}{{ ticket.technician }}{% else %}{% trans "Non assigné" %}{% endif %}</span>
                                 </td>
                                 <td class="px-8 py-4">
                                     <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-600{% elif ticket.status == 'in_progress' %}bg-blue-50 text-blue-600{% else %}bg-slate-100 text-slate-500{% endif %}">
@@ -116,7 +117,7 @@
                                     <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
                                         <i class="las la-ghost text-4xl"></i>
                                     </div>
-                                    <p class="text-slate-400 font-medium">Aucune intervention pour le moment.</p>
+                                    <p class="text-slate-400 font-medium">{% trans "Aucune intervention pour le moment." %}</p>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -132,7 +133,7 @@
                 <div class="p-6 bg-slate-50 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm uppercase tracking-wide">
                         <i class="las la-info-circle text-lg text-blue-600"></i>
-                        Votre Entreprise
+                        {% trans "Votre Entreprise" %}
                     </h3>
                 </div>
                 <div class="p-8">
@@ -143,7 +144,7 @@
                             <div class="h-20 w-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 font-bold">SM</div>
                         {% endif %}
                         <h4 class="text-xl font-black text-slate-800 leading-tight">{{ config.company_name }}</h4>
-                        <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Identité Validée</p>
+                        <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">{% trans "Identité Validée" %}</p>
                     </div>
 
                     <div class="space-y-4 pt-6 border-t border-slate-50">
@@ -158,7 +159,7 @@
                     </div>
                     
                     <a href="{% url 'system_config' %}" class="mt-8 block w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-center py-3 rounded-xl text-sm transition border border-slate-100">
-                        Éditer les informations
+                        {% trans "Éditer les informations" %}
                     </a>
                 </div>
             </div>
@@ -183,12 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <i class="las la-gift text-2xl"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-black uppercase tracking-widest text-blue-100">Mises à jour disponibles</p>
-                                <p class="text-xs font-medium text-white/80">${data.module_updates.length} module(s) peuvent être mis à jour.</p>
+                                <p class="text-sm font-black uppercase tracking-widest text-blue-100">{% filter escapejs %}{% trans "Mises à jour disponibles" %}{% endfilter %}</p>
+                                <p class="text-xs font-medium text-white/80">${data.module_updates.length} {% filter escapejs %}{% trans "module(s) peuvent être mis à jour." %}{% endfilter %}</p>
                             </div>
                         </div>
                         <a href="{% url 'plugin_list' %}" class="px-6 py-3 bg-white text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition shadow-lg">
-                            Mettre à jour maintenant
+                            {% filter escapejs %}{% trans "Mettre à jour maintenant" %}{% endfilter %}
                         </a>
                     </div>
                 `;

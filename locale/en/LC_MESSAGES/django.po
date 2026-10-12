@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:31+0200\n"
+"POT-Creation-Date: 2026-10-12 16:34+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -14,6 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: accounts/models.py:22
 msgid "Administrateur"
 msgstr "Administrator"
@@ -23,6 +24,7 @@ msgid "Gestionnaire"
 msgstr "Manager"
 
 #: accounts/models.py:24 maintenance/models.py:44 maintenance/models.py:73
+#: system/templates/system/dashboard.html:93
 msgid "Technicien"
 msgstr "Technician"
 
@@ -158,6 +160,7 @@ msgid "Client"
 msgstr ""
 
 #: inventory/models.py:30 system/templates/base.html:129
+#: system/templates/system/dashboard.html:68
 msgid "Clients"
 msgstr "Customers"
 
@@ -206,6 +209,7 @@ msgid "Lieu"
 msgstr ""
 
 #: inventory/models.py:56 system/templates/base.html:134
+#: system/templates/system/dashboard.html:57
 msgid "Lieux"
 msgstr "Sites"
 
@@ -290,24 +294,26 @@ msgid "Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ."
 msgstr ""
 
 #: inventory/models.py:176 maintenance/models.py:72
+#: system/templates/system/dashboard.html:92
 msgid "Équipement"
-msgstr ""
+msgstr "Equipment"
 
 #: inventory/models.py:177 system/templates/base.html:139
+#: system/templates/system/dashboard.html:46
 msgid "Équipements"
 msgstr "Equipment"
 
 #: maintenance/models.py:37
 msgid "Liste des compétences (ex: Electrique, Hydraulique)"
-msgstr ""
+msgstr "List of skills (e.g. Electrical, Hydraulics)"
 
 #: maintenance/models.py:37
 msgid "Spécialités"
-msgstr ""
+msgstr "Specialties"
 
 #: maintenance/models.py:38
 msgid "Actif"
-msgstr ""
+msgstr "Active"
 
 #: maintenance/models.py:45 system/templates/base.html:91
 msgid "Techniciens"
@@ -316,79 +322,80 @@ msgstr "Technicians"
 #: maintenance/models.py:58
 #: maintenance/templates/maintenance/ticket_form.html:118
 msgid "En attente"
-msgstr ""
+msgstr "Pending"
 
 #: maintenance/models.py:59
 #: maintenance/templates/maintenance/_planning_legend.html:15
 msgid "Planifié"
-msgstr ""
+msgstr "Scheduled"
 
 #: maintenance/models.py:60
 #: maintenance/templates/maintenance/_planning_legend.html:16
 #: maintenance/templates/maintenance/ticket_list.html:17
 msgid "En cours"
-msgstr ""
+msgstr "In progress"
 
 #: maintenance/models.py:61
 #: maintenance/templates/maintenance/_planning_legend.html:18
 msgid "À replanifier"
-msgstr ""
+msgstr "To reschedule"
 
 #: maintenance/models.py:62
 #: maintenance/templates/maintenance/_planning_legend.html:17
 msgid "Terminé"
-msgstr ""
+msgstr "Completed"
 
 #: maintenance/models.py:63
 msgid "Annulé"
-msgstr ""
+msgstr "Canceled"
 
 #: maintenance/models.py:67
 msgid "Maintenance Préventive"
-msgstr ""
+msgstr "Preventive maintenance"
 
 #: maintenance/models.py:68
 #: maintenance/templates/maintenance/_planning_legend.html:10
 msgid "Dépannage / Réparation"
-msgstr ""
+msgstr "Breakdown / Repair"
 
 #: maintenance/models.py:69
 #: maintenance/templates/maintenance/_planning_legend.html:11
 msgid "Urgence"
-msgstr ""
+msgstr "Emergency"
 
 #: maintenance/models.py:74
 msgid "Type d'intervention"
-msgstr ""
+msgstr "Work order type"
 
 #: maintenance/models.py:77
 msgid "Début prévu"
-msgstr ""
+msgstr "Planned start"
 
 #: maintenance/models.py:78
 msgid "Fin prévue"
-msgstr ""
+msgstr "Planned end"
 
 #: maintenance/models.py:81
 msgid "Début réel"
-msgstr ""
+msgstr "Actual start"
 
 #: maintenance/models.py:82
 msgid "Fin réelle"
-msgstr ""
+msgstr "Actual end"
 
 #: maintenance/models.py:85
 msgid "Latitude de début"
-msgstr ""
+msgstr "Start latitude"
 
 #: maintenance/models.py:86
 msgid "Longitude de début"
-msgstr ""
+msgstr "Start longitude"
 
 #: maintenance/models.py:88
 #: maintenance/templates/maintenance/_planning_legend.html:14
+#: system/templates/system/dashboard.html:94
 msgid "Statut"
-msgstr ""
+msgstr "Status"
 
 #: maintenance/models.py:89
 msgid "Description du problème / travail"
@@ -510,7 +517,7 @@ msgid "Dernier login"
 msgstr ""
 
 #: maintenance/templates/maintenance/technician_detail.html:38
-#: system/templates/base.html:86
+#: system/templates/base.html:86 system/templates/system/dashboard.html:35
 msgid "Interventions"
 msgstr "Work orders"
 
@@ -577,8 +584,9 @@ msgid "Ticket de suite"
 msgstr ""
 
 #: maintenance/templates/maintenance/ticket_detail.html:186
+#: system/templates/system/dashboard.html:106
 msgid "Non assigné"
-msgstr ""
+msgstr "Unassigned"
 
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
@@ -646,6 +654,7 @@ msgid ""
 msgstr ""
 
 #: system/templates/base.html:73 system/templates/base.html:213
+#: system/templates/system/dashboard.html:4
 msgid "Tableau de Bord"
 msgstr "Dashboard"
 
@@ -704,3 +713,52 @@ msgstr "Show or hide the menu"
 #: system/templates/base.html:238
 msgid "Déconnexion"
 msgstr "Log out"
+
+#: system/templates/system/dashboard.html:5
+msgid "Tableau de Bord Principal"
+msgstr "Main dashboard"
+
+#: system/templates/system/dashboard.html:16
+#, python-format
+msgid "Bonjour, %(name)s"
+msgstr "Hello, %(name)s"
+
+#: system/templates/system/dashboard.html:17
+msgid "Gérez votre activité de maintenance aujourd'hui."
+msgstr "Manage your maintenance activity today."
+
+#: system/templates/system/dashboard.html:82
+msgid "Dernières Interventions"
+msgstr "Latest work orders"
+
+#: system/templates/system/dashboard.html:84
+msgid "Voir tout"
+msgstr "View all"
+
+#: system/templates/system/dashboard.html:120
+msgid "Aucune intervention pour le moment."
+msgstr "No work orders yet."
+
+#: system/templates/system/dashboard.html:136
+msgid "Votre Entreprise"
+msgstr "Your company"
+
+#: system/templates/system/dashboard.html:147
+msgid "Identité Validée"
+msgstr "Identity validated"
+
+#: system/templates/system/dashboard.html:162
+msgid "Éditer les informations"
+msgstr "Edit details"
+
+#: system/templates/system/dashboard.html:187
+msgid "Mises à jour disponibles"
+msgstr "Updates available"
+
+#: system/templates/system/dashboard.html:188
+msgid "module(s) peuvent être mis à jour."
+msgstr "module(s) can be updated."
+
+#: system/templates/system/dashboard.html:192
+msgid "Mettre à jour maintenant"
+msgstr "Update now"
