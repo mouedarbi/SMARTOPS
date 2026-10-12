@@ -960,6 +960,25 @@ class TechnicianCalendarTestCase(TestCase):
             for text in texts:
                 self.assertContains(response, text, msg_prefix=language)
 
+    def test_technician_pages_are_translated(self):
+        """Étape 5 de la traduction : équipe technique et fiche technicien en FR / NL / EN."""
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        technician = Technician.objects.first()
+        expected = {
+            'fr': ('Équipe technique', 'Spécialités', 'Taux de succès'),
+            'nl': ('Technisch team', 'Specialisaties', 'Slaagpercentage'),
+            'en': ('Technical team', 'Specialties', 'Success rate'),
+        }
+        for language, (title, column, stat) in expected.items():
+            self.manager.language = language
+            self.manager.save()
+            response = http.get(reverse('technician_list'))
+            self.assertContains(response, title, msg_prefix=language)
+            self.assertContains(response, column, msg_prefix=language)
+            response = http.get(reverse('technician_detail', args=[technician.pk]), {'tab': 'statistiques'})
+            self.assertContains(response, stat, msg_prefix=language)
+
     def test_planning_pages_render(self):
         """Le planning filtré et la fiche technicien affichent le calendrier du technicien."""
         http = HttpClient()

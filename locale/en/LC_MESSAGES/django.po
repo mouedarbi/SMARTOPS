@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:46+0200\n"
+"POT-Creation-Date: 2026-10-12 16:50+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -25,6 +25,7 @@ msgstr "Manager"
 
 #: accounts/models.py:24 maintenance/models.py:44 maintenance/models.py:73
 #: maintenance/templates/maintenance/_ticket_table.html:9
+#: maintenance/templates/maintenance/technician_list.html:30
 #: maintenance/templates/maintenance/ticket_list.html:48
 #: system/templates/system/dashboard.html:93
 msgid "Technicien"
@@ -61,6 +62,7 @@ msgstr "My profile"
 
 #: accounts/templates/accounts/profile.html:23
 #: accounts/templates/accounts/profile.html:59
+#: maintenance/templates/maintenance/technician_list.html:33
 msgid "E-mail"
 msgstr "Email"
 
@@ -355,15 +357,27 @@ msgstr "Estimated duration"
 msgid "--- Choisir un équipement ---"
 msgstr "--- Choose a piece of equipment ---"
 
+#: maintenance/forms.py:225
+msgid "Spécialités (séparées par des virgules)"
+msgstr "Specialties (comma-separated)"
+
+#: maintenance/forms.py:227
+msgid "Ex: Electrique, Hydraulique, Froid"
+msgstr "E.g.: Electrical, Hydraulics, Refrigeration"
+
 #: maintenance/models.py:37
 msgid "Liste des compétences (ex: Electrique, Hydraulique)"
 msgstr "List of skills (e.g. Electrical, Hydraulics)"
 
 #: maintenance/models.py:37
+#: maintenance/templates/maintenance/technician_list.html:36
 msgid "Spécialités"
 msgstr "Specialties"
 
 #: maintenance/models.py:38
+#: maintenance/templates/maintenance/technician_detail.html:25
+#: maintenance/templates/maintenance/technician_detail.html:161
+#: maintenance/templates/maintenance/technician_list.html:75
 msgid "Actif"
 msgstr "Active"
 
@@ -446,6 +460,7 @@ msgstr "Start longitude"
 #: maintenance/models.py:88
 #: maintenance/templates/maintenance/_planning_legend.html:14
 #: maintenance/templates/maintenance/_ticket_table.html:13
+#: maintenance/templates/maintenance/technician_list.html:42
 #: maintenance/templates/maintenance/ticket_list.html:62
 #: system/templates/system/dashboard.html:94
 msgid "Statut"
@@ -614,7 +629,17 @@ msgstr "No technician registered."
 
 #: maintenance/templates/maintenance/technician_detail.html:23
 msgid "Dernier login"
-msgstr ""
+msgstr "Last login"
+
+#: maintenance/templates/maintenance/technician_detail.html:23
+msgid "Jamais"
+msgstr "Never"
+
+#: maintenance/templates/maintenance/technician_detail.html:27
+#: maintenance/templates/maintenance/technician_detail.html:157
+#: maintenance/templates/maintenance/technician_list.html:77
+msgid "Inactif"
+msgstr "Inactive"
 
 #: maintenance/templates/maintenance/technician_detail.html:38
 #: system/templates/base.html:86 system/templates/system/dashboard.html:35
@@ -623,19 +648,104 @@ msgstr "Work orders"
 
 #: maintenance/templates/maintenance/technician_detail.html:41
 msgid "Statistiques"
-msgstr ""
+msgstr "Statistics"
 
 #: maintenance/templates/maintenance/technician_detail.html:44
 msgid "Profil"
-msgstr ""
+msgstr "Profile"
 
 #: maintenance/templates/maintenance/technician_detail.html:51
 msgid "Ouvrir dans le planning"
-msgstr ""
+msgstr "Open in the schedule"
+
+#: maintenance/templates/maintenance/technician_detail.html:59
+msgid "Aucune intervention enregistrée pour ce technicien"
+msgstr "No work orders recorded for this technician"
+
+#: maintenance/templates/maintenance/technician_detail.html:62
+msgid "Page"
+msgstr "Page"
+
+#: maintenance/templates/maintenance/technician_detail.html:75
+msgid "Performance"
+msgstr "Performance"
+
+#: maintenance/templates/maintenance/technician_detail.html:82
+msgid "Taux de succès"
+msgstr "Success rate"
+
+#: maintenance/templates/maintenance/technician_detail.html:93
+msgid "Efficacité"
+msgstr "Efficiency"
+
+#: maintenance/templates/maintenance/technician_detail.html:98
+msgid "Durée moyenne / intervention"
+msgstr "Average duration / work order"
+
+#: maintenance/templates/maintenance/technician_detail.html:104
+msgid "Charge de travail"
+msgstr "Workload"
 
 #: maintenance/templates/maintenance/technician_detail.html:110
 msgid "À réaliser"
-msgstr ""
+msgstr "To do"
+
+#: maintenance/templates/maintenance/technician_detail.html:115
+msgid "Total"
+msgstr "Total"
+
+#: maintenance/templates/maintenance/technician_detail.html:130
+msgid "Paramètres du Profil"
+msgstr "Profile settings"
+
+#: maintenance/templates/maintenance/technician_detail.html:136
+msgid "Spécialités Techniques"
+msgstr "Technical specialties"
+
+#: maintenance/templates/maintenance/technician_detail.html:138
+msgid ""
+"Entrez les compétences séparées par des virgules (ex: HVAC, Gaz, Électricité)"
+msgstr "Enter the skills separated by commas (e.g. HVAC, Gas, Electrical)"
+
+#: maintenance/templates/maintenance/technician_detail.html:153
+msgid "Disponibilité du Technicien"
+msgstr "Technician availability"
+
+#: maintenance/templates/maintenance/technician_detail.html:154
+msgid "Si inactif, il n'apparaîtra plus dans les choix de planification."
+msgstr "If inactive, they will no longer appear in the scheduling choices."
+
+#: maintenance/templates/maintenance/technician_detail.html:169
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Enregistrer les modifications"
+msgstr "Save changes"
+
+#: maintenance/templates/maintenance/technician_list.html:4
+#: maintenance/templates/maintenance/technician_list.html:5
+msgid "Équipe technique"
+msgstr "Technical team"
+
+#: maintenance/templates/maintenance/technician_list.html:15
+#, python-format
+msgid "%(counter)s Actif"
+msgid_plural "%(counter)s Actifs"
+msgstr[0] "%(counter)s active"
+msgstr[1] "%(counter)s active"
+
+#: maintenance/templates/maintenance/technician_list.html:19
+#, python-format
+msgid "%(counter)s Inactif"
+msgid_plural "%(counter)s Inactifs"
+msgstr[0] "%(counter)s inactive"
+msgstr[1] "%(counter)s inactive"
+
+#: maintenance/templates/maintenance/technician_list.html:39
+msgid "Tickets"
+msgstr "Tickets"
+
+#: maintenance/templates/maintenance/technician_list.html:66
+msgid "Aucune"
+msgstr "None"
 
 #: maintenance/templates/maintenance/ticket_cancel.html:22
 msgid ""
@@ -935,10 +1045,6 @@ msgstr ""
 "calendar."
 
 #: maintenance/templates/maintenance/ticket_form.html:171
-msgid "Enregistrer les modifications"
-msgstr "Save changes"
-
-#: maintenance/templates/maintenance/ticket_form.html:171
 msgid "Ajouter le ticket"
 msgstr "Add the ticket"
 
@@ -1132,6 +1238,11 @@ msgstr "Reassignment #%(id)s"
 #: maintenance/views.py:358
 msgid "Nouveau ticket d'intervention"
 msgstr "New work order ticket"
+
+#: maintenance/views.py:441
+#, python-format
+msgid "Profil Technicien : %(name)s"
+msgstr "Technician profile: %(name)s"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4

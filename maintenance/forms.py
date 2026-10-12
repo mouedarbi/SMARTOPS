@@ -222,9 +222,9 @@ class TechnicianForm(forms.ModelForm):
     Formulaire pour éditer le profil d'un technicien.
     """
     specialties_str = forms.CharField(
-        label="Spécialités (séparées par des virgules)",
+        label=_("Spécialités (séparées par des virgules)"),
         required=False,
-        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm', 'placeholder': 'Ex: Electrique, Hydraulique, Froid'})
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm', 'placeholder': _('Ex: Electrique, Hydraulique, Froid')})
     )
 
     class Meta:

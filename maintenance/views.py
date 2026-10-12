@@ -438,7 +438,7 @@ def technician_detail(request, pk):
         'tab': tab,
         'interventions': interventions,
         'events_url': f"{reverse('api_events')}?technician={technician.pk}",
-        'page_title': f"Profil Technicien : {technician}",
+        'page_title': _("Profil Technicien : %(name)s") % {'name': technician},
         'stats': {
             'total': total_tickets,
             'done': done_tickets,

@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Équipe technique | SMARTOPS{% endblock %}
-{% block page_title %}Équipe technique{% endblock %}
+{% block title %}{% trans "Équipe technique" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Équipe technique" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -11,11 +12,11 @@
         <div class="flex gap-4">
             <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                <span class="text-xs font-black uppercase tracking-widest">{{ active_count }} Actifs</span>
+                <span class="text-xs font-black uppercase tracking-widest">{% blocktrans count counter=active_count %}{{ counter }} Actif{% plural %}{{ counter }} Actifs{% endblocktrans %}</span>
             </div>
             <div class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-xl border border-slate-200">
                 <span class="h-2 w-2 rounded-full bg-slate-300"></span>
-                <span class="text-xs font-black uppercase tracking-widest">{{ inactive_count }} Inactifs</span>
+                <span class="text-xs font-black uppercase tracking-widest">{% blocktrans count counter=inactive_count %}{{ counter }} Inactif{% plural %}{{ counter }} Inactifs{% endblocktrans %}</span>
             </div>
         </div>
     </div>
@@ -26,19 +27,19 @@
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100">
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer hover:text-blue-600 transition" onclick="sortTable(0)">
-                        Technicien <i class="las la-sort ml-1"></i>
+                        {% trans "Technicien" %} <i class="las la-sort ml-1"></i>
                     </th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer hover:text-blue-600 transition" onclick="sortTable(1)">
-                        Email <i class="las la-sort ml-1"></i>
+                        {% trans "E-mail" %} <i class="las la-sort ml-1"></i>
                     </th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        Spécialités
+                        {% trans "Spécialités" %}
                     </th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer hover:text-blue-600 transition" onclick="sortTable(3)">
-                        Tickets <i class="las la-sort ml-1"></i>
+                        {% trans "Tickets" %} <i class="las la-sort ml-1"></i>
                     </th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer hover:text-blue-600 transition" onclick="sortTable(4)">
-                        Statut <i class="las la-sort ml-1"></i>
+                        {% trans "Statut" %} <i class="las la-sort ml-1"></i>
                     </th>
                     <th class="px-6 py-4 text-right"></th>
                 </tr>
@@ -62,7 +63,7 @@
                             {% for spec in tech.specialties %}
                             <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[9px] font-black uppercase border border-blue-100">{{ spec }}</span>
                             {% empty %}
-                            <span class="text-[9px] text-slate-300 italic font-bold uppercase">Aucune</span>
+                            <span class="text-[9px] text-slate-300 italic font-bold uppercase">{% trans "Aucune" %}</span>
                             {% endfor %}
                         </div>
                     </td>
@@ -71,9 +72,9 @@
                     </td>
                     <td class="px-6 py-4">
                         {% if tech.is_active %}
-                        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">Actif</span>
+                        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">{% trans "Actif" %}</span>
                         {% else %}
-                        <span class="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-100">Inactif</span>
+                        <span class="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-100">{% trans "Inactif" %}</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 text-right">
