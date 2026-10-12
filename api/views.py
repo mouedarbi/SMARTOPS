@@ -119,6 +119,25 @@ class TechnicianViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
+# Écart au-delà duquel une heure terrain est tracée comme synchronisée en différé.
+DEFERRED_SYNC_THRESHOLD = timedelta(minutes=2)
+
+
+def log_deferred_action(ticket, action, field_time, received_at):
+    """
+    Trace, dans le logger `api.mobile`, une action dont l'heure terrain précède
+    la réception de plus de 2 min (synchronisation après un passage hors-ligne).
+    Aucune donnée personnelle : n° du ticket, action et heures seulement.
+    """
+    if field_time and received_at - field_time > DEFERRED_SYNC_THRESHOLD:
+        mobile_logger.info(
+            "Action synchronisée en différé : ticket #%s, %s, heure terrain %s, reçue %s.",
+            ticket.id, action,
+            timezone.localtime(field_time).isoformat(timespec='seconds'),
+            timezone.localtime(received_at).isoformat(timespec='seconds'),
+        )
+
+
 def validate_or_detail(serializer, time_field):
     """
     Valide le serializer ; une heure terrain refusée (`started_at` / `ended_at`)
@@ -194,6 +213,7 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         Passe le ticket en `in_progress` et enregistre l'heure de début :
         celle envoyée par l'application (`started_at`), sinon l'heure de réception.
         """
+        received_at = timezone.now()
         ticket = self.get_object()
 
         if ticket.status not in ('pending', 'planned'):
@@ -208,11 +228,13 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
             return error
 
         ticket.status = 'in_progress'
-        ticket.effective_start = serializer.validated_data.get('started_at') or timezone.now()
+        started_at = serializer.validated_data.get('started_at')
+        ticket.effective_start = started_at or received_at
         if serializer.validated_data.get('latitude'):
             ticket.start_latitude = serializer.validated_data['latitude']
             ticket.start_longitude = serializer.validated_data['longitude']
         ticket.save()
+        log_deferred_action(ticket, 'start', started_at, received_at)
 
         return Response(MaintenanceTicketSerializer(ticket).data)
 
@@ -233,6 +255,7 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         celle envoyée par l'application (`ended_at`), sinon l'heure de réception.
         En `to_reschedule`, un ticket de suite est créé en attente, sans technicien.
         """
+        received_at = timezone.now()
         ticket = self.get_object()
 
         if ticket.status != 'in_progress':
@@ -252,10 +275,11 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
             reschedule_ticket(ticket, report, ended_at=ended_at)
         else:
             ticket.status = 'done'
-            ticket.effective_end = ended_at or timezone.now()
+            ticket.effective_end = ended_at or received_at
             if report:
                 ticket.intervention_report = report
             ticket.save()
+        log_deferred_action(ticket, f"stop ({ticket.status})", ended_at, received_at)
 
         return Response(MaintenanceTicketSerializer(ticket).data)
 

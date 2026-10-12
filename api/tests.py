@@ -336,6 +336,25 @@ class TicketAPITestCase(TestCase):
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.effective_start, started_at)
 
+    def test_deferred_actions_are_logged_without_personal_data(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=1)).replace(microsecond=0)
+        with self.assertLogs('api.mobile', level='INFO') as logs:
+            self._start(started_at)
+            self._stop(started_at + timedelta(minutes=20))
+        self.assertEqual(len(logs.output), 2)
+        self.assertIn(f"ticket #{self.ticket.id}, start", logs.output[0])
+        self.assertIn(f"ticket #{self.ticket.id}, stop (done)", logs.output[1])
+        for line in logs.output:
+            self.assertNotIn('tech1', line)
+            self.assertNotIn('Fait.', line)
+
+    def test_real_time_actions_are_not_logged(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        with self.assertNoLogs('api.mobile', level='INFO'):
+            self._start(timezone.now() - timedelta(seconds=30))
+            self._stop()
+
     def test_my_interventions_uses_effective_date(self):
         now = timezone.now()
         # Démarrage effectif aujourd'hui (heure locale), même si le test tourne juste après minuit.

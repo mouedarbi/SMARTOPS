@@ -273,6 +273,12 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
+        # Application mobile : vérifications de licence, actions synchronisées en différé (journald).
+        'api.mobile': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
 
