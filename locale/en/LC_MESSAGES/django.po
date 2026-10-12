@@ -642,20 +642,24 @@ msgid ""
 "Une maintenance préventive est en principe obligatoire : ne l'annulez qu'à "
 "titre exceptionnel."
 msgstr ""
+"Preventive maintenance is mandatory in principle: only cancel it in "
+"exceptional cases."
 
 #: maintenance/templates/maintenance/ticket_cancel.html:29
 msgid "Motif de l'annulation (rapport)"
-msgstr ""
+msgstr "Reason for cancellation (report)"
 
 #: maintenance/templates/maintenance/ticket_cancel.html:31
 msgid "Ex. : le client a rappelé, la panne est résolue."
-msgstr ""
+msgstr "E.g.: the customer called back, the fault is fixed."
 
 #: maintenance/templates/maintenance/ticket_cancel.html:33
 msgid ""
 "Ce texte devient le rapport du ticket. L'intervention quitte le planning du "
 "technicien."
 msgstr ""
+"This text becomes the ticket's report. The work order leaves the "
+"technician's schedule."
 
 #: maintenance/templates/maintenance/ticket_cancel.html:37
 #: maintenance/templates/maintenance/ticket_detail.html:40
