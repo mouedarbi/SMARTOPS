@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:50+0200\n"
+"POT-Creation-Date: 2026-10-12 16:53+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -62,6 +62,7 @@ msgstr "My profile"
 
 #: accounts/templates/accounts/profile.html:23
 #: accounts/templates/accounts/profile.html:59
+#: inventory/templates/inventory/client_list.html:57
 #: maintenance/templates/maintenance/technician_list.html:33
 msgid "E-mail"
 msgstr "Email"
@@ -91,6 +92,7 @@ msgid "Nom"
 msgstr "Last name"
 
 #: accounts/templates/accounts/profile.html:71
+#: inventory/templates/inventory/client_form.html:19
 msgid "Enregistrer"
 msgstr "Save"
 
@@ -127,37 +129,38 @@ msgid ""
 "L'heure de fin doit être postérieure à l'heure de début de l'intervention."
 msgstr ""
 
-#: inventory/models.py:19
+#: inventory/models.py:19 inventory/templates/inventory/client_list.html:45
 msgid "Nom du Client"
-msgstr ""
+msgstr "Customer name"
 
-#: inventory/models.py:20
+#: inventory/models.py:20 inventory/templates/inventory/client_detail.html:101
 msgid "Adresse"
-msgstr ""
+msgstr "Address"
 
 #: inventory/models.py:21
 msgid "Contact"
-msgstr ""
+msgstr "Contact person"
 
 #: inventory/models.py:22
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
-#: inventory/models.py:23
+#: inventory/models.py:23 inventory/templates/inventory/client_detail.html:66
+#: inventory/templates/inventory/client_list.html:58
 msgid "Téléphone"
-msgstr ""
+msgstr "Phone"
 
-#: inventory/models.py:24
+#: inventory/models.py:24 inventory/templates/inventory/client_detail.html:77
 msgid "Numéro de TVA"
-msgstr ""
+msgstr "VAT number"
 
 #: inventory/models.py:25
 msgid "Est Actif"
-msgstr ""
+msgstr "Active"
 
 #: inventory/models.py:26 maintenance/models.py:95
 msgid "Date de création"
-msgstr ""
+msgstr "Creation date"
 
 #: inventory/models.py:29 inventory/models.py:39
 #: maintenance/templates/maintenance/ticket_detail.html:105
@@ -170,45 +173,45 @@ msgstr "Customer"
 msgid "Clients"
 msgstr "Customers"
 
-#: inventory/models.py:40
+#: inventory/models.py:40 inventory/templates/inventory/client_detail.html:100
 msgid "Nom du lieu"
-msgstr ""
+msgstr "Site name"
 
 #: inventory/models.py:42
 msgid "Rue"
-msgstr ""
+msgstr "Street"
 
 #: inventory/models.py:43
 msgid "Numéro"
-msgstr ""
+msgstr "Number"
 
 #: inventory/models.py:44
 msgid "Boîte"
-msgstr ""
+msgstr "Box"
 
 #: inventory/models.py:45
 msgid "Code postal"
-msgstr ""
+msgstr "Postal code"
 
 #: inventory/models.py:46
 msgid "Ville"
-msgstr ""
+msgstr "City"
 
 #: inventory/models.py:47
 msgid "Pays"
-msgstr ""
+msgstr "Country"
 
 #: inventory/models.py:48
 msgid "Accès / complément"
-msgstr ""
+msgstr "Access / additional info"
 
 #: inventory/models.py:49
 msgid "Étage, code de porte, entrée, consignes d'accès."
-msgstr ""
+msgstr "Floor, door code, entrance, access instructions."
 
 #: inventory/models.py:52
 msgid "Adresse du lieu"
-msgstr ""
+msgstr "Site address"
 
 #: inventory/models.py:55 inventory/models.py:120
 #: maintenance/templates/maintenance/ticket_detail.html:109
@@ -216,18 +219,18 @@ msgstr ""
 msgid "Lieu"
 msgstr "Site"
 
-#: inventory/models.py:56 system/templates/base.html:134
-#: system/templates/system/dashboard.html:57
+#: inventory/models.py:56 inventory/templates/inventory/client_detail.html:39
+#: system/templates/base.html:134 system/templates/system/dashboard.html:57
 msgid "Lieux"
 msgstr "Sites"
 
 #: inventory/models.py:82
 msgid "Nom du type"
-msgstr ""
+msgstr "Type name"
 
 #: inventory/models.py:85
 msgid "Type d'équipement"
-msgstr ""
+msgstr "Equipment type"
 
 #: inventory/models.py:86 system/templates/base.html:154
 msgid "Types d'équipement"
@@ -235,11 +238,11 @@ msgstr "Equipment types"
 
 #: inventory/models.py:96
 msgid "Texte"
-msgstr ""
+msgstr "Text"
 
 #: inventory/models.py:97
 msgid "Nombre"
-msgstr ""
+msgstr "Number"
 
 #: inventory/models.py:98 maintenance/templates/maintenance/ticket_list.html:58
 msgid "Date"
@@ -255,54 +258,54 @@ msgstr "Type"
 
 #: inventory/models.py:101
 msgid "Nom du champ"
-msgstr ""
+msgstr "Field name"
 
 #: inventory/models.py:102
 msgid "Type de champ"
-msgstr ""
+msgstr "Field type"
 
 #: inventory/models.py:103
 msgid "Requis"
-msgstr ""
+msgstr "Required"
 
 #: inventory/models.py:106
 msgid "Champ personnalisé"
-msgstr ""
+msgstr "Custom field"
 
 #: inventory/models.py:107 inventory/models.py:127
 msgid "Champs personnalisés"
-msgstr ""
+msgstr "Custom fields"
 
 #: inventory/models.py:121
 msgid "Nom de l'équipement"
-msgstr ""
+msgstr "Equipment name"
 
 #: inventory/models.py:123
 msgid "Numéro de série"
-msgstr ""
+msgstr "Serial number"
 
 #: inventory/models.py:124
 msgid "Date d'installation"
-msgstr ""
+msgstr "Installation date"
 
 #: inventory/models.py:142
 msgid "Les champs personnalisés doivent être un objet JSON valide."
-msgstr ""
+msgstr "Custom fields must be a valid JSON object."
 
 #: inventory/models.py:153
 #, python-format
 msgid "Le champ personnalisé '%(name)s' est requis pour ce type d'équipement."
-msgstr ""
+msgstr "The custom field '%(name)s' is required for this equipment type."
 
 #: inventory/models.py:161
 #, python-format
 msgid "Le champ '%(name)s' doit être numérique."
-msgstr ""
+msgstr "The field '%(name)s' must be numeric."
 
 #: inventory/models.py:168 inventory/models.py:170
 #, python-format
 msgid "Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ."
-msgstr ""
+msgstr "The field '%(name)s' must be a valid date in the format YYYY-MM-DD."
 
 #: inventory/models.py:176 maintenance/models.py:72
 #: system/templates/system/dashboard.html:92
@@ -313,6 +316,167 @@ msgstr "Equipment"
 #: system/templates/system/dashboard.html:46
 msgid "Équipements"
 msgstr "Equipment"
+
+#: inventory/templates/inventory/client_detail.html:4
+#: inventory/templates/inventory/client_detail.html:5
+msgid "Fiche Client"
+msgstr "Customer record"
+
+#: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
+#: maintenance/templates/maintenance/technician_detail.html:25
+#: maintenance/templates/maintenance/technician_detail.html:161
+#: maintenance/templates/maintenance/technician_list.html:75
+msgid "Actif"
+msgstr "Active"
+
+#: inventory/templates/inventory/client_detail.html:18
+#: maintenance/templates/maintenance/technician_detail.html:27
+#: maintenance/templates/maintenance/technician_detail.html:157
+#: maintenance/templates/maintenance/technician_list.html:77
+msgid "Inactif"
+msgstr "Inactive"
+
+#: inventory/templates/inventory/client_detail.html:21
+#, python-format
+msgid "Créé le %(day)s"
+msgstr "Created on %(day)s"
+
+#: inventory/templates/inventory/client_detail.html:25
+#: maintenance/templates/maintenance/ticket_cancel.html:39
+msgid "Retour"
+msgstr "Back"
+
+#: inventory/templates/inventory/client_detail.html:28
+#: inventory/templates/inventory/client_detail.html:121
+#: inventory/templates/inventory/client_list.html:92
+msgid "Modifier"
+msgstr "Edit"
+
+#: inventory/templates/inventory/client_detail.html:36
+msgid "Informations Générales"
+msgstr "General information"
+
+#: inventory/templates/inventory/client_detail.html:50
+msgid "Fiche de Contact"
+msgstr "Contact details"
+
+#: inventory/templates/inventory/client_detail.html:56
+msgid "Responsable de contact"
+msgstr "Contact person"
+
+#: inventory/templates/inventory/client_detail.html:60
+msgid "Adresse E-mail"
+msgstr "Email address"
+
+#: inventory/templates/inventory/client_detail.html:67
+#: inventory/templates/inventory/client_detail.html:78
+msgid "Non renseigné"
+msgstr "Not provided"
+
+#: inventory/templates/inventory/client_detail.html:73
+msgid "Adresse Principale"
+msgstr "Main address"
+
+#: inventory/templates/inventory/client_detail.html:89
+msgid "Lieux associés"
+msgstr "Linked sites"
+
+#: inventory/templates/inventory/client_detail.html:92 inventory/views.py:163
+msgid "Nouveau lieu"
+msgstr "New site"
+
+#: inventory/templates/inventory/client_detail.html:102
+msgid "Appareils"
+msgstr "Equipment"
+
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+msgid "Actions"
+msgstr "Actions"
+
+#: inventory/templates/inventory/client_detail.html:114
+msgid "Adresse à compléter"
+msgstr "Address to complete"
+
+#: inventory/templates/inventory/client_detail.html:118
+msgid "Voir appareils"
+msgstr "View equipment"
+
+#: inventory/templates/inventory/client_detail.html:128
+msgid "Aucun lieu enregistré pour ce client."
+msgstr "No sites recorded for this customer."
+
+#: inventory/templates/inventory/client_form.html:16
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Cancel"
+
+#: inventory/templates/inventory/client_list.html:4
+#: inventory/templates/inventory/client_list.html:5
+msgid "Gestion des Clients"
+msgstr "Customer management"
+
+#: inventory/templates/inventory/client_list.html:18
+msgid "Rechercher un client (nom, email, tel, tva)..."
+msgstr "Search for a customer (name, email, phone, VAT)..."
+
+#: inventory/templates/inventory/client_list.html:23
+#: maintenance/templates/maintenance/ticket_list.html:93
+msgid "Réinitialiser les filtres"
+msgstr "Reset filters"
+
+#: inventory/templates/inventory/client_list.html:29
+msgid "Rechercher"
+msgstr "Search"
+
+#: inventory/templates/inventory/client_list.html:34 inventory/views.py:74
+msgid "Nouveau Client"
+msgstr "New customer"
+
+#: inventory/templates/inventory/client_list.html:61
+msgid "Date d'Ajout"
+msgstr "Date added"
+
+#: inventory/templates/inventory/client_list.html:89
+msgid "Détails"
+msgstr "Details"
+
+#: inventory/templates/inventory/client_list.html:99
+msgid "Aucun client trouvé."
+msgstr "No customers found."
+
+#: inventory/templates/inventory/client_list.html:111
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: inventory/templates/inventory/client_list.html:116
+msgid "Première page"
+msgstr "First page"
+
+#: inventory/templates/inventory/client_list.html:120
+msgid "Précédent"
+msgstr "Previous"
+
+#: inventory/templates/inventory/client_list.html:138
+msgid "Suivant"
+msgstr "Next"
+
+#: inventory/templates/inventory/client_list.html:140
+msgid "Dernière page"
+msgstr "Last page"
+
+#: inventory/views.py:89
+msgid "Modifier Client"
+msgstr "Edit customer"
+
+#: inventory/views.py:181
+msgid "Modifier le lieu"
+msgstr "Edit site"
+
+#: inventory/views.py:248
+msgid "Nouvel Équipement"
+msgstr "New equipment"
 
 #: maintenance/forms.py:45
 msgid "Filtrer par Client"
@@ -373,13 +537,6 @@ msgstr "List of skills (e.g. Electrical, Hydraulics)"
 #: maintenance/templates/maintenance/technician_list.html:36
 msgid "Spécialités"
 msgstr "Specialties"
-
-#: maintenance/models.py:38
-#: maintenance/templates/maintenance/technician_detail.html:25
-#: maintenance/templates/maintenance/technician_detail.html:161
-#: maintenance/templates/maintenance/technician_list.html:75
-msgid "Actif"
-msgstr "Active"
 
 #: maintenance/models.py:45 system/templates/base.html:91
 msgid "Techniciens"
@@ -635,12 +792,6 @@ msgstr "Last login"
 msgid "Jamais"
 msgstr "Never"
 
-#: maintenance/templates/maintenance/technician_detail.html:27
-#: maintenance/templates/maintenance/technician_detail.html:157
-#: maintenance/templates/maintenance/technician_list.html:77
-msgid "Inactif"
-msgstr "Inactive"
-
 #: maintenance/templates/maintenance/technician_detail.html:38
 #: system/templates/base.html:86 system/templates/system/dashboard.html:35
 msgid "Interventions"
@@ -775,10 +926,6 @@ msgstr ""
 #: maintenance/templates/maintenance/ticket_detail.html:40
 msgid "Annuler le ticket"
 msgstr "Cancel the ticket"
-
-#: maintenance/templates/maintenance/ticket_cancel.html:39
-msgid "Retour"
-msgstr "Back"
 
 #: maintenance/templates/maintenance/ticket_detail.html:24
 msgid ""
@@ -1048,10 +1195,6 @@ msgstr ""
 msgid "Ajouter le ticket"
 msgstr "Add the ticket"
 
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Cancel"
-
 #: maintenance/templates/maintenance/ticket_form.html:181
 msgid "INTERVENTION ARCHIVÉE"
 msgstr "WORK ORDER ARCHIVED"
@@ -1164,10 +1307,6 @@ msgstr "All"
 #: maintenance/templates/maintenance/ticket_list.html:90
 msgid "Filtrer"
 msgstr "Filter"
-
-#: maintenance/templates/maintenance/ticket_list.html:93
-msgid "Réinitialiser les filtres"
-msgstr "Reset filters"
 
 #: maintenance/templates/maintenance/ticket_list.html:102
 msgid "Résultats"

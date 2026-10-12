@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:50+0200\n"
+"POT-Creation-Date: 2026-10-12 16:53+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -62,6 +62,7 @@ msgstr "Mijn profiel"
 
 #: accounts/templates/accounts/profile.html:23
 #: accounts/templates/accounts/profile.html:59
+#: inventory/templates/inventory/client_list.html:57
 #: maintenance/templates/maintenance/technician_list.html:33
 msgid "E-mail"
 msgstr "E-mail"
@@ -91,6 +92,7 @@ msgid "Nom"
 msgstr "Naam"
 
 #: accounts/templates/accounts/profile.html:71
+#: inventory/templates/inventory/client_form.html:19
 msgid "Enregistrer"
 msgstr "Opslaan"
 
@@ -127,37 +129,38 @@ msgid ""
 "L'heure de fin doit être postérieure à l'heure de début de l'intervention."
 msgstr ""
 
-#: inventory/models.py:19
+#: inventory/models.py:19 inventory/templates/inventory/client_list.html:45
 msgid "Nom du Client"
-msgstr ""
+msgstr "Naam van de klant"
 
-#: inventory/models.py:20
+#: inventory/models.py:20 inventory/templates/inventory/client_detail.html:101
 msgid "Adresse"
-msgstr ""
+msgstr "Adres"
 
 #: inventory/models.py:21
 msgid "Contact"
-msgstr ""
+msgstr "Contactpersoon"
 
 #: inventory/models.py:22
 msgid "Email"
-msgstr ""
+msgstr "E-mail"
 
-#: inventory/models.py:23
+#: inventory/models.py:23 inventory/templates/inventory/client_detail.html:66
+#: inventory/templates/inventory/client_list.html:58
 msgid "Téléphone"
-msgstr ""
+msgstr "Telefoon"
 
-#: inventory/models.py:24
+#: inventory/models.py:24 inventory/templates/inventory/client_detail.html:77
 msgid "Numéro de TVA"
-msgstr ""
+msgstr "Btw-nummer"
 
 #: inventory/models.py:25
 msgid "Est Actif"
-msgstr ""
+msgstr "Actief"
 
 #: inventory/models.py:26 maintenance/models.py:95
 msgid "Date de création"
-msgstr ""
+msgstr "Aanmaakdatum"
 
 #: inventory/models.py:29 inventory/models.py:39
 #: maintenance/templates/maintenance/ticket_detail.html:105
@@ -170,45 +173,45 @@ msgstr "Klant"
 msgid "Clients"
 msgstr "Klanten"
 
-#: inventory/models.py:40
+#: inventory/models.py:40 inventory/templates/inventory/client_detail.html:100
 msgid "Nom du lieu"
-msgstr ""
+msgstr "Naam van de locatie"
 
 #: inventory/models.py:42
 msgid "Rue"
-msgstr ""
+msgstr "Straat"
 
 #: inventory/models.py:43
 msgid "Numéro"
-msgstr ""
+msgstr "Nummer"
 
 #: inventory/models.py:44
 msgid "Boîte"
-msgstr ""
+msgstr "Bus"
 
 #: inventory/models.py:45
 msgid "Code postal"
-msgstr ""
+msgstr "Postcode"
 
 #: inventory/models.py:46
 msgid "Ville"
-msgstr ""
+msgstr "Gemeente"
 
 #: inventory/models.py:47
 msgid "Pays"
-msgstr ""
+msgstr "Land"
 
 #: inventory/models.py:48
 msgid "Accès / complément"
-msgstr ""
+msgstr "Toegang / aanvulling"
 
 #: inventory/models.py:49
 msgid "Étage, code de porte, entrée, consignes d'accès."
-msgstr ""
+msgstr "Verdieping, deurcode, ingang, toegangsinstructies."
 
 #: inventory/models.py:52
 msgid "Adresse du lieu"
-msgstr ""
+msgstr "Adres van de locatie"
 
 #: inventory/models.py:55 inventory/models.py:120
 #: maintenance/templates/maintenance/ticket_detail.html:109
@@ -216,18 +219,18 @@ msgstr ""
 msgid "Lieu"
 msgstr "Locatie"
 
-#: inventory/models.py:56 system/templates/base.html:134
-#: system/templates/system/dashboard.html:57
+#: inventory/models.py:56 inventory/templates/inventory/client_detail.html:39
+#: system/templates/base.html:134 system/templates/system/dashboard.html:57
 msgid "Lieux"
 msgstr "Locaties"
 
 #: inventory/models.py:82
 msgid "Nom du type"
-msgstr ""
+msgstr "Naam van het type"
 
 #: inventory/models.py:85
 msgid "Type d'équipement"
-msgstr ""
+msgstr "Toesteltype"
 
 #: inventory/models.py:86 system/templates/base.html:154
 msgid "Types d'équipement"
@@ -235,11 +238,11 @@ msgstr "Toesteltypes"
 
 #: inventory/models.py:96
 msgid "Texte"
-msgstr ""
+msgstr "Tekst"
 
 #: inventory/models.py:97
 msgid "Nombre"
-msgstr ""
+msgstr "Getal"
 
 #: inventory/models.py:98 maintenance/templates/maintenance/ticket_list.html:58
 msgid "Date"
@@ -255,54 +258,54 @@ msgstr "Type"
 
 #: inventory/models.py:101
 msgid "Nom du champ"
-msgstr ""
+msgstr "Naam van het veld"
 
 #: inventory/models.py:102
 msgid "Type de champ"
-msgstr ""
+msgstr "Veldtype"
 
 #: inventory/models.py:103
 msgid "Requis"
-msgstr ""
+msgstr "Verplicht"
 
 #: inventory/models.py:106
 msgid "Champ personnalisé"
-msgstr ""
+msgstr "Aangepast veld"
 
 #: inventory/models.py:107 inventory/models.py:127
 msgid "Champs personnalisés"
-msgstr ""
+msgstr "Aangepaste velden"
 
 #: inventory/models.py:121
 msgid "Nom de l'équipement"
-msgstr ""
+msgstr "Naam van het toestel"
 
 #: inventory/models.py:123
 msgid "Numéro de série"
-msgstr ""
+msgstr "Serienummer"
 
 #: inventory/models.py:124
 msgid "Date d'installation"
-msgstr ""
+msgstr "Installatiedatum"
 
 #: inventory/models.py:142
 msgid "Les champs personnalisés doivent être un objet JSON valide."
-msgstr ""
+msgstr "De aangepaste velden moeten een geldig JSON-object zijn."
 
 #: inventory/models.py:153
 #, python-format
 msgid "Le champ personnalisé '%(name)s' est requis pour ce type d'équipement."
-msgstr ""
+msgstr "Het aangepaste veld '%(name)s' is verplicht voor dit toesteltype."
 
 #: inventory/models.py:161
 #, python-format
 msgid "Le champ '%(name)s' doit être numérique."
-msgstr ""
+msgstr "Het veld '%(name)s' moet numeriek zijn."
 
 #: inventory/models.py:168 inventory/models.py:170
 #, python-format
 msgid "Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ."
-msgstr ""
+msgstr "Het veld '%(name)s' moet een geldige datum zijn in het formaat JJJJ-MM-DD."
 
 #: inventory/models.py:176 maintenance/models.py:72
 #: system/templates/system/dashboard.html:92
@@ -313,6 +316,167 @@ msgstr "Toestel"
 #: system/templates/system/dashboard.html:46
 msgid "Équipements"
 msgstr "Toestellen"
+
+#: inventory/templates/inventory/client_detail.html:4
+#: inventory/templates/inventory/client_detail.html:5
+msgid "Fiche Client"
+msgstr "Klantfiche"
+
+#: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
+#: maintenance/templates/maintenance/technician_detail.html:25
+#: maintenance/templates/maintenance/technician_detail.html:161
+#: maintenance/templates/maintenance/technician_list.html:75
+msgid "Actif"
+msgstr "Actief"
+
+#: inventory/templates/inventory/client_detail.html:18
+#: maintenance/templates/maintenance/technician_detail.html:27
+#: maintenance/templates/maintenance/technician_detail.html:157
+#: maintenance/templates/maintenance/technician_list.html:77
+msgid "Inactif"
+msgstr "Inactief"
+
+#: inventory/templates/inventory/client_detail.html:21
+#, python-format
+msgid "Créé le %(day)s"
+msgstr "Aangemaakt op %(day)s"
+
+#: inventory/templates/inventory/client_detail.html:25
+#: maintenance/templates/maintenance/ticket_cancel.html:39
+msgid "Retour"
+msgstr "Terug"
+
+#: inventory/templates/inventory/client_detail.html:28
+#: inventory/templates/inventory/client_detail.html:121
+#: inventory/templates/inventory/client_list.html:92
+msgid "Modifier"
+msgstr "Wijzigen"
+
+#: inventory/templates/inventory/client_detail.html:36
+msgid "Informations Générales"
+msgstr "Algemene gegevens"
+
+#: inventory/templates/inventory/client_detail.html:50
+msgid "Fiche de Contact"
+msgstr "Contactfiche"
+
+#: inventory/templates/inventory/client_detail.html:56
+msgid "Responsable de contact"
+msgstr "Contactpersoon"
+
+#: inventory/templates/inventory/client_detail.html:60
+msgid "Adresse E-mail"
+msgstr "E-mailadres"
+
+#: inventory/templates/inventory/client_detail.html:67
+#: inventory/templates/inventory/client_detail.html:78
+msgid "Non renseigné"
+msgstr "Niet ingevuld"
+
+#: inventory/templates/inventory/client_detail.html:73
+msgid "Adresse Principale"
+msgstr "Hoofdadres"
+
+#: inventory/templates/inventory/client_detail.html:89
+msgid "Lieux associés"
+msgstr "Gekoppelde locaties"
+
+#: inventory/templates/inventory/client_detail.html:92 inventory/views.py:163
+msgid "Nouveau lieu"
+msgstr "Nieuwe locatie"
+
+#: inventory/templates/inventory/client_detail.html:102
+msgid "Appareils"
+msgstr "Toestellen"
+
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+msgid "Actions"
+msgstr "Acties"
+
+#: inventory/templates/inventory/client_detail.html:114
+msgid "Adresse à compléter"
+msgstr "Adres aan te vullen"
+
+#: inventory/templates/inventory/client_detail.html:118
+msgid "Voir appareils"
+msgstr "Toestellen bekijken"
+
+#: inventory/templates/inventory/client_detail.html:128
+msgid "Aucun lieu enregistré pour ce client."
+msgstr "Geen locaties geregistreerd voor deze klant."
+
+#: inventory/templates/inventory/client_form.html:16
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Annuleren"
+
+#: inventory/templates/inventory/client_list.html:4
+#: inventory/templates/inventory/client_list.html:5
+msgid "Gestion des Clients"
+msgstr "Klantenbeheer"
+
+#: inventory/templates/inventory/client_list.html:18
+msgid "Rechercher un client (nom, email, tel, tva)..."
+msgstr "Een klant zoeken (naam, e-mail, tel, btw)..."
+
+#: inventory/templates/inventory/client_list.html:23
+#: maintenance/templates/maintenance/ticket_list.html:93
+msgid "Réinitialiser les filtres"
+msgstr "Filters wissen"
+
+#: inventory/templates/inventory/client_list.html:29
+msgid "Rechercher"
+msgstr "Zoeken"
+
+#: inventory/templates/inventory/client_list.html:34 inventory/views.py:74
+msgid "Nouveau Client"
+msgstr "Nieuwe klant"
+
+#: inventory/templates/inventory/client_list.html:61
+msgid "Date d'Ajout"
+msgstr "Datum toegevoegd"
+
+#: inventory/templates/inventory/client_list.html:89
+msgid "Détails"
+msgstr "Details"
+
+#: inventory/templates/inventory/client_list.html:99
+msgid "Aucun client trouvé."
+msgstr "Geen klanten gevonden."
+
+#: inventory/templates/inventory/client_list.html:111
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Pagina %(number)s van %(total)s"
+
+#: inventory/templates/inventory/client_list.html:116
+msgid "Première page"
+msgstr "Eerste pagina"
+
+#: inventory/templates/inventory/client_list.html:120
+msgid "Précédent"
+msgstr "Vorige"
+
+#: inventory/templates/inventory/client_list.html:138
+msgid "Suivant"
+msgstr "Volgende"
+
+#: inventory/templates/inventory/client_list.html:140
+msgid "Dernière page"
+msgstr "Laatste pagina"
+
+#: inventory/views.py:89
+msgid "Modifier Client"
+msgstr "Klant wijzigen"
+
+#: inventory/views.py:181
+msgid "Modifier le lieu"
+msgstr "Locatie wijzigen"
+
+#: inventory/views.py:248
+msgid "Nouvel Équipement"
+msgstr "Nieuw toestel"
 
 #: maintenance/forms.py:45
 msgid "Filtrer par Client"
@@ -373,13 +537,6 @@ msgstr "Lijst van vaardigheden (bv. Elektriciteit, Hydraulica)"
 #: maintenance/templates/maintenance/technician_list.html:36
 msgid "Spécialités"
 msgstr "Specialisaties"
-
-#: maintenance/models.py:38
-#: maintenance/templates/maintenance/technician_detail.html:25
-#: maintenance/templates/maintenance/technician_detail.html:161
-#: maintenance/templates/maintenance/technician_list.html:75
-msgid "Actif"
-msgstr "Actief"
 
 #: maintenance/models.py:45 system/templates/base.html:91
 msgid "Techniciens"
@@ -635,12 +792,6 @@ msgstr "Laatste aanmelding"
 msgid "Jamais"
 msgstr "Nooit"
 
-#: maintenance/templates/maintenance/technician_detail.html:27
-#: maintenance/templates/maintenance/technician_detail.html:157
-#: maintenance/templates/maintenance/technician_list.html:77
-msgid "Inactif"
-msgstr "Inactief"
-
 #: maintenance/templates/maintenance/technician_detail.html:38
 #: system/templates/base.html:86 system/templates/system/dashboard.html:35
 msgid "Interventions"
@@ -777,10 +928,6 @@ msgstr ""
 #: maintenance/templates/maintenance/ticket_detail.html:40
 msgid "Annuler le ticket"
 msgstr "Ticket annuleren"
-
-#: maintenance/templates/maintenance/ticket_cancel.html:39
-msgid "Retour"
-msgstr "Terug"
 
 #: maintenance/templates/maintenance/ticket_detail.html:24
 msgid ""
@@ -1051,10 +1198,6 @@ msgstr ""
 msgid "Ajouter le ticket"
 msgstr "Ticket toevoegen"
 
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Annuleren"
-
 #: maintenance/templates/maintenance/ticket_form.html:181
 msgid "INTERVENTION ARCHIVÉE"
 msgstr "INTERVENTIE GEARCHIVEERD"
@@ -1170,10 +1313,6 @@ msgstr "Alle"
 #: maintenance/templates/maintenance/ticket_list.html:90
 msgid "Filtrer"
 msgstr "Filteren"
-
-#: maintenance/templates/maintenance/ticket_list.html:93
-msgid "Réinitialiser les filtres"
-msgstr "Filters wissen"
 
 #: maintenance/templates/maintenance/ticket_list.html:102
 msgid "Résultats"

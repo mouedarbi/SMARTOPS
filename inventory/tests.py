@@ -460,3 +460,37 @@ class StructuredAddressTests(TestCase):
         self.assertEqual((data['street'], data['postal_code'], data['country']), ('Rue Neuve', '1000', 'BE'))
         self.assertTrue(data['is_address_complete'])
         self.assertTrue(data['navigation_url'].startswith('https://www.google.com/maps/dir/?api=1&destination='))
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class InventoryTranslationTests(TestCase):
+    """Traduction FR / NL / EN des écrans de l'inventaire (langue du profil de l'utilisateur)."""
+
+    def setUp(self):
+        self.manager = CustomUser.objects.create_user(username='gestion_i18n', password='Password123!', role='manager')
+        self.client_obj = Client.objects.create(name="Hôtel Ibis", address="Rue Neuve 1, 1000 Bruxelles",
+                                                contact_name="Marc", email="ibis@example.be")
+        self.http = HttpClient()
+        self.http.login(username='gestion_i18n', password='Password123!')
+
+    def _check(self, url, expected):
+        for language, texts in expected.items():
+            self.manager.language = language
+            self.manager.save()
+            response = self.http.get(url)
+            for text in texts:
+                self.assertContains(response, text, msg_prefix=f"{language} {url}")
+
+    def test_client_screens(self):
+        self._check(reverse('client_list'), {
+            'fr': ('Gestion des Clients', 'Nom du Client'), 'nl': ('Klantenbeheer', 'Naam van de klant'),
+            'en': ('Customer management', 'Customer name')})
+        self._check(reverse('client_detail', args=[self.client_obj.pk]), {
+            'fr': ('Fiche de Contact', 'Lieux associés'), 'nl': ('Contactfiche', 'Gekoppelde locaties'),
+            'en': ('Contact details', 'Linked sites')})
+        self._check(reverse('client_update', args=[self.client_obj.pk]), {
+            'fr': ('Modifier Client', 'Numéro de TVA'), 'nl': ('Klant wijzigen', 'Btw-nummer'),
+            'en': ('Edit customer', 'VAT number')})

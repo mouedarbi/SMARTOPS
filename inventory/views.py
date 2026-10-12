@@ -10,6 +10,7 @@ Description : Vues CRUD pour la gestion des clients, lieux, équipements et type
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required, user_passes_test
 from accounts.views import is_management_staff
 from .models import Client, Building, Equipment, EquipmentType, EquipmentTypeField
@@ -70,7 +71,7 @@ def client_create_view(request):
             return redirect('client_list')
     else:
         form = ClientForm()
-    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Nouveau Client'})
+    return render(request, 'inventory/client_form.html', {'form': form, 'title': _('Nouveau Client')})
 
 @login_required
 @user_passes_test(is_management_staff)
@@ -85,7 +86,7 @@ def client_update_view(request, pk):
             return redirect('client_list')
     else:
         form = ClientForm(instance=client)
-    return render(request, 'inventory/client_form.html', {'form': form, 'title': 'Modifier Client'})
+    return render(request, 'inventory/client_form.html', {'form': form, 'title': _('Modifier Client')})
 
 @login_required
 @user_passes_test(is_management_staff)
@@ -159,7 +160,7 @@ def building_create_view(request):
         messages.success(request, "Lieu créé avec succès.")
         return redirect('client_detail', pk=client.pk)
     return render(request, 'inventory/building_form.html', {
-        'form': form, 'title': 'Nouveau lieu', 'client': client,
+        'form': form, 'title': _('Nouveau lieu'), 'client': client,
         'cancel_url': reverse('client_detail', args=[client.pk]),
     })
 
@@ -177,7 +178,7 @@ def building_update_view(request, pk):
     else:
         form = BuildingForm(instance=building)
     return render(request, 'inventory/building_form.html', {
-        'form': form, 'title': 'Modifier le lieu', 'client': building.client,
+        'form': form, 'title': _('Modifier le lieu'), 'client': building.client,
         'cancel_url': reverse('building_detail', args=[building.pk]),
     })
 
@@ -244,7 +245,7 @@ def equipment_create_view(request):
         messages.success(request, "Équipement créé avec succès.")
         return redirect('building_detail', pk=building.pk)
     return render(request, 'inventory/equipment_form.html', {
-        'form': form, 'title': 'Nouvel Équipement', 'building': building,
+        'form': form, 'title': _('Nouvel Équipement'), 'building': building,
         'cancel_url': reverse('building_detail', args=[building.pk]),
     })
 
