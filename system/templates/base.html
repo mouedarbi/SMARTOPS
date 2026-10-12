@@ -12,6 +12,10 @@
     <!-- Icons (Line Awesome) -->
     <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
     <style>
+        /* Menu replié sur grand écran (bouton de l'en-tête, choix mémorisé dans le navigateur) */
+        @media (min-width: 1024px) {
+            html.sidebar-collapsed .app-sidebar { display: none; }
+        }
         .sidebar-item-active {
             background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 100%);
             border-left: 4px solid #3b82f6;
@@ -27,6 +31,14 @@
         }
     </style>
     {% include "system/favicon.html" %}
+    <script>
+        // Menu replié : appliqué avant l'affichage pour éviter un clignotement.
+        try {
+            if (localStorage.getItem('smo-sidebar-collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans antialiased">
 
@@ -166,8 +178,8 @@
             <!-- Header -->
             <header class="app-header h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
                 <div class="flex items-center gap-2 min-w-0">
-                    <button type="button" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Ouvrir le menu" aria-controls="app-sidebar" aria-expanded="false"
-                            class="lg:hidden -ml-2 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition">
+                    <button type="button" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Afficher ou masquer le menu" title="Afficher ou masquer le menu" aria-controls="app-sidebar" aria-expanded="false"
+                            class="no-print -ml-2 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition">
                         <i class="las la-bars text-2xl"></i>
                     </button>
                     <h2 class="text-lg font-bold text-slate-800 truncate">{% block page_title %}Dashboard{% endblock %}</h2>
@@ -219,16 +231,30 @@
     </div>
 
     <script>
+        // Grand écran (>= 1024 px) : le bouton replie le menu pour élargir le contenu (planning).
+        // Petit écran : il ouvre le menu en tiroir.
+        const sidebarDesktop = window.matchMedia('(min-width: 1024px)');
+        function setCollapsed(collapsed) {
+            document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+            syncToggleState();
+            try { localStorage.setItem('smo-sidebar-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+            // Les plannings FullCalendar se recalculent sur un redimensionnement de la fenêtre.
+            window.dispatchEvent(new Event('resize'));
+        }
+
         // Tiroir de navigation mobile (barre latérale masquée sous 1024 px)
         function setSidebar(open) {
             const sidebar = document.getElementById('app-sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            const toggle = document.getElementById('sidebar-toggle');
             sidebar.classList.toggle('-translate-x-full', !open);
             overlay.classList.toggle('hidden', !open);
-            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            syncToggleState();
         }
         function toggleSidebar() {
+            if (sidebarDesktop.matches) {
+                setCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'));
+                return;
+            }
             setSidebar(document.getElementById('app-sidebar').classList.contains('-translate-x-full'));
         }
         function closeSidebar() { setSidebar(false); }
@@ -237,9 +263,17 @@
         document.querySelectorAll('#app-sidebar a').forEach(function (link) {
             link.addEventListener('click', closeSidebar);
         });
-        window.matchMedia('(min-width: 1024px)').addEventListener('change', function (e) {
+        function syncToggleState() {
+            const expanded = sidebarDesktop.matches
+                ? !document.documentElement.classList.contains('sidebar-collapsed')
+                : !document.getElementById('app-sidebar').classList.contains('-translate-x-full');
+            document.getElementById('sidebar-toggle').setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+        sidebarDesktop.addEventListener('change', function (e) {
             if (e.matches) closeSidebar();
+            syncToggleState();
         });
+        syncToggleState();
     </script>
 
 </body>

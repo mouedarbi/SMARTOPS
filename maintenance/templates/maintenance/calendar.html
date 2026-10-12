@@ -5,7 +5,7 @@
 {% block page_title %}Planning de Maintenance{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
+<div class="w-full">
     
     <div class="mb-8 flex justify-between items-center">
         <div>
@@ -32,7 +32,7 @@
     </form>
 
     <!-- Calendar Container -->
-    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 min-h-[700px]">
+    <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 min-h-[700px]">
         {% if events_url %}
         {% include "maintenance/_planning.html" with planning_id="calendar" %}
         {% else %}
