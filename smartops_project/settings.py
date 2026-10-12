@@ -192,6 +192,8 @@ AXES_COOLOFF_TIME = timedelta(minutes=15)
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
 AXES_RESET_ON_SUCCESS = True
 AXES_CLIENT_IP_CALLABLE = 'accounts.security.get_client_ip'
+# Page de blocage traduite (langue du navigateur), au lieu du texte brut en anglais d'axes.
+AXES_LOCKOUT_TEMPLATE = 'registration/lockout.html'
 
 # Cache partagé entre les workers gunicorn (compteurs de limitation de débit)
 CACHES = {

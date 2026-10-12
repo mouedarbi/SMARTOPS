@@ -142,6 +142,29 @@ class UserLanguageTests(TestCase):
         r = self.client.get(reverse('login'))
         self.assertEqual(r.headers['Content-Language'], 'fr')
 
+    def test_anonymous_pages_follow_the_browser_language(self):
+        """Sans connexion : langue du navigateur (FR / NL / EN), français si elle n'est pas proposée."""
+        for header, language, text in (('nl-BE,nl;q=0.9', 'nl', 'Beveiligde beheerconsole'),
+                                       ('en-GB,en;q=0.9', 'en', 'Secure administration console'),
+                                       ('de-DE,de;q=0.9', 'fr', "Console d'administration sécurisée")):
+            r = self.client.get(reverse('login'), HTTP_ACCEPT_LANGUAGE=header)
+            self.assertEqual(r.headers['Content-Language'], language)
+            self.assertContains(r, text)
+            self.assertIn('Accept-Language', r.headers['Vary'])
+        r = self.client.post(reverse('login'), {'username': 'x', 'password': 'y'}, HTTP_ACCEPT_LANGUAGE='nl')
+        self.assertContains(r, 'Onjuiste gebruikersnaam of wachtwoord.')
+        r = self.client.post(reverse('technician_login'), {'username': 'x', 'password': 'y'}, HTTP_ACCEPT_LANGUAGE='en')
+        self.assertContains(r, 'Incorrect credentials.')
+
+    def test_password_change_message_is_translated(self):
+        self.manager.set_password('Ancien-Mdp-2026')
+        self.manager.save()
+        self.client.force_login(self.manager)
+        r = self.client.post(reverse('my_profile'), {
+            'action': 'password', 'old_password': 'Ancien-Mdp-2026',
+            'new_password1': 'Nouveau-Mdp-2026!', 'new_password2': 'Nouveau-Mdp-2026!'}, follow=True)
+        self.assertContains(r, 'Wachtwoord gewijzigd.')
+
     def test_language_is_changed_from_the_profile(self):
         self.client.force_login(self.manager)
         self.client.post(reverse('my_profile'), {'action': 'profile', 'first_name': '', 'last_name': '',

@@ -45,6 +45,18 @@ class LoginLockoutTestCase(TestCase):
         self.assertEqual(response.status_code, 429)
         self.assertNotIn('_auth_user_id', self.client.session)
 
+    def test_lockout_page_is_translated(self):
+        """Page de blocage traduite selon la langue du navigateur, toujours en 429."""
+        url = reverse('login')
+        self.fail(url, 'mgr_lock')
+        for language, title in (('fr', 'Accès temporairement bloqué'), ('nl', 'Toegang tijdelijk geblokkeerd'),
+                                ('en', 'Access temporarily blocked')):
+            response = self.client.post(url, {'username': 'mgr_lock', 'password': 'x'},
+                                        HTTP_X_REAL_IP='203.0.113.7', HTTP_ACCEPT_LANGUAGE=language)
+            self.assertEqual(response.status_code, 429)
+            self.assertContains(response, title, status_code=429, msg_prefix=language)
+        self.assertContains(response, 'Try again in 15 minutes.', status_code=429)
+
     def test_other_ip_is_not_locked(self):
         url = reverse('login')
         self.fail(url, 'mgr_lock')

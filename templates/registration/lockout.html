@@ -1,0 +1,33 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"fr" }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Accès temporairement bloqué" %} | SMARTOPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css">
+    {% include "system/favicon.html" %}
+</head>
+{# Page affichée par django-axes après trop d'échecs de connexion (AXES_LOCKOUT_TEMPLATE, code 429). #}
+<body class="bg-slate-900 min-h-screen flex items-center justify-center font-sans antialiased p-6">
+    <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-10 text-center">
+        <div class="h-16 w-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <i class="las la-user-lock text-4xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-4">{% trans "Accès temporairement bloqué" %}</h1>
+        <p class="text-sm text-slate-600 leading-relaxed">
+            {% blocktrans count counter=failure_limit %}Trop de tentatives de connexion échouées ({{ counter }}) pour cet identifiant.{% plural %}Trop de tentatives de connexion échouées ({{ counter }}) pour cet identifiant.{% endblocktrans %}
+        </p>
+        {% if cooloff_timedelta %}
+        <p class="mt-3 text-sm font-bold text-slate-800">
+            {% widthratio cooloff_timedelta.total_seconds 60 1 as minutes %}
+            {% blocktrans count counter=minutes|add:0 %}Réessayez dans {{ counter }} minute.{% plural %}Réessayez dans {{ counter }} minutes.{% endblocktrans %}
+        </p>
+        {% endif %}
+        <p class="mt-3 text-xs text-slate-400">{% trans "Si vous avez oublié votre mot de passe, contactez votre administrateur." %}</p>
+        <a href="{{ request.path }}" class="mt-8 inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm transition">
+            {% trans "Retour à la connexion" %}
+        </a>
+    </div>
+</body>
+</html>

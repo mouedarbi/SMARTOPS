@@ -115,13 +115,13 @@ def my_profile(request):
                 user = password_form.save()
                 # Garde la session ouverte après le changement de mot de passe.
                 update_session_auth_hash(request, user)
-                messages.success(request, "Mot de passe modifié.")
+                messages.success(request, _("Mot de passe modifié."))
                 return redirect('my_profile')
         else:
             profile_form = ProfileForm(request.POST, instance=request.user)
             if profile_form.is_valid():
                 profile_form.save()
-                messages.success(request, "Profil mis à jour.")
+                messages.success(request, _("Profil mis à jour."))
                 return redirect('my_profile')
 
     return render(request, 'accounts/profile.html', {

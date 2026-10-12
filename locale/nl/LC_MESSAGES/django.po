@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 22:06+0200\n"
+"POT-Creation-Date: 2026-10-12 22:32+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -113,6 +113,7 @@ msgstr "Opslaan"
 
 #: accounts/templates/accounts/profile.html:81
 #: technician/templates/technician/login.html:33
+#: templates/registration/login.html:43
 msgid "Mot de passe"
 msgstr "Wachtwoord"
 
@@ -217,6 +218,14 @@ msgstr "Weet u zeker dat u deze gebruiker wilt verwijderen?"
 #, python-format
 msgid "Modifier %(username)s"
 msgstr "%(username)s wijzigen"
+
+#: accounts/views.py:118
+msgid "Mot de passe modifié."
+msgstr "Wachtwoord gewijzigd."
+
+#: accounts/views.py:124
+msgid "Profil mis à jour."
+msgstr "Profiel bijgewerkt."
 
 #: api/serializers.py:224
 msgid "L'heure envoyée est dans le futur."
@@ -2077,7 +2086,8 @@ msgstr "Verslag van het terrein"
 
 #: technician/templates/technician/intervention_report.html:38
 msgid "Travaux réalisés, pièces remplacées, observations, recommandations…"
-msgstr "Uitgevoerde werken, vervangen onderdelen, vaststellingen, aanbevelingen…"
+msgstr ""
+"Uitgevoerde werken, vervangen onderdelen, vaststellingen, aanbevelingen…"
 
 #: technician/templates/technician/intervention_report.html:44
 msgid "Résultat"
@@ -2104,6 +2114,7 @@ msgid "Veuillez vous authentifier"
 msgstr "Meld u aan"
 
 #: technician/templates/technician/login.html:21
+#: templates/registration/login.html:38
 msgid "Identifiant"
 msgstr "Gebruikersnaam"
 
@@ -2191,9 +2202,22 @@ msgstr "Foto wordt geoptimaliseerd…"
 msgid "LOCALISATION..."
 msgstr "LOCATIE BEPALEN..."
 
+#: technician/views.py:64
+msgid "Accès réservé au personnel technique."
+msgstr "Toegang voorbehouden aan het technisch personeel."
+
+#: technician/views.py:66
+msgid "Identifiants incorrects."
+msgstr "Onjuiste aanmeldgegevens."
+
 #: technician/views.py:69
 msgid "Connexion Technicien"
 msgstr "Aanmelding technicus"
+
+#: technician/views.py:87 technician/views.py:127 technician/views.py:153
+#: technician/views.py:187 technician/views.py:247 technician/views.py:285
+msgid "Profil technicien introuvable."
+msgstr "Technicusprofiel niet gevonden."
 
 #: technician/views.py:110
 msgid "Mon Planning"
@@ -2208,3 +2232,55 @@ msgstr "Interventie #%(id)s"
 #, python-format
 msgid "Rapport #%(id)s"
 msgstr "Verslag #%(id)s"
+
+#: templates/registration/lockout.html:6 templates/registration/lockout.html:17
+msgid "Accès temporairement bloqué"
+msgstr "Toegang tijdelijk geblokkeerd"
+
+#: templates/registration/lockout.html:19
+#, python-format
+msgid ""
+"Trop de tentatives de connexion échouées (%(counter)s) pour cet identifiant."
+msgid_plural ""
+"Trop de tentatives de connexion échouées (%(counter)s) pour cet identifiant."
+msgstr[0] "Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
+msgstr[1] "Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
+
+#: templates/registration/lockout.html:24
+#, python-format
+msgid "Réessayez dans %(counter)s minute."
+msgid_plural "Réessayez dans %(counter)s minutes."
+msgstr[0] "Probeer het opnieuw over %(counter)s minuut."
+msgstr[1] "Probeer het opnieuw over %(counter)s minuten."
+
+#: templates/registration/lockout.html:27
+msgid "Si vous avez oublié votre mot de passe, contactez votre administrateur."
+msgstr "Bent u uw wachtwoord vergeten? Neem contact op met uw beheerder."
+
+#: templates/registration/lockout.html:29
+msgid "Retour à la connexion"
+msgstr "Terug naar aanmelden"
+
+#: templates/registration/login.html:6 templates/registration/login.html:25
+msgid "Connexion"
+msgstr "Aanmelden"
+
+#: templates/registration/login.html:20
+msgid "Console d'administration sécurisée"
+msgstr "Beveiligde beheerconsole"
+
+#: templates/registration/login.html:32
+msgid "Identifiant ou mot de passe incorrect."
+msgstr "Onjuiste gebruikersnaam of wachtwoord."
+
+#: templates/registration/login.html:39
+msgid "Ex: admin"
+msgstr "Bv.: admin"
+
+#: templates/registration/login.html:48
+msgid "Entrer dans le système"
+msgstr "Aanmelden"
+
+#: templates/registration/login.html:55
+msgid "Système Auto-Hébergé."
+msgstr "Zelf-gehost systeem."

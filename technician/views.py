@@ -61,9 +61,9 @@ def technician_login(request):
                     return redirect(next_url)
                 return redirect('technician_dashboard')
             else:
-                messages.error(request, "Accès réservé au personnel technique.")
+                messages.error(request, _("Accès réservé au personnel technique."))
         else:
-            messages.error(request, "Identifiants incorrects.")
+            messages.error(request, _("Identifiants incorrects."))
     
     return render(request, 'technician/login.html', {
         'page_title': _('Connexion Technicien')
@@ -84,7 +84,7 @@ def technician_dashboard(request):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('login')
 
     # Interventions du calendrier du technicien, datées par leur début effectif si démarrées, sinon prévu
@@ -124,7 +124,7 @@ def technician_history(request):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
     tickets = (
@@ -150,7 +150,7 @@ def technician_profile(request):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
     # Langue de l'interface choisie par le technicien (prise en compte dès la page suivante).
@@ -184,7 +184,7 @@ def technician_ticket_detail(request, pk):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
@@ -244,7 +244,7 @@ def start_intervention(request, pk):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
@@ -282,7 +282,7 @@ def stop_intervention(request, pk):
     try:
         tech_profile = request.user.technician_profile
     except Exception:
-        messages.error(request, "Profil technicien introuvable.")
+        messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
