@@ -4,8 +4,10 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
 {% endcomment %}
 {% include "maintenance/_planning_assets.html" %}
 
-<div id="{{ planning_id }}"></div>
-{% include "maintenance/_planning_legend.html" %}
+<div class="smo-planning-layout">
+    {% include "maintenance/_planning_legend.html" %}
+    <div id="{{ planning_id }}" class="smo-planning-main"></div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -564,12 +564,11 @@ def api_events(request):
     for ticket in tickets:
         display_start, display_end = bounds(ticket)
 
-        # Titre dynamique avec statut
-        status_label = ticket.get_status_display().upper()
-        
+        # Tuile : société cliente d'abord (« chez IKEA »), puis l'appareil. Le statut est
+        # donné par la lampe en haut à droite de la tuile, plus dans le texte.
         events.append({
             'id': ticket.id,
-            'title': f"[{status_label}] {ticket.equipment.name}",
+            'title': f"{ticket.equipment.building.client.name} · {ticket.equipment.name}",
             'start': display_start.isoformat(),
             'end': display_end.isoformat(),
             'extendedProps': {

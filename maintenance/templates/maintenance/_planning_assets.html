@@ -41,21 +41,48 @@ Feuilles de style et scripts FullCalendar partagés par les plannings.
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
-    /* Tuiles d'intervention : bandeau gauche = type, fond = statut (couleurs pastel). */
+    /* Tuiles d'intervention : bandeau gauche = type, fond pastel et lampe en haut à droite = statut. */
     .smo-tile {
         --smo-band: #93c5fd;
         --smo-bg: #ffffff;
         --smo-text: #1e293b;
+        --smo-lamp: #3b82f6;
     }
     .smo-type-maintenance { --smo-band: #93c5fd; }
     .smo-type-repair { --smo-band: #c4b5fd; }
     .smo-type-emergency { --smo-band: #fca5a5; }
-    .smo-status-pending { --smo-bg: #f8fafc; --smo-text: #64748b; }
-    .smo-status-planned { --smo-bg: #ffffff; }
-    .smo-status-in_progress { --smo-bg: #dcfce7; }
-    .smo-status-done { --smo-bg: #f1f5f9; --smo-text: #64748b; }
-    .smo-status-to_reschedule { --smo-bg: #ffedd5; }
-    .smo-status-canceled { --smo-bg: #f8fafc; --smo-text: #94a3b8; }
+    .smo-status-pending { --smo-bg: #f8fafc; --smo-text: #64748b; --smo-lamp: #cbd5e1; }
+    .smo-status-planned { --smo-bg: #ffffff; --smo-lamp: #3b82f6; }
+    .smo-status-in_progress { --smo-bg: #dcfce7; --smo-lamp: #16a34a; }
+    .smo-status-done { --smo-bg: #f1f5f9; --smo-text: #64748b; --smo-lamp: #64748b; }
+    .smo-status-to_reschedule { --smo-bg: #ffedd5; --smo-lamp: #f97316; }
+    .smo-status-canceled { --smo-bg: #f8fafc; --smo-text: #94a3b8; --smo-lamp: #94a3b8; }
+
+    /* Lampe de statut : pastille dans le coin supérieur droit de la tuile. */
+    .fc .smo-tile::after,
+    .smo-lamp {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        background: var(--smo-lamp);
+        box-shadow: 0 0 0 2px var(--smo-bg), 0 0 6px var(--smo-lamp);
+    }
+    /* FullCalendar utilise aussi ::after (voile de la tuile sélectionnée) : on garde la pastille. */
+    .fc .smo-tile::after,
+    .fc .smo-tile.fc-event-selected::after,
+    .fc .smo-tile:focus::after { position: absolute; top: 3px; right: 3px; left: auto; bottom: auto; z-index: 2; }
+    .fc .smo-tile .fc-event-main,
+    .fc .fc-daygrid-event.smo-tile { padding-right: 12px; }
+    .smo-lamp { display: inline-block; flex-shrink: 0; }
+    /* En cours : la lampe pulse. */
+    .fc .smo-status-in_progress::after,
+    .smo-status-in_progress .smo-lamp { animation: smo-lamp-pulse 1.6s ease-in-out infinite; }
+    @keyframes smo-lamp-pulse { 50% { opacity: 0.35; } }
+    @media (prefers-reduced-motion: reduce) {
+        .fc .smo-status-in_progress::after,
+        .smo-status-in_progress .smo-lamp { animation: none; }
+    }
     .fc .fc-v-event.smo-tile {
         background: var(--smo-bg);
         border: 1px solid #e2e8f0;
@@ -76,11 +103,22 @@ Feuilles de style et scripts FullCalendar partagés par les plannings.
     }
     .smo-status-canceled .fc-event-title { text-decoration: line-through; }
 
+    /* Planning avec sa légende à gauche (au-dessus sur écran étroit). */
+    .smo-planning-layout { display: flex; flex-direction: column; gap: 1.5rem; }
+    .smo-planning-main { flex: 1; min-width: 0; }
+    @media (min-width: 1024px) {
+        .smo-planning-layout { flex-direction: row; align-items: flex-start; }
+        .smo-planning-layout > .smo-legend { width: 11rem; flex-shrink: 0; flex-direction: column; margin-top: 4.5rem; }
+        .smo-planning-layout > .smo-legend .smo-legend-group { flex-direction: column; align-items: flex-start; }
+    }
+
     /* Légende du planning */
-    .smo-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-top: 1rem; font-size: 12px; color: #475569; }
+    .smo-legend { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; font-size: 12px; color: #475569; }
     .smo-legend-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
     .smo-legend-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
-    .smo-legend-item { display: inline-flex; align-items: center; gap: 0.4rem; }
-    .smo-legend-swatch { width: 18px; height: 14px; border-radius: 4px; border: 1px solid #e2e8f0; }
+    .smo-legend-item { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .smo-legend-swatch { position: relative; width: 22px; height: 16px; border-radius: 4px; border: 1px solid #e2e8f0; flex-shrink: 0; }
     .smo-legend-swatch.is-band { border: none; border-left: 5px solid var(--smo-band); background: #ffffff; box-shadow: inset 0 0 0 1px #e2e8f0; }
+    .smo-legend-swatch.is-status { background: var(--smo-bg); }
+    .smo-legend-swatch.is-status .smo-lamp { position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; }
 </style>

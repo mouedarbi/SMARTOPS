@@ -873,6 +873,17 @@ class TechnicianCalendarTestCase(TestCase):
         inside = http.get(url, {'start': '2026-12-14', 'end': '2026-12-21'})
         self.assertEqual(len(inside.json()), 2)
 
+    def test_api_events_tile_shows_client_then_equipment(self):
+        """Tuile : société cliente puis appareil ; le statut passe par la classe (lampe), pas le texte."""
+        ticket = self._ticket(self.tech)
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        event = http.get(reverse('api_events'), {'technician': self.tech.pk}).json()[0]
+        equipment = ticket.equipment
+        self.assertEqual(event['title'], f"{equipment.building.client.name} · {equipment.name}")
+        self.assertNotIn('[', event['title'])
+        self.assertIn(f'smo-status-{ticket.status}', event['classNames'])
+
     def test_planning_pages_render(self):
         """Le planning filtré et la fiche technicien affichent le calendrier du technicien."""
         http = HttpClient()
