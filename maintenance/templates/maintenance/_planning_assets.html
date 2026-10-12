@@ -4,6 +4,12 @@ Feuilles de style et scripts FullCalendar partagés par les plannings.
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/nl.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/en-gb.js'></script>
+<script>
+    // Langue des plannings = langue de l'utilisateur (anglais : en-gb, semaine au lundi et 24 h).
+    window.SMO_CALENDAR_LOCALE = '{% if LANGUAGE_CODE == "en" %}en-gb{% else %}{{ LANGUAGE_CODE|default:"fr"|escapejs }}{% endif %}';
+</script>
 
 <style>
     :root {

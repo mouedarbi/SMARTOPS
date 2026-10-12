@@ -14,7 +14,7 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
         var calendarEl = document.getElementById('{{ planning_id|escapejs }}');
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'timeGridWeek',
-            locale: 'fr',
+            locale: window.SMO_CALENDAR_LOCALE,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',

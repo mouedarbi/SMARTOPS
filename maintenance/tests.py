@@ -884,6 +884,22 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertNotIn('[', event['title'])
         self.assertIn(f'smo-status-{ticket.status}', event['classNames'])
 
+    def test_planning_page_is_translated(self):
+        """Étape 3 de la traduction : planning, légende et langue de FullCalendar en FR / NL / EN."""
+        http = HttpClient()
+        http.login(username='chef_cal', password='Password123!')
+        expected = {
+            'fr': ('Calendrier des Interventions', 'Nouveau Ticket', 'Dépannage / Réparation', "SMO_CALENDAR_LOCALE = 'fr'"),
+            'nl': ('Interventiekalender', 'Nieuw ticket', 'Panne / Herstelling', "SMO_CALENDAR_LOCALE = 'nl'"),
+            'en': ('Work order calendar', 'New ticket', 'Breakdown / Repair', "SMO_CALENDAR_LOCALE = 'en-gb'"),
+        }
+        for language, texts in expected.items():
+            self.manager.language = language
+            self.manager.save()
+            response = http.get(reverse('maintenance_calendar'))
+            for text in texts:
+                self.assertContains(response, text, msg_prefix=language)
+
     def test_planning_pages_render(self):
         """Le planning filtré et la fiche technicien affichent le calendrier du technicien."""
         http = HttpClient()

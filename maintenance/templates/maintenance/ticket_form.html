@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             calendar = new FullCalendar.Calendar(document.getElementById('dispatch-planning'), {
                 initialView: 'timeGridWeek',
                 initialDate: dateInput.value || undefined,
-                locale: 'fr',
+                locale: window.SMO_CALENDAR_LOCALE,
                 headerToolbar: {left: 'prev,next today', center: 'title', right: 'timeGridWeek,timeGridDay'},
                 allDaySlot: false,
                 nowIndicator: true,

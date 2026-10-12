@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:34+0200\n"
+"POT-Creation-Date: 2026-10-12 16:38+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -240,7 +240,7 @@ msgstr ""
 #: inventory/models.py:100 inventory/models.py:122
 #: maintenance/templates/maintenance/_planning_legend.html:8
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: inventory/models.py:101
 msgid "Nom du champ"
@@ -475,7 +475,7 @@ msgstr ""
 
 #: maintenance/templates/maintenance/_planning_legend.html:9
 msgid "Maintenance préventive"
-msgstr ""
+msgstr "Preventief onderhoud"
 
 #: maintenance/templates/maintenance/_ticket_table.html:11
 msgid "Créé le"
@@ -502,15 +502,24 @@ msgstr ""
 msgid "Non attribué"
 msgstr ""
 
+#: maintenance/templates/maintenance/calendar.html:4
+#: maintenance/templates/maintenance/calendar.html:5
+msgid "Calendrier des Interventions"
+msgstr "Interventiekalender"
+
 #: maintenance/templates/maintenance/calendar.html:13
 #: maintenance/templates/maintenance/technician_detail.html:35
 #: system/templates/base.html:81
 msgid "Planning"
 msgstr "Planning"
 
+#: maintenance/templates/maintenance/calendar.html:23
+msgid "Nouveau Ticket"
+msgstr "Nieuw ticket"
+
 #: maintenance/templates/maintenance/calendar.html:32
 msgid "Aucun technicien enregistré."
-msgstr ""
+msgstr "Geen technicus geregistreerd."
 
 #: maintenance/templates/maintenance/technician_detail.html:23
 msgid "Dernier login"
