@@ -1,17 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Équipe Technique | SMARTOPS{% endblock %}
-{% block page_title %}Équipe Technique{% endblock %}
+{% block title %}Équipe technique | SMARTOPS{% endblock %}
+{% block page_title %}Équipe technique{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
     
-    <!-- En-tête -->
-    <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Gestion de l'Équipe</h3>
-            <p class="text-slate-500 font-medium italic">Tableau de suivi des {{ technicians.count }} techniciens enregistrés.</p>
-        </div>
+    <!-- Compteurs (le titre est dans l'en-tête de la page) -->
+    <div class="mb-6 flex justify-end">
         <div class="flex gap-4">
             <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>

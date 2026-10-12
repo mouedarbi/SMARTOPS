@@ -30,7 +30,7 @@ def user_list(request):
     users = CustomUser.objects.filter(is_deleted=False).order_by('username')
     context = {
         'users': users,
-        'page_title': "Gestion des Utilisateurs"
+        'page_title': "Utilisateurs du système"
     }
     return render(request, 'accounts/user_list.html', context)
 

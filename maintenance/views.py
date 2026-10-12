@@ -354,7 +354,7 @@ def ticket_create(request):
     
     context = {
         'form': form,
-        'page_title': "Nouveau Ticket"
+        'page_title': "Nouveau ticket d'intervention"
     }
     return render(request, 'maintenance/ticket_form.html', context)
 
@@ -381,7 +381,7 @@ def technician_list(request):
         'technicians': technicians,
         'active_count': technicians.filter(is_active=True).count(),
         'inactive_count': technicians.filter(is_active=False).count(),
-        'page_title': "Équipe Technique"
+        'page_title': "Équipe technique"
     }
     return render(request, 'maintenance/technician_list.html', context)
 from .forms import MaintenanceTicketForm, TechnicianForm
