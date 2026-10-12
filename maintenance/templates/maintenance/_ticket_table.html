@@ -5,13 +5,13 @@
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100">
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% if sortable %}{% include "maintenance/_sort_header.html" with field="id" label="ID" %}{% else %}ID{% endif %}</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Équipement / Client</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Technicien</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Type</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Équipement / Client" %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Technicien" %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Type" %}</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Créé le" as created_label %}{% if sortable %}{% include "maintenance/_sort_header.html" with field="created_at" label=created_label %}{% else %}{{ created_label }}{% endif %}</th>
                     <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Date Prévue" as planned_label %}{% if sortable %}{% include "maintenance/_sort_header.html" with field="planned_start" label=planned_label %}{% else %}{{ planned_label }}{% endif %}</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
-                    {% if show_reason %}<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Motif</th>{% endif %}
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Statut" %}</th>
+                    {% if show_reason %}<th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Motif" %}</th>{% endif %}
                     <th class="px-6 py-4 text-right"></th>
                 </tr>
             </thead>
@@ -37,7 +37,7 @@
                             <span class="font-medium text-slate-600" title="{{ ticket.technician }}">{{ ticket.technician.user.username }}</span>
                         </div>
                         {% else %}
-                        <span class="text-slate-300 italic text-sm">Non assigné</span>
+                        <span class="text-slate-300 italic text-sm">{% trans "Non assigné" %}</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">
@@ -77,11 +77,11 @@
                     {% if show_reason %}
                     <td class="px-6 py-4">
                         {% if ticket.plan_reason == 'follow_up' %}
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-orange-50 text-orange-600 border border-orange-100">Suite de l'intervention{% if ticket.origin_id %} #{{ ticket.origin_id }}{% endif %}</span>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-orange-50 text-orange-600 border border-orange-100">{% trans "Suite de l'intervention" %}{% if ticket.origin_id %} #{{ ticket.origin_id }}{% endif %}</span>
                         {% elif ticket.plan_reason == 'unassigned' %}
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-600 border border-slate-200">{% trans "Non attribué" %}</span>
                         {% else %}
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100">Créneau dépassé, non démarrée</span>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100">{% trans "Créneau dépassé, non démarrée" %}</span>
                         {% endif %}
                     </td>
                     {% endif %}
@@ -96,7 +96,7 @@
                     <td colspan="{% if show_reason %}9{% else %}8{% endif %}" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center opacity-30">
                             <i class="las la-clipboard-list text-6xl"></i>
-                            <p class="mt-4 font-bold tracking-tight">{{ empty_text|default:"Aucun ticket trouvé" }}</p>
+                            <p class="mt-4 font-bold tracking-tight">{% if empty_text %}{{ empty_text }}{% else %}{% trans "Aucun ticket trouvé" %}{% endif %}</p>
                         </div>
                     </td>
                 </tr>

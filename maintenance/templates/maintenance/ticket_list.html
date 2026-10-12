@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Liste des interventions | SMARTOPS{% endblock %}
-{% block page_title %}Liste des interventions{% endblock %}
+{% block title %}{% trans "Liste des interventions" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Liste des interventions" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -22,7 +22,7 @@
         </a>
         <a href="{% url 'ticket_create' %}" class="ml-auto mb-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
             <i class="las la-plus-circle text-xl"></i>
-            Nouveau Ticket
+            {% trans "Nouveau Ticket" %}
         </a>
     </div>
 
@@ -31,13 +31,13 @@
     <section>
         <p class="text-slate-500 text-sm mb-4">{% trans "Tickets sans technicien (dont les suites d'interventions à replanifier) et interventions planifiées non démarrées dont le créneau est dépassé depuis moins de 7 jours, de la plus ancienne date prévue à la plus récente." %}</p>
         {% if older_late %}<p class="text-sm font-semibold text-rose-600 mb-4"><i class="las la-history"></i> {{ older_late }} {% trans "autre(s) intervention(s) planifiée(s) jamais démarrée(s), créneau dépassé depuis plus de 7 jours (voir l'onglet Toutes les interventions)." %}</p>{% endif %}
-        {% include "maintenance/_ticket_table.html" with rows=to_plan show_reason=True empty_text="Aucun ticket à planifier" %}
+        {% include "maintenance/_ticket_table.html" with rows=to_plan show_reason=True empty_text=_("Aucun ticket à planifier") %}
     </section>
     {% elif tab == 'en-cours' %}
     <!-- Interventions démarrées et pas encore clôturées -->
     <section>
         <p class="text-slate-500 text-sm mb-4">{% trans "Interventions démarrées par un technicien et pas encore clôturées, quelle que soit leur date, de la plus ancienne à la plus récente : une session ouverte depuis la veille signale une clôture oubliée." %}</p>
-        {% include "maintenance/_ticket_table.html" with rows=in_progress empty_text="Aucune intervention en cours" %}
+        {% include "maintenance/_ticket_table.html" with rows=in_progress empty_text=_("Aucune intervention en cours") %}
     </section>
     {% else %}
     <!-- Filtres -->
@@ -45,41 +45,41 @@
         <form method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
             <input type="hidden" name="tab" value="toutes">
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Technicien</label>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Technicien" %}</label>
                 <select name="technician" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
-                    <option value="">Tous</option>
-                    <option value="none" {% if filters.technician == 'none' %}selected{% endif %}>Non assigné</option>
+                    <option value="">{% trans "Tous" %}</option>
+                    <option value="none" {% if filters.technician == 'none' %}selected{% endif %}>{% trans "Non assigné" %}</option>
                     {% for tech in technicians %}
                     <option value="{{ tech.id }}" {% if filters.technician == tech.id|stringformat:"s" %}selected{% endif %}>{{ tech }} ({{ tech.user.username }})</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Date</label>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Date" %}</label>
                 <input type="date" name="date" value="{{ filters.date }}" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Statut</label>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Statut" %}</label>
                 <select name="status" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
-                    <option value="">Tous</option>
+                    <option value="">{% trans "Tous" %}</option>
                     {% for value, label in status_choices %}
                     <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Lieu</label>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Lieu" %}</label>
                 <select name="building" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
-                    <option value="">Tous</option>
+                    <option value="">{% trans "Tous" %}</option>
                     {% for building in buildings %}
                     <option value="{{ building.id }}" {% if filters.building == building.id|stringformat:"s" %}selected{% endif %}>{{ building.name }} ({{ building.client.name }})</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Client</label>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Client" %}</label>
                 <select name="client" onchange="this.form.submit()" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 text-sm shadow-sm">
-                    <option value="">Tous</option>
+                    <option value="">{% trans "Tous" %}</option>
                     {% for client in clients %}
                     <option value="{{ client.id }}" {% if filters.client == client.id|stringformat:"s" %}selected{% endif %}>{{ client.name }}</option>
                     {% endfor %}
@@ -87,10 +87,10 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-grow px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
-                    <i class="las la-filter"></i> Filtrer
+                    <i class="las la-filter"></i> {% trans "Filtrer" %}
                 </button>
                 {% if filters.technician or filters.date or filters.status or filters.building or filters.client %}
-                <a href="{% url 'ticket_list' %}?tab=toutes" title="Réinitialiser les filtres" class="px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-xl transition flex items-center justify-center">
+                <a href="{% url 'ticket_list' %}?tab=toutes" title="{% trans "Réinitialiser les filtres" %}" class="px-4 py-3 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-xl transition flex items-center justify-center">
                     <i class="las la-times"></i>
                 </a>
                 {% endif %}
@@ -99,15 +99,15 @@
     </div>
 
     <div class="mb-4">
-        <h3 class="text-lg font-black text-slate-800">{% if filtering %}Résultats{% else %}Toutes les interventions{% endif %}</h3>
-        {% if not filtering %}<p class="text-slate-500 text-sm">Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur l'en-tête ID, Créé le ou Date prévue pour changer le tri.</p>{% endif %}
+        <h3 class="text-lg font-black text-slate-800">{% if filtering %}{% trans "Résultats" %}{% else %}{% trans "Toutes les interventions" %}{% endif %}</h3>
+        {% if not filtering %}<p class="text-slate-500 text-sm">{% trans "Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur l'en-tête ID, Créé le ou Date prévue pour changer le tri." %}</p>{% endif %}
     </div>
     {% include "maintenance/_ticket_table.html" with rows=tickets sortable=True %}
 
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="flex items-center justify-between mt-6">
         <p class="text-xs font-bold text-slate-400">
-            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} — {{ page_obj.paginator.count }} ticket{{ page_obj.paginator.count|pluralize }}
+            {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages count counter=page_obj.paginator.count %}Page {{ number }} sur {{ total }} — {{ counter }} ticket{% plural %}Page {{ number }} sur {{ total }} — {{ counter }} tickets{% endblocktrans %}
         </p>
         <div class="flex items-center gap-2">
             {% if page_obj.has_previous %}

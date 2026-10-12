@@ -441,6 +441,23 @@ class TicketListSectionsTestCase(TestCase):
     def _ids(self, rows):
         return [t.pk for t in rows]
 
+    def test_ticket_list_is_translated(self):
+        """Étape 4 de la traduction : onglets, motifs, filtres et tableau de la liste en FR / NL / EN."""
+        manager = CustomUser.objects.get(username='chef')
+        expected = {
+            'fr': ('Liste des interventions', 'À planifier', "Suite de l'intervention", 'Équipement / Client'),
+            'nl': ('Lijst van interventies', 'In te plannen', 'Vervolg van interventie', 'Toestel / Klant'),
+            'en': ('Work order list', 'To schedule', 'Follow-up of work order', 'Equipment / Customer'),
+        }
+        for language, texts in expected.items():
+            manager.language = language
+            manager.save()
+            response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
+            for text in texts:
+                self.assertContains(response, text, msg_prefix=language)
+        response = self.http.get(reverse('ticket_list'), {'tab': 'toutes'})
+        self.assertContains(response, 'Filter')  # dernière langue active : anglais
+
     def test_to_plan_tab(self):
         """Onglet « À planifier » : sans technicien (suites comprises) et planifiées en retard de moins de 7 jours."""
         response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})

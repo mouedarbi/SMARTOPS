@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:38+0200\n"
+"POT-Creation-Date: 2026-10-12 16:39+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -24,6 +24,8 @@ msgid "Gestionnaire"
 msgstr "Manager"
 
 #: accounts/models.py:24 maintenance/models.py:44 maintenance/models.py:73
+#: maintenance/templates/maintenance/_ticket_table.html:9
+#: maintenance/templates/maintenance/ticket_list.html:48
 #: system/templates/system/dashboard.html:93
 msgid "Technicien"
 msgstr "Technician"
@@ -156,8 +158,9 @@ msgid "Date de création"
 msgstr ""
 
 #: inventory/models.py:29 inventory/models.py:39
+#: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
-msgstr ""
+msgstr "Customer"
 
 #: inventory/models.py:30 system/templates/base.html:129
 #: system/templates/system/dashboard.html:68
@@ -205,8 +208,9 @@ msgid "Adresse du lieu"
 msgstr ""
 
 #: inventory/models.py:55 inventory/models.py:120
+#: maintenance/templates/maintenance/ticket_list.html:71
 msgid "Lieu"
-msgstr ""
+msgstr "Site"
 
 #: inventory/models.py:56 system/templates/base.html:134
 #: system/templates/system/dashboard.html:57
@@ -233,12 +237,13 @@ msgstr ""
 msgid "Nombre"
 msgstr ""
 
-#: inventory/models.py:98
+#: inventory/models.py:98 maintenance/templates/maintenance/ticket_list.html:58
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: inventory/models.py:100 inventory/models.py:122
 #: maintenance/templates/maintenance/_planning_legend.html:8
+#: maintenance/templates/maintenance/_ticket_table.html:10
 msgid "Type"
 msgstr "Type"
 
@@ -393,6 +398,8 @@ msgstr "Start longitude"
 
 #: maintenance/models.py:88
 #: maintenance/templates/maintenance/_planning_legend.html:14
+#: maintenance/templates/maintenance/_ticket_table.html:13
+#: maintenance/templates/maintenance/ticket_list.html:62
 #: system/templates/system/dashboard.html:94
 msgid "Statut"
 msgstr "Status"
@@ -477,30 +484,57 @@ msgstr ""
 msgid "Maintenance préventive"
 msgstr "Preventive maintenance"
 
+#: maintenance/templates/maintenance/_ticket_table.html:8
+msgid "Équipement / Client"
+msgstr "Equipment / Customer"
+
 #: maintenance/templates/maintenance/_ticket_table.html:11
 msgid "Créé le"
-msgstr ""
+msgstr "Created on"
 
 #: maintenance/templates/maintenance/_ticket_table.html:12
 msgid "Date Prévue"
-msgstr ""
+msgstr "Planned date"
+
+#: maintenance/templates/maintenance/_ticket_table.html:14
+msgid "Motif"
+msgstr "Reason"
+
+#: maintenance/templates/maintenance/_ticket_table.html:40
+#: maintenance/templates/maintenance/ticket_detail.html:186
+#: maintenance/templates/maintenance/ticket_list.html:51
+#: system/templates/system/dashboard.html:106
+msgid "Non assigné"
+msgstr "Unassigned"
 
 #: maintenance/templates/maintenance/_ticket_table.html:58
 msgid "EN DIRECT depuis"
-msgstr ""
+msgstr "LIVE since"
 
 #: maintenance/templates/maintenance/_ticket_table.html:59
 #: maintenance/templates/maintenance/_ticket_table.html:64
 msgid "Prévu"
-msgstr ""
+msgstr "Planned"
 
 #: maintenance/templates/maintenance/_ticket_table.html:62
 msgid "Réalisé le"
-msgstr ""
+msgstr "Carried out on"
+
+#: maintenance/templates/maintenance/_ticket_table.html:80
+msgid "Suite de l'intervention"
+msgstr "Follow-up of work order"
 
 #: maintenance/templates/maintenance/_ticket_table.html:82
 msgid "Non attribué"
-msgstr ""
+msgstr "Unassigned"
+
+#: maintenance/templates/maintenance/_ticket_table.html:84
+msgid "Créneau dépassé, non démarrée"
+msgstr "Slot passed, not started"
+
+#: maintenance/templates/maintenance/_ticket_table.html:99
+msgid "Aucun ticket trouvé"
+msgstr "No tickets found"
 
 #: maintenance/templates/maintenance/calendar.html:4
 #: maintenance/templates/maintenance/calendar.html:5
@@ -514,6 +548,7 @@ msgid "Planning"
 msgstr "Schedule"
 
 #: maintenance/templates/maintenance/calendar.html:23
+#: maintenance/templates/maintenance/ticket_list.html:25
 msgid "Nouveau Ticket"
 msgstr "New ticket"
 
@@ -592,11 +627,6 @@ msgstr ""
 msgid "Ticket de suite"
 msgstr ""
 
-#: maintenance/templates/maintenance/ticket_detail.html:186
-#: system/templates/system/dashboard.html:106
-msgid "Non assigné"
-msgstr "Unassigned"
-
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
 msgstr ""
@@ -634,13 +664,19 @@ msgid ""
 "le ticket."
 msgstr ""
 
+#: maintenance/templates/maintenance/ticket_list.html:4
+#: maintenance/templates/maintenance/ticket_list.html:5
+msgid "Liste des interventions"
+msgstr "Work order list"
+
 #: maintenance/templates/maintenance/ticket_list.html:13
 msgid "À planifier"
-msgstr ""
+msgstr "To schedule"
 
 #: maintenance/templates/maintenance/ticket_list.html:21
+#: maintenance/templates/maintenance/ticket_list.html:102
 msgid "Toutes les interventions"
-msgstr ""
+msgstr "All work orders"
 
 #: maintenance/templates/maintenance/ticket_list.html:32
 msgid ""
@@ -648,12 +684,21 @@ msgid ""
 "interventions planifiées non démarrées dont le créneau est dépassé depuis "
 "moins de 7 jours, de la plus ancienne date prévue à la plus récente."
 msgstr ""
+"Tickets without a technician (including follow-ups of work orders to "
+"reschedule) and scheduled work orders not started whose slot passed less "
+"than 7 days ago, from the oldest to the most recent planned date."
 
 #: maintenance/templates/maintenance/ticket_list.html:33
 msgid ""
 "autre(s) intervention(s) planifiée(s) jamais démarrée(s), créneau dépassé "
 "depuis plus de 7 jours (voir l'onglet Toutes les interventions)."
 msgstr ""
+"other scheduled work order(s) never started, slot passed more than 7 days "
+"ago (see the All work orders tab)."
+
+#: maintenance/templates/maintenance/ticket_list.html:34
+msgid "Aucun ticket à planifier"
+msgstr "No tickets to schedule"
 
 #: maintenance/templates/maintenance/ticket_list.html:39
 msgid ""
@@ -661,6 +706,47 @@ msgid ""
 "que soit leur date, de la plus ancienne à la plus récente : une session "
 "ouverte depuis la veille signale une clôture oubliée."
 msgstr ""
+"Work orders started by a technician and not yet closed, whatever their "
+"date, from the oldest to the most recent: a session open since the day "
+"before points to a forgotten closure."
+
+#: maintenance/templates/maintenance/ticket_list.html:40
+msgid "Aucune intervention en cours"
+msgstr "No work orders in progress"
+
+#: maintenance/templates/maintenance/ticket_list.html:50
+#: maintenance/templates/maintenance/ticket_list.html:64
+#: maintenance/templates/maintenance/ticket_list.html:73
+#: maintenance/templates/maintenance/ticket_list.html:82
+msgid "Tous"
+msgstr "All"
+
+#: maintenance/templates/maintenance/ticket_list.html:90
+msgid "Filtrer"
+msgstr "Filter"
+
+#: maintenance/templates/maintenance/ticket_list.html:93
+msgid "Réinitialiser les filtres"
+msgstr "Reset filters"
+
+#: maintenance/templates/maintenance/ticket_list.html:102
+msgid "Résultats"
+msgstr "Results"
+
+#: maintenance/templates/maintenance/ticket_list.html:103
+msgid ""
+"Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur "
+"l'en-tête ID, Créé le ou Date prévue pour changer le tri."
+msgstr ""
+"By default from the most recent to the oldest planned date. Click the ID, "
+"Created on or Planned date header to change the sort order."
+
+#: maintenance/templates/maintenance/ticket_list.html:110
+#, python-format
+msgid "Page %(number)s sur %(total)s — %(counter)s ticket"
+msgid_plural "Page %(number)s sur %(total)s — %(counter)s tickets"
+msgstr[0] "Page %(number)s of %(total)s — %(counter)s ticket"
+msgstr[1] "Page %(number)s of %(total)s — %(counter)s tickets"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4
