@@ -227,6 +227,115 @@ class TicketAPITestCase(TestCase):
         r2 = self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {})
         self.assertEqual(r2.status_code, status.HTTP_400_BAD_REQUEST)
 
+    # --- Heures terrain envoyées en différé par l'application hors-ligne ---
+
+    def _start(self, started_at=None):
+        data = {'started_at': started_at.isoformat()} if started_at else {}
+        return self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', data, format='json')
+
+    def _stop(self, ended_at=None, status_value='done'):
+        data = {'status': status_value, 'intervention_report': 'Fait.'}
+        if ended_at:
+            data['ended_at'] = ended_at.isoformat()
+        return self.api.post(f'/api/v1/tickets/{self.ticket.id}/stop/', data, format='json')
+
+    def test_offline_start_keeps_field_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=2)).replace(microsecond=0)
+        r = self._start(started_at)
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.effective_start, started_at)
+
+    def test_offline_stop_keeps_field_time_and_duration(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=2)).replace(microsecond=0)
+        ended_at = started_at + timedelta(minutes=45)
+        self._start(started_at)
+        r = self._stop(ended_at)
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'done')
+        self.assertEqual(self.ticket.effective_end, ended_at)
+        self.assertEqual(self.ticket.effective_end - self.ticket.effective_start, timedelta(minutes=45))
+
+    def test_offline_reschedule_uses_field_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=3)).replace(microsecond=0)
+        ended_at = started_at + timedelta(minutes=30)
+        self._start(started_at)
+        r = self._stop(ended_at, status_value='to_reschedule')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'to_reschedule')
+        self.assertEqual(self.ticket.effective_end, ended_at)
+        follow_up = MaintenanceTicket.objects.exclude(pk=self.ticket.pk).get()
+        self.assertEqual(follow_up.status, 'pending')
+        self.assertIn(f"{timezone.localtime(ended_at):%d/%m/%Y à %H:%M}", follow_up.description)
+
+    def test_start_stop_without_field_time_uses_server_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        before = timezone.now()
+        self.assertEqual(self._start().status_code, status.HTTP_200_OK)
+        self.assertEqual(self._stop().status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertGreaterEqual(self.ticket.effective_start, before)
+        self.assertGreaterEqual(self.ticket.effective_end, self.ticket.effective_start)
+
+    def test_null_field_time_uses_server_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        before = timezone.now()
+        r = self.api.post(f'/api/v1/tickets/{self.ticket.id}/start/', {'started_at': None}, format='json')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertGreaterEqual(self.ticket.effective_start, before)
+
+    def test_start_refuses_future_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        r = self._start(timezone.now() + timedelta(hours=1))
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', r.data)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'planned')
+        self.assertIsNone(self.ticket.effective_start)
+
+    def test_start_refuses_time_older_than_7_days(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        r = self._start(timezone.now() - timedelta(days=8))
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', r.data)
+
+    def test_stop_refuses_future_or_old_time(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        self._start(timezone.now() - timedelta(hours=1))
+        for ended_at in (timezone.now() + timedelta(hours=1), timezone.now() - timedelta(days=8)):
+            r = self._stop(ended_at)
+            self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn('detail', r.data)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')
+
+    def test_stop_refuses_end_before_or_at_start(self):
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=1)).replace(microsecond=0)
+        self._start(started_at)
+        for ended_at in (started_at, started_at - timedelta(minutes=2)):
+            r = self._stop(ended_at)
+            self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn('detail', r.data)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, 'in_progress')
+        self.assertIsNone(self.ticket.effective_end)
+
+    def test_replayed_offline_start_is_refused(self):
+        """Rejeu d'une synchronisation : le second start renvoie toujours 400."""
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {self.tech_token}')
+        started_at = (timezone.now() - timedelta(hours=1)).replace(microsecond=0)
+        self.assertEqual(self._start(started_at).status_code, status.HTTP_200_OK)
+        self.assertEqual(self._start(started_at).status_code, status.HTTP_400_BAD_REQUEST)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.effective_start, started_at)
+
     def test_my_interventions_uses_effective_date(self):
         now = timezone.now()
         # Démarrage effectif aujourd'hui (heure locale), même si le test tourne juste après minuit.
