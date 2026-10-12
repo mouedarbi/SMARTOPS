@@ -69,6 +69,10 @@ class MyProfileTests(TestCase):
         self.assertContains(r, '@chef')
         self.assertContains(r, 'marie@example.com')
         self.assertContains(r, 'Gestionnaire')
+        # En-tête : avatar aux initiales, menu avec le profil et la déconnexion.
+        self.assertContains(r, 'id="user-menu"')
+        self.assertContains(r, '>MD</span>')
+        self.assertContains(r, reverse('logout'))
 
     def test_update_own_details_only(self):
         r = self.client.post(reverse('my_profile'), {

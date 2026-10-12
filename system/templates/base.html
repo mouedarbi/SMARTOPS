@@ -156,17 +156,20 @@
 
             </nav>
 
-            <!-- User / Instance Footer -->
+            <!-- Pied : connexion au Portail et identifiant de l'installation -->
             <div class="p-6 border-t border-slate-800 bg-slate-950/50">
-                <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center text-slate-400 font-bold text-xs uppercase">
-                        {{ user.username|slice:":2" }}
-                    </div>
-                    <div class="overflow-hidden">
-                        <p class="text-xs font-bold text-white truncate">{{ user.username }}</p>
-                        <p class="text-[9px] text-slate-500 font-medium truncate">ID: {{ config.installation_uuid|slice:":8" }}...</p>
-                    </div>
+                {% if config.last_sync_portal %}
+                <div class="flex items-center gap-2" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">Connecté au Portail</span>
                 </div>
+                {% else %}
+                <div class="flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Pas de connexion portail</span>
+                </div>
+                {% endif %}
+                <p class="mt-2 text-[9px] text-slate-500 font-medium truncate">ID : {{ config.installation_uuid|slice:":8" }}...</p>
             </div>
         </aside>
 
@@ -185,24 +188,32 @@
                     <h2 class="text-lg font-bold text-slate-800 truncate">{% block page_title %}Dashboard{% endblock %}</h2>
                 </div>
 
-                <div class="flex items-center gap-3 sm:gap-6">
-                    {% if config.last_sync_portal %}
-                    <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-sm"></span>
-                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-600">Connecté au Portail</span>
+                <!-- Utilisateur connecté : avatar + menu (profil, déconnexion) -->
+                <div class="relative no-print">
+                    <button type="button" id="user-menu-toggle" onclick="toggleUserMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="user-menu"
+                            class="flex items-center gap-3 p-1 pr-2 rounded-full hover:bg-slate-100 transition">
+                        <span class="hidden sm:block text-right leading-tight">
+                            <span class="block text-sm font-bold text-slate-800">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="block text-[10px] font-bold text-slate-400">@{{ user.username }}</span>
+                        </span>
+                        <span class="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-md shadow-blue-200">{{ user.initials }}</span>
+                        <i class="las la-angle-down text-slate-400"></i>
+                    </button>
+                    <div id="user-menu" hidden class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                        <div class="px-4 py-3 border-b border-slate-100">
+                            <p class="text-sm font-bold text-slate-800 truncate">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-xs text-slate-400 truncate">@{{ user.username }} · {{ user.get_role_display }}</p>
+                        </div>
+                        <a href="{% url 'my_profile' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition">
+                            <i class="las la-user-circle text-xl"></i> Mon profil
+                        </a>
+                        <form action="{% url 'logout' %}" method="post" id="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 transition">
+                                <i class="las la-sign-out-alt text-xl"></i> Déconnexion
+                            </button>
+                        </form>
                     </div>
-                    {% else %}
-                    <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
-                        <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
-                        <span class="text-[10px] font-black uppercase tracking-wider text-amber-600">Pas de connexion portail</span>
-                    </div>
-                    {% endif %}
-                    <form action="{% url 'logout' %}" method="post" id="logout-form" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-slate-400 hover:text-red-600 transition p-0 bg-transparent border-none cursor-pointer">
-                            <i class="las la-sign-out-alt text-2xl"></i>
-                        </button>
-                    </form>
                 </div>
             </header>
 
@@ -259,7 +270,17 @@
         }
         function closeSidebar() { setSidebar(false); }
 
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
+        // Menu de l'utilisateur connecté (en-tête) : clic sur l'avatar, fermé par un clic ailleurs ou Échap.
+        function setUserMenu(open) {
+            document.getElementById('user-menu').hidden = !open;
+            document.getElementById('user-menu-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        function toggleUserMenu() { setUserMenu(document.getElementById('user-menu').hidden); }
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#user-menu') && !e.target.closest('#user-menu-toggle')) setUserMenu(false);
+        });
+
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeSidebar(); setUserMenu(false); } });
         document.querySelectorAll('#app-sidebar a').forEach(function (link) {
             link.addEventListener('click', closeSidebar);
         });
