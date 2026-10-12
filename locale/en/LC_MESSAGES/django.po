@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:57+0200\n"
+"POT-Creation-Date: 2026-10-12 21:59+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -23,7 +23,9 @@ msgstr "Administrator"
 msgid "Gestionnaire"
 msgstr "Manager"
 
-#: accounts/models.py:24 maintenance/models.py:44 maintenance/models.py:73
+#: accounts/models.py:24
+#: inventory/templates/inventory/equipment_detail.html:106
+#: maintenance/models.py:44 maintenance/models.py:73
 #: maintenance/templates/maintenance/_ticket_table.html:9
 #: maintenance/templates/maintenance/technician_list.html:30
 #: maintenance/templates/maintenance/ticket_list.html:48
@@ -94,6 +96,7 @@ msgstr "Last name"
 #: accounts/templates/accounts/profile.html:71
 #: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
+#: inventory/templates/inventory/equipment_form.html:36
 msgid "Enregistrer"
 msgstr "Save"
 
@@ -198,6 +201,7 @@ msgstr "Creation date"
 
 #: inventory/models.py:29 inventory/models.py:39
 #: inventory/templates/inventory/building_form.html:12
+#: inventory/templates/inventory/equipment_detail.html:26
 #: maintenance/templates/maintenance/ticket_detail.html:105
 #: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
@@ -250,6 +254,7 @@ msgid "Adresse du lieu"
 msgstr "Site address"
 
 #: inventory/models.py:55 inventory/models.py:120
+#: inventory/templates/inventory/equipment_form.html:12
 #: maintenance/templates/maintenance/ticket_detail.html:109
 #: maintenance/templates/maintenance/ticket_list.html:71
 msgid "Lieu"
@@ -261,6 +266,7 @@ msgid "Lieux"
 msgstr "Sites"
 
 #: inventory/models.py:82
+#: inventory/templates/inventory/equipment_type_list.html:25
 msgid "Nom du type"
 msgstr "Type name"
 
@@ -268,7 +274,10 @@ msgstr "Type name"
 msgid "Type d'équipement"
 msgstr "Equipment type"
 
-#: inventory/models.py:86 system/templates/base.html:154
+#: inventory/models.py:86
+#: inventory/templates/inventory/equipment_type_list.html:4
+#: inventory/templates/inventory/equipment_type_list.html:5
+#: system/templates/base.html:154
 msgid "Types d'équipement"
 msgstr "Equipment types"
 
@@ -285,6 +294,7 @@ msgid "Date"
 msgstr "Date"
 
 #: inventory/models.py:100 inventory/models.py:122
+#: inventory/templates/inventory/equipment_detail.html:103
 #: maintenance/templates/maintenance/_planning_legend.html:8
 #: maintenance/templates/maintenance/_ticket_table.html:10
 #: maintenance/templates/maintenance/ticket_detail.html:132
@@ -301,6 +311,7 @@ msgid "Type de champ"
 msgstr "Field type"
 
 #: inventory/models.py:103
+#: inventory/templates/inventory/equipment_type_detail.html:26
 msgid "Requis"
 msgstr "Required"
 
@@ -316,11 +327,12 @@ msgstr "Custom fields"
 msgid "Nom de l'équipement"
 msgstr "Equipment name"
 
-#: inventory/models.py:123
+#: inventory/models.py:123 inventory/templates/inventory/equipment_list.html:56
 msgid "Numéro de série"
 msgstr "Serial number"
 
 #: inventory/models.py:124
+#: inventory/templates/inventory/equipment_detail.html:62
 msgid "Date d'installation"
 msgstr "Installation date"
 
@@ -355,6 +367,7 @@ msgstr "Equipment"
 
 #: inventory/templates/inventory/building_detail.html:4
 #: inventory/templates/inventory/building_detail.html:5
+#: inventory/templates/inventory/equipment_detail.html:40
 msgid "Fiche du lieu"
 msgstr "Site record"
 
@@ -386,6 +399,7 @@ msgid "Modifier"
 msgstr "Edit"
 
 #: inventory/templates/inventory/building_detail.html:42
+#: inventory/templates/inventory/equipment_detail.html:21
 msgid "Localisation"
 msgstr "Location"
 
@@ -408,6 +422,7 @@ msgid "Nouvel Appareil"
 msgstr "New equipment"
 
 #: inventory/templates/inventory/building_detail.html:83
+#: inventory/templates/inventory/equipment_list.html:42
 msgid "Nom de l'appareil"
 msgstr "Equipment name"
 
@@ -423,6 +438,8 @@ msgstr "Serial no."
 #: inventory/templates/inventory/building_list.html:69
 #: inventory/templates/inventory/client_detail.html:103
 #: inventory/templates/inventory/client_list.html:73
+#: inventory/templates/inventory/equipment_list.html:97
+#: inventory/templates/inventory/equipment_type_list.html:26
 msgid "Actions"
 msgstr "Actions"
 
@@ -445,6 +462,7 @@ msgstr "Work site address"
 
 #: inventory/templates/inventory/building_form.html:38
 #: inventory/templates/inventory/client_form.html:16
+#: inventory/templates/inventory/equipment_form.html:33
 #: maintenance/templates/maintenance/ticket_form.html:174
 msgid "Annuler"
 msgstr "Cancel"
@@ -460,17 +478,20 @@ msgstr "Search for a site (name, address, customer)..."
 
 #: inventory/templates/inventory/building_list.html:23
 #: inventory/templates/inventory/client_list.html:23
+#: inventory/templates/inventory/equipment_list.html:23
 #: maintenance/templates/maintenance/ticket_list.html:93
 msgid "Réinitialiser les filtres"
 msgstr "Reset filters"
 
 #: inventory/templates/inventory/building_list.html:29
 #: inventory/templates/inventory/client_list.html:29
+#: inventory/templates/inventory/equipment_list.html:29
 msgid "Rechercher"
 msgstr "Search"
 
 #: inventory/templates/inventory/building_list.html:88
 #: inventory/templates/inventory/client_list.html:89
+#: inventory/templates/inventory/equipment_list.html:135
 msgid "Détails"
 msgstr "Details"
 
@@ -480,27 +501,32 @@ msgstr "No sites found."
 
 #: inventory/templates/inventory/building_list.html:110
 #: inventory/templates/inventory/client_list.html:111
+#: inventory/templates/inventory/equipment_list.html:154
 #, python-format
 msgid "Page %(number)s sur %(total)s"
 msgstr "Page %(number)s of %(total)s"
 
 #: inventory/templates/inventory/building_list.html:115
 #: inventory/templates/inventory/client_list.html:116
+#: inventory/templates/inventory/equipment_list.html:159
 msgid "Première page"
 msgstr "First page"
 
 #: inventory/templates/inventory/building_list.html:119
 #: inventory/templates/inventory/client_list.html:120
+#: inventory/templates/inventory/equipment_list.html:163
 msgid "Précédent"
 msgstr "Previous"
 
 #: inventory/templates/inventory/building_list.html:137
 #: inventory/templates/inventory/client_list.html:138
+#: inventory/templates/inventory/equipment_list.html:181
 msgid "Suivant"
 msgstr "Next"
 
 #: inventory/templates/inventory/building_list.html:139
 #: inventory/templates/inventory/client_list.html:140
+#: inventory/templates/inventory/equipment_list.html:183
 msgid "Dernière page"
 msgstr "Last page"
 
@@ -593,6 +619,149 @@ msgstr "Date added"
 #: inventory/templates/inventory/client_list.html:99
 msgid "Aucun client trouvé."
 msgstr "No customers found."
+
+#: inventory/templates/inventory/equipment_detail.html:4
+#: inventory/templates/inventory/equipment_detail.html:5
+msgid "Fiche Technique Appareil"
+msgstr "Equipment technical record"
+
+#: inventory/templates/inventory/equipment_detail.html:34
+msgid "Imprimer Étiquette QR"
+msgstr "Print QR label"
+
+#: inventory/templates/inventory/equipment_detail.html:37
+msgid "Certificat de Visite"
+msgstr "Visit certificate"
+
+#: inventory/templates/inventory/equipment_detail.html:43
+msgid "Ajouter Appareil"
+msgstr "Add equipment"
+
+#: inventory/templates/inventory/equipment_detail.html:56
+msgid "Caractéristiques"
+msgstr "Characteristics"
+
+#: inventory/templates/inventory/equipment_detail.html:71
+#, python-format
+msgid "Attributs %(type)s"
+msgstr "%(type)s attributes"
+
+#: inventory/templates/inventory/equipment_detail.html:81
+msgid "Aucun attribut spécifique renseigné pour cet appareil."
+msgstr "No specific attributes entered for this equipment."
+
+#: inventory/templates/inventory/equipment_detail.html:92
+msgid "Historique Interventions"
+msgstr "Work order history"
+
+#: inventory/templates/inventory/equipment_detail.html:95
+msgid "Trié par date de planification"
+msgstr "Sorted by planned date"
+
+#: inventory/templates/inventory/equipment_detail.html:102
+msgid "ID Ticket"
+msgstr "Ticket ID"
+
+#: inventory/templates/inventory/equipment_detail.html:104
+msgid "Date prévue"
+msgstr "Planned date"
+
+#: inventory/templates/inventory/equipment_detail.html:105
+#: maintenance/models.py:88
+#: maintenance/templates/maintenance/_planning_legend.html:14
+#: maintenance/templates/maintenance/_ticket_table.html:13
+#: maintenance/templates/maintenance/technician_list.html:42
+#: maintenance/templates/maintenance/ticket_list.html:62
+#: system/templates/system/dashboard.html:94
+msgid "Statut"
+msgstr "Status"
+
+#: inventory/templates/inventory/equipment_detail.html:117
+msgid "Préventive"
+msgstr "Preventive"
+
+#: inventory/templates/inventory/equipment_detail.html:119
+msgid "Dépannage"
+msgstr "Breakdown"
+
+#: inventory/templates/inventory/equipment_detail.html:121
+#: maintenance/models.py:69
+#: maintenance/templates/maintenance/_planning_legend.html:11
+msgid "Urgence"
+msgstr "Emergency"
+
+#: inventory/templates/inventory/equipment_detail.html:127
+#: maintenance/models.py:62
+#: maintenance/templates/maintenance/_planning_legend.html:17
+msgid "Terminé"
+msgstr "Completed"
+
+#: inventory/templates/inventory/equipment_detail.html:135
+#: maintenance/templates/maintenance/_ticket_table.html:40
+#: maintenance/templates/maintenance/ticket_detail.html:186
+#: maintenance/templates/maintenance/ticket_list.html:51
+#: system/templates/system/dashboard.html:106
+msgid "Non assigné"
+msgstr "Unassigned"
+
+#: inventory/templates/inventory/equipment_detail.html:141
+msgid "Aucune intervention enregistrée pour cet appareil."
+msgstr "No work orders recorded for this equipment."
+
+#: inventory/templates/inventory/equipment_form.html:25
+msgid "Attributs du type"
+msgstr "Type attributes"
+
+#: inventory/templates/inventory/equipment_list.html:4
+#: inventory/templates/inventory/equipment_list.html:5
+msgid "Gestion des Équipements"
+msgstr "Equipment management"
+
+#: inventory/templates/inventory/equipment_list.html:18
+msgid "Rechercher un appareil (nom, S/N, type, lieu, client)..."
+msgstr "Search for equipment (name, S/N, type, site, customer)..."
+
+#: inventory/templates/inventory/equipment_list.html:70
+msgid "Type / Catégorie"
+msgstr "Type / Category"
+
+#: inventory/templates/inventory/equipment_list.html:82
+msgid "Lieu & Client"
+msgstr "Site & customer"
+
+#: inventory/templates/inventory/equipment_list.html:85
+msgid "Installation"
+msgstr "Installation"
+
+#: inventory/templates/inventory/equipment_list.html:142
+msgid "Aucun appareil trouvé."
+msgstr "No equipment found."
+
+#: inventory/templates/inventory/equipment_type_detail.html:4
+#: inventory/templates/inventory/equipment_type_detail.html:5
+#, python-format
+msgid "Champs : %(name)s"
+msgstr "Fields: %(name)s"
+
+#: inventory/templates/inventory/equipment_type_detail.html:10
+msgid "Ajouter un champ personnalisé"
+msgstr "Add a custom field"
+
+#: inventory/templates/inventory/equipment_type_detail.html:15
+msgid "Ajouter Champ"
+msgstr "Add field"
+
+#: inventory/templates/inventory/equipment_type_detail.html:21
+msgid "Champs actuels"
+msgstr "Current fields"
+
+#: inventory/templates/inventory/equipment_type_list.html:15
+msgid "Créer Type"
+msgstr "Create type"
+
+#: inventory/templates/inventory/equipment_type_list.html:34
+msgid "Gérer Champs"
+msgstr "Manage fields"
 
 #: inventory/views.py:89
 msgid "Modifier Client"
@@ -691,11 +860,6 @@ msgstr "In progress"
 msgid "À replanifier"
 msgstr "To reschedule"
 
-#: maintenance/models.py:62
-#: maintenance/templates/maintenance/_planning_legend.html:17
-msgid "Terminé"
-msgstr "Completed"
-
 #: maintenance/models.py:63
 msgid "Annulé"
 msgstr "Canceled"
@@ -708,11 +872,6 @@ msgstr "Preventive maintenance"
 #: maintenance/templates/maintenance/_planning_legend.html:10
 msgid "Dépannage / Réparation"
 msgstr "Breakdown / Repair"
-
-#: maintenance/models.py:69
-#: maintenance/templates/maintenance/_planning_legend.html:11
-msgid "Urgence"
-msgstr "Emergency"
 
 #: maintenance/models.py:74
 msgid "Type d'intervention"
@@ -741,15 +900,6 @@ msgstr "Start latitude"
 #: maintenance/models.py:86
 msgid "Longitude de début"
 msgstr "Start longitude"
-
-#: maintenance/models.py:88
-#: maintenance/templates/maintenance/_planning_legend.html:14
-#: maintenance/templates/maintenance/_ticket_table.html:13
-#: maintenance/templates/maintenance/technician_list.html:42
-#: maintenance/templates/maintenance/ticket_list.html:62
-#: system/templates/system/dashboard.html:94
-msgid "Statut"
-msgstr "Status"
 
 #: maintenance/models.py:89
 msgid "Description du problème / travail"
@@ -855,13 +1005,6 @@ msgstr "Planned date"
 #: maintenance/templates/maintenance/_ticket_table.html:14
 msgid "Motif"
 msgstr "Reason"
-
-#: maintenance/templates/maintenance/_ticket_table.html:40
-#: maintenance/templates/maintenance/ticket_detail.html:186
-#: maintenance/templates/maintenance/ticket_list.html:51
-#: system/templates/system/dashboard.html:106
-msgid "Non assigné"
-msgstr "Unassigned"
 
 #: maintenance/templates/maintenance/_ticket_table.html:58
 msgid "EN DIRECT depuis"

@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Détails Appareil - {{ equipment.name }} | SMARTOPS{% endblock %}
-{% block page_title %}Fiche Technique Appareil{% endblock %}
+{% block title %}{% trans "Fiche Technique Appareil" %} - {{ equipment.name }} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Fiche Technique Appareil" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-8">
@@ -17,12 +18,12 @@
             </div>
             <h2 class="text-3xl font-black text-slate-800 mt-2">{{ equipment.name }}</h2>
             <p class="text-sm text-slate-500 font-semibold mt-2">
-                <i class="las la-map-marker mr-1 text-slate-400"></i> Localisation : 
+                <i class="las la-map-marker mr-1 text-slate-400"></i> {% trans "Localisation" %} : 
                 <a href="{% url 'building_detail' equipment.building.pk %}" class="text-blue-600 hover:underline font-bold">
                     {{ equipment.building.name }}
                 </a>
                 <span class="text-slate-300 mx-2">|</span>
-                <i class="las la-user-tie mr-1 text-slate-400"></i> Client : 
+                <i class="las la-user-tie mr-1 text-slate-400"></i> {% trans "Client" %} : 
                 <a href="{% url 'client_detail' equipment.building.client.pk %}" class="text-blue-600 hover:underline font-bold">
                     {{ equipment.building.client.name }}
                 </a>
@@ -30,16 +31,16 @@
         </div>
         <div class="flex flex-wrap gap-3">
             <a href="{% url 'equipment_label' equipment.pk %}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center shadow-md shadow-blue-600/20">
-                <i class="las la-tag text-xl mr-2"></i>Imprimer Étiquette QR
+                <i class="las la-tag text-xl mr-2"></i>{% trans "Imprimer Étiquette QR" %}
             </a>
             <a href="{% url 'equipment_public_report' equipment.serial_number %}" target="_blank" class="bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
-                <i class="las la-certificate text-xl mr-2"></i>Certificat de Visite
+                <i class="las la-certificate text-xl mr-2"></i>{% trans "Certificat de Visite" %}
             </a>
             <a href="{% url 'building_detail' equipment.building.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
-                <i class="las la-arrow-left text-lg mr-2"></i>Fiche du lieu
+                <i class="las la-arrow-left text-lg mr-2"></i>{% trans "Fiche du lieu" %}
             </a>
             <a href="{% url 'equipment_create' %}?building={{ equipment.building.pk }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
-                <i class="las la-plus text-lg mr-2"></i>Ajouter Appareil
+                <i class="las la-plus text-lg mr-2"></i>{% trans "Ajouter Appareil" %}
             </a>
         </div>
     </div>
@@ -52,13 +53,13 @@
             <div>
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <i class="las la-sliders-h text-xl text-blue-600"></i>
-                    Caractéristiques
+                    {% trans "Caractéristiques" %}
                 </h3>
             </div>
             
             <div class="space-y-4 pt-4 border-t border-slate-50">
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Date d'installation</label>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Date d'installation" %}</label>
                     <p class="text-sm font-bold text-slate-700 mt-1">{{ equipment.installed_at|date:"d F Y" }}</p>
                 </div>
             </div>
@@ -67,7 +68,7 @@
             <div class="space-y-4 pt-4 border-t border-slate-50">
                 <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
                     <i class="las la-cog text-sm"></i>
-                    Attributs {{ equipment.equipment_type.name }}
+                    {% blocktrans with type=equipment.equipment_type.name %}Attributs {{ type }}{% endblocktrans %}
                 </h4>
                 
                 <div class="space-y-3">
@@ -77,7 +78,7 @@
                         <span class="font-bold text-slate-700">{{ value }}</span>
                     </div>
                     {% empty %}
-                    <p class="text-xs text-slate-400 italic">Aucun attribut spécifique renseigné pour cet appareil.</p>
+                    <p class="text-xs text-slate-400 italic">{% trans "Aucun attribut spécifique renseigné pour cet appareil." %}</p>
                     {% endfor %}
                 </div>
             </div>
@@ -88,21 +89,21 @@
             <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
                 <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                     <i class="las la-history text-2xl text-blue-600"></i>
-                    Historique Interventions ({{ tickets.count }})
+                    {% trans "Historique Interventions" %} ({{ tickets.count }})
                 </h3>
                 <!-- Lien fictif ou réel vers création de ticket pour cet appareil -->
-                <span class="text-xs text-slate-400 font-semibold">Trié par date de planification</span>
+                <span class="text-xs text-slate-400 font-semibold">{% trans "Trié par date de planification" %}</span>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest pl-8">ID Ticket</th>
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Type</th>
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Date prévue</th>
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Statut</th>
-                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Technicien</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest pl-8">{% trans "ID Ticket" %}</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "Type" %}</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "Date prévue" %}</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "Statut" %}</th>
+                            <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">{% trans "Technicien" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,17 +114,17 @@
                             </td>
                             <td class="p-4 font-semibold text-slate-600">
                                 {% if ticket.type == 'maintenance' %}
-                                    <span class="text-blue-600 font-semibold">Préventive</span>
+                                    <span class="text-blue-600 font-semibold">{% trans "Préventive" %}</span>
                                 {% elif ticket.type == 'repair' %}
-                                    <span class="text-amber-600 font-semibold">Dépannage</span>
+                                    <span class="text-amber-600 font-semibold">{% trans "Dépannage" %}</span>
                                 {% else %}
-                                    <span class="text-rose-600 font-semibold">Urgence</span>
+                                    <span class="text-rose-600 font-semibold">{% trans "Urgence" %}</span>
                                 {% endif %}
                             </td>
                             <td class="p-4 text-slate-600">{{ ticket.planned_start|date:"d/m/Y H:i" }}</td>
                             <td class="p-4">
                                 {% if ticket.status == 'done' %}
-                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-100">Terminé</span>
+                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-100">{% trans "Terminé" %}</span>
                                 {% elif ticket.status == 'planned' or ticket.status == 'in_progress' %}
                                     <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full border border-blue-100">{{ ticket.get_status_display }}</span>
                                 {% else %}
@@ -131,13 +132,13 @@
                                 {% endif %}
                             </td>
                             <td class="p-4 text-right pr-8 font-bold text-slate-600">
-                                {{ ticket.technician|default:"Non assigné" }}
+                                {% if ticket.technician %}{{ ticket.technician }}{% else %}{% trans "Non assigné" %}{% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="5" class="p-12 text-center text-slate-400 font-bold italic">
-                                Aucune intervention enregistrée pour cet appareil.
+                                {% trans "Aucune intervention enregistrée pour cet appareil." %}
                             </td>
                         </tr>
                         {% endfor %}

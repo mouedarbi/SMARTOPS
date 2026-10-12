@@ -513,3 +513,20 @@ class InventoryTranslationTests(TestCase):
             'city': 'Bruxelles', 'country': 'BE'})
         building.refresh_from_db()
         self.assertEqual(building.address, 'Rue Neuve 2, 1000 Bruxelles, Belgique')
+
+    def test_equipment_screens(self):
+        building = Building.objects.create(client=self.client_obj, name="Site", address="a")
+        eq_type = EquipmentType.objects.create(name="HVAC-i18n")
+        equipment = Equipment.objects.create(building=building, name="Clim", equipment_type=eq_type,
+                                             serial_number="SN-I18N", installed_at=date(2024, 1, 1))
+        self._check(reverse('equipment_list'), {
+            'fr': ('Gestion des Équipements', 'Lieu & Client'), 'nl': ('Toestelbeheer', 'Locatie & klant'),
+            'en': ('Equipment management', 'Site & customer')})
+        self._check(reverse('equipment_detail', args=[equipment.pk]), {
+            'fr': ('Caractéristiques', 'Historique Interventions'), 'nl': ('Kenmerken', 'Interventiegeschiedenis'),
+            'en': ('Characteristics', 'Work order history')})
+        self._check(reverse('equipment_type_list'), {
+            'fr': ('Créer Type', 'Gérer Champs'), 'nl': ('Type aanmaken', 'Velden beheren'),
+            'en': ('Create type', 'Manage fields')})
+        self._check(reverse('equipment_type_detail', args=[eq_type.pk]), {
+            'fr': ('Champs actuels',), 'nl': ('Huidige velden',), 'en': ('Current fields',)})
