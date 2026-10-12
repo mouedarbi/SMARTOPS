@@ -1,35 +1,28 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Planning de Maintenance | SMARTOPS{% endblock %}
-{% block page_title %}Planning de Maintenance{% endblock %}
+{% block title %}Calendrier des Interventions | SMARTOPS{% endblock %}
+{% block page_title %}Calendrier des Interventions{% endblock %}
 
 {% block content %}
 <div class="w-full">
-    
-    <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Calendrier des Interventions</h3>
-            <p class="text-slate-500 font-medium italic">{% trans "Planning d'un technicien. Pour voir toutes les interventions, utilisez la liste des interventions." %}</p>
-        </div>
-        <div class="flex gap-2">
-             <a href="{% url 'ticket_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
-                <i class="las la-plus-circle text-xl"></i>
-                Nouveau Ticket
-            </a>
-        </div>
-    </div>
 
-    <!-- Filtre technicien : chaque technicien a son propre calendrier -->
-    <form method="get" class="mb-6 flex items-center gap-3">
-        <label for="technician-filter" class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Planning" %}</label>
-        <select id="technician-filter" name="technician" onchange="this.form.submit()"
-                class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm">
-            {% for tech in technicians %}
-            <option value="{{ tech.pk }}" {% if selected_technician and tech.pk == selected_technician.pk %}selected{% endif %}>{{ tech }} ({{ tech.user.username }})</option>
-            {% endfor %}
-        </select>
-    </form>
+    <!-- Filtre technicien (chaque technicien a son propre calendrier) et création d'un ticket, sur une seule ligne -->
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <form method="get" class="flex items-center gap-3">
+            <label for="technician-filter" class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Planning" %}</label>
+            <select id="technician-filter" name="technician" onchange="this.form.submit()"
+                    class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm">
+                {% for tech in technicians %}
+                <option value="{{ tech.pk }}" {% if selected_technician and tech.pk == selected_technician.pk %}selected{% endif %}>{{ tech }} ({{ tech.user.username }})</option>
+                {% endfor %}
+            </select>
+        </form>
+        <a href="{% url 'ticket_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
+            <i class="las la-plus-circle text-xl"></i>
+            Nouveau Ticket
+        </a>
+    </div>
 
     <!-- Calendar Container -->
     <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 min-h-[700px]">

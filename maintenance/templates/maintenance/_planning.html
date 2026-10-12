@@ -20,6 +20,8 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
+            // Pas de ligne « Toute la journée » : les interventions ont toujours un créneau horaire.
+            allDaySlot: false,
             slotMinTime: '07:00:00',
             slotMaxTime: '20:00:00',
             // Interventions qui se chevauchent (urgence) : côte à côte, chacune sur la moitié de la largeur.

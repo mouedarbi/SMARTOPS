@@ -460,7 +460,7 @@ def maintenance_calendar(request):
     selected_technician = (technicians.filter(pk=technician_id).first() if technician_id.isdigit() else None) or technicians.first()
     events_url = f"{reverse('api_events')}?technician={selected_technician.pk}" if selected_technician else None
     context = {
-        'page_title': "Planning de Maintenance",
+        'page_title': "Calendrier des Interventions",
         'technicians': technicians,
         'selected_technician': selected_technician,
         'events_url': events_url,
