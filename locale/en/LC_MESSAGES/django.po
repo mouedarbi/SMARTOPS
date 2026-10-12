@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 22:02+0200\n"
+"POT-Creation-Date: 2026-10-12 22:06+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -39,6 +39,7 @@ msgstr "Role"
 
 #: accounts/models.py:37 accounts/templates/accounts/profile.html:64
 #: accounts/templates/accounts/user_form.html:45
+#: technician/templates/technician/profile.html:49
 msgid "Langue"
 msgstr "Language"
 
@@ -61,6 +62,8 @@ msgstr "Users"
 
 #: accounts/templates/accounts/profile.html:4
 #: accounts/templates/accounts/profile.html:5 system/templates/base.html:233
+#: technician/templates/technician/base_technician.html:64
+#: technician/views.py:169
 msgid "Mon profil"
 msgstr "My profile"
 
@@ -104,10 +107,12 @@ msgstr "Last name"
 #: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
 #: inventory/templates/inventory/equipment_form.html:36
+#: technician/templates/technician/profile.html:57
 msgid "Enregistrer"
 msgstr "Save"
 
 #: accounts/templates/accounts/profile.html:81
+#: technician/templates/technician/login.html:33
 msgid "Mot de passe"
 msgstr "Password"
 
@@ -191,6 +196,7 @@ msgstr "Actions"
 #: maintenance/templates/maintenance/technician_detail.html:25
 #: maintenance/templates/maintenance/technician_detail.html:161
 #: maintenance/templates/maintenance/technician_list.html:75
+#: technician/templates/technician/profile.html:15
 msgid "Actif"
 msgstr "Active"
 
@@ -393,6 +399,7 @@ msgstr "Date"
 #: maintenance/templates/maintenance/_ticket_table.html:10
 #: maintenance/templates/maintenance/ticket_detail.html:132
 #: maintenance/templates/maintenance/ticket_form.html:112
+#: technician/templates/technician/ticket_detail.html:73
 msgid "Type"
 msgstr "Type"
 
@@ -495,6 +502,7 @@ msgstr "Edit"
 
 #: inventory/templates/inventory/building_detail.html:42
 #: inventory/templates/inventory/equipment_detail.html:21
+#: technician/templates/technician/ticket_detail.html:90
 msgid "Localisation"
 msgstr "Location"
 
@@ -614,6 +622,7 @@ msgstr "Last page"
 #: maintenance/templates/maintenance/technician_detail.html:27
 #: maintenance/templates/maintenance/technician_detail.html:157
 #: maintenance/templates/maintenance/technician_list.html:77
+#: technician/templates/technician/profile.html:15
 msgid "Inactif"
 msgstr "Inactive"
 
@@ -977,6 +986,7 @@ msgstr "List of skills (e.g. Electrical, Hydraulics)"
 
 #: maintenance/models.py:37
 #: maintenance/templates/maintenance/technician_list.html:36
+#: technician/templates/technician/profile.html:35
 msgid "Spécialités"
 msgstr "Specialties"
 
@@ -997,6 +1007,7 @@ msgstr "Scheduled"
 #: maintenance/models.py:60
 #: maintenance/templates/maintenance/_planning_legend.html:16
 #: maintenance/templates/maintenance/ticket_list.html:17
+#: technician/templates/technician/profile.html:26
 msgid "En cours"
 msgstr "In progress"
 
@@ -1031,10 +1042,12 @@ msgid "Fin prévue"
 msgstr "Planned end"
 
 #: maintenance/models.py:81
+#: technician/templates/technician/ticket_detail.html:125
 msgid "Début réel"
 msgstr "Actual start"
 
 #: maintenance/models.py:82
+#: technician/templates/technician/ticket_detail.html:131
 msgid "Fin réelle"
 msgstr "Actual end"
 
@@ -1052,6 +1065,7 @@ msgstr ""
 
 #: maintenance/models.py:90
 #: maintenance/templates/maintenance/ticket_detail.html:253
+#: technician/templates/technician/ticket_detail.html:252
 msgid "Rapport d'intervention"
 msgstr "Work order report"
 
@@ -1188,6 +1202,7 @@ msgstr "Work order calendar"
 #: maintenance/templates/maintenance/calendar.html:13
 #: maintenance/templates/maintenance/technician_detail.html:35
 #: system/templates/base.html:81
+#: technician/templates/technician/base_technician.html:58
 msgid "Planning"
 msgstr "Schedule"
 
@@ -1425,10 +1440,13 @@ msgid "Rapport"
 msgstr "Report"
 
 #: maintenance/templates/maintenance/ticket_detail.html:158
+#: technician/templates/technician/ticket_detail.html:154
 msgid "Photos"
 msgstr "Photos"
 
 #: maintenance/templates/maintenance/ticket_detail.html:162
+#: technician/templates/technician/base_technician.html:61
+#: technician/templates/technician/history.html:6 technician/views.py:139
 msgid "Historique"
 msgstr "History"
 
@@ -1442,10 +1460,12 @@ msgid "Technicien assigné"
 msgstr "Assigned technician"
 
 #: maintenance/templates/maintenance/ticket_detail.html:191
+#: technician/templates/technician/ticket_detail.html:43
 msgid "Statut actuel"
 msgstr "Current status"
 
 #: maintenance/templates/maintenance/ticket_detail.html:199
+#: technician/templates/technician/ticket_detail.html:69
 msgid "Horaire prévu"
 msgstr "Planned time"
 
@@ -1484,6 +1504,7 @@ msgstr ""
 "The report will be filled in by the technician when closing the work order."
 
 #: maintenance/templates/maintenance/ticket_detail.html:273
+#: technician/templates/technician/ticket_detail.html:256
 #, python-format
 msgid "Clôturé le %(day)s à %(time)s"
 msgstr "Closed on %(day)s at %(time)s"
@@ -1493,6 +1514,7 @@ msgid "Photos de l'intervention"
 msgstr "Work order photos"
 
 #: maintenance/templates/maintenance/ticket_detail.html:299
+#: technician/templates/technician/ticket_detail.html:164
 msgid "Supprimer cette photo ?"
 msgstr "Delete this photo?"
 
@@ -1850,6 +1872,8 @@ msgid "Afficher ou masquer le menu"
 msgstr "Show or hide the menu"
 
 #: system/templates/base.html:238
+#: technician/templates/technician/base_technician.html:72
+#: technician/templates/technician/profile.html:62
 msgid "Déconnexion"
 msgstr "Log out"
 
@@ -1969,3 +1993,209 @@ msgstr "module(s) can be updated."
 #: system/templates/system/dashboard.html:192
 msgid "Mettre à jour maintenant"
 msgstr "Update now"
+
+#: technician/templates/technician/base_technician.html:27
+msgid "Terrain"
+msgstr "Field"
+
+#: technician/templates/technician/base_technician.html:52
+msgid "Menu"
+msgstr "Menu"
+
+#: technician/templates/technician/base_technician.html:69
+msgid "Connecté en tant que"
+msgstr "Logged in as"
+
+#: technician/templates/technician/components/ticket_card.html:5
+msgid "Horaire réel"
+msgstr "Actual time"
+
+#: technician/templates/technician/components/ticket_card.html:7
+msgid "réel"
+msgstr "actual"
+
+#: technician/templates/technician/dashboard.html:11
+msgid "En retard"
+msgstr "Overdue"
+
+#: technician/templates/technician/dashboard.html:27
+msgid "AUJOURD'HUI"
+msgstr "TODAY"
+
+#: technician/templates/technician/dashboard.html:30
+msgid "CETTE SEMAINE"
+msgstr "THIS WEEK"
+
+#: technician/templates/technician/dashboard.html:45
+msgid "Aucune intervention prévue"
+msgstr "No work orders scheduled"
+
+#: technician/templates/technician/dashboard.html:46
+msgid "Profitez-en pour réviser votre stock !"
+msgstr "A good time to check your stock!"
+
+#: technician/templates/technician/dashboard.html:67
+msgid "Planning vide pour la semaine"
+msgstr "Empty schedule for the week"
+
+#: technician/templates/technician/history.html:7
+msgid "Vos interventions terminées, à replanifier ou annulées."
+msgstr "Your completed, to reschedule or canceled work orders."
+
+#: technician/templates/technician/history.html:27
+msgid "Plus récentes"
+msgstr "Newer"
+
+#: technician/templates/technician/history.html:31
+msgid "Plus anciennes"
+msgstr "Older"
+
+#: technician/templates/technician/history.html:40
+msgid "Aucune intervention dans l'historique"
+msgstr "No work orders in the history"
+
+#: technician/templates/technician/intervention_report.html:13
+msgid "Clôture"
+msgstr "Closing"
+
+#: technician/templates/technician/intervention_report.html:14
+msgid "RAPPORT D'INTERVENTION"
+msgstr "WORK ORDER REPORT"
+
+#: technician/templates/technician/intervention_report.html:36
+msgid "Compte rendu terrain"
+msgstr "Field report"
+
+#: technician/templates/technician/intervention_report.html:38
+msgid "Travaux réalisés, pièces remplacées, observations, recommandations…"
+msgstr "Work done, parts replaced, observations, recommendations…"
+
+#: technician/templates/technician/intervention_report.html:44
+msgid "Résultat"
+msgstr "Outcome"
+
+#: technician/templates/technician/intervention_report.html:49
+msgid "Intervention terminée"
+msgstr "Work order completed"
+
+#: technician/templates/technician/intervention_report.html:54
+msgid "À replanifier (travaux incomplets)"
+msgstr "To reschedule (work incomplete)"
+
+#: technician/templates/technician/intervention_report.html:62
+msgid "VALIDER ET CLÔTURER"
+msgstr "CONFIRM AND CLOSE"
+
+#: technician/templates/technician/login.html:11
+msgid "Zone Technicien"
+msgstr "Technician area"
+
+#: technician/templates/technician/login.html:12
+msgid "Veuillez vous authentifier"
+msgstr "Please sign in"
+
+#: technician/templates/technician/login.html:21
+msgid "Identifiant"
+msgstr "Username"
+
+#: technician/templates/technician/login.html:45
+msgid "SE CONNECTER"
+msgstr "SIGN IN"
+
+#: technician/templates/technician/profile.html:22
+msgid "Terminées"
+msgstr "Completed"
+
+#: technician/templates/technician/profile.html:30
+msgid "À venir"
+msgstr "Upcoming"
+
+#: technician/templates/technician/profile.html:43
+msgid "Aucune spécialité renseignée."
+msgstr "No specialties entered."
+
+#: technician/templates/technician/ticket_detail.html:14
+msgid "DÉMARRER L'INTERVENTION"
+msgstr "START THE WORK ORDER"
+
+#: technician/templates/technician/ticket_detail.html:25
+msgid "CLÔTURER (RAPPORT)"
+msgstr "CLOSE (REPORT)"
+
+#: technician/templates/technician/ticket_detail.html:34
+msgid "Intervention liée, en lecture seule"
+msgstr "Linked work order, read-only"
+
+#: technician/templates/technician/ticket_detail.html:82
+msgid ""
+"Intervention clôturée « à replanifier ». La suite est transmise au "
+"dispatching, qui la réattribuera."
+msgstr ""
+"Work order closed as “to reschedule”. The follow-up goes to dispatching, "
+"which will reassign it."
+
+#: technician/templates/technician/ticket_detail.html:100
+msgid "bte"
+msgstr "box"
+
+#: technician/templates/technician/ticket_detail.html:113
+msgid "ITINÉRAIRE"
+msgstr "DIRECTIONS"
+
+#: technician/templates/technician/ticket_detail.html:122
+msgid "Horodatage réel"
+msgstr "Actual times"
+
+#: technician/templates/technician/ticket_detail.html:142
+msgid "Consignes / Problème"
+msgstr "Instructions / problem"
+
+#: technician/templates/technician/ticket_detail.html:147
+msgid "Aucune consigne spécifique renseignée."
+msgstr "No specific instructions given."
+
+#: technician/templates/technician/ticket_detail.html:183
+msgid "Avant"
+msgstr "Before"
+
+#: technician/templates/technician/ticket_detail.html:184
+msgid "Pendant"
+msgstr "During"
+
+#: technician/templates/technician/ticket_detail.html:185
+msgid "Après"
+msgstr "After"
+
+#: technician/templates/technician/ticket_detail.html:187
+msgid "Légende (option)"
+msgstr "Caption (optional)"
+
+#: technician/templates/technician/ticket_detail.html:191
+msgid "PRENDRE / CHOISIR UNE PHOTO"
+msgstr "TAKE / CHOOSE A PHOTO"
+
+#: technician/templates/technician/ticket_detail.html:194
+msgid "Optimisation de la photo…"
+msgstr "Optimising the photo…"
+
+#: technician/templates/technician/ticket_detail.html:275
+msgid "LOCALISATION..."
+msgstr "LOCATING..."
+
+#: technician/views.py:69
+msgid "Connexion Technicien"
+msgstr "Technician sign-in"
+
+#: technician/views.py:110
+msgid "Mon Planning"
+msgstr "My schedule"
+
+#: technician/views.py:223
+#, python-format
+msgid "Intervention #%(id)s"
+msgstr "Work order #%(id)s"
+
+#: technician/views.py:303 technician/views.py:325
+#, python-format
+msgid "Rapport #%(id)s"
+msgstr "Report #%(id)s"

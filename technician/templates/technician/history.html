@@ -1,9 +1,10 @@
 {% extends 'technician/base_technician.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="px-4 py-6">
-    <h2 class="text-lg font-black text-slate-800 mb-1">Historique</h2>
-    <p class="text-xs text-slate-400 font-bold mb-6">Vos interventions terminées, à replanifier ou annulées.</p>
+    <h2 class="text-lg font-black text-slate-800 mb-1">{% trans "Historique" %}</h2>
+    <p class="text-xs text-slate-400 font-bold mb-6">{% trans "Vos interventions terminées, à replanifier ou annulées." %}</p>
 
     {% if page %}
         {% regroup page by display_start|date:"l d F Y" as tickets_by_day %}
@@ -23,11 +24,11 @@
         {% if page.has_other_pages %}
         <div class="mt-8 flex items-center justify-between text-xs font-bold">
             {% if page.has_previous %}
-                <a href="?page={{ page.previous_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">← Plus récentes</a>
+                <a href="?page={{ page.previous_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">← {% trans "Plus récentes" %}</a>
             {% else %}<span></span>{% endif %}
             <span class="text-slate-300">{{ page.number }} / {{ page.paginator.num_pages }}</span>
             {% if page.has_next %}
-                <a href="?page={{ page.next_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">Plus anciennes →</a>
+                <a href="?page={{ page.next_page_number }}" class="px-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600">{% trans "Plus anciennes" %} →</a>
             {% else %}<span></span>{% endif %}
         </div>
         {% endif %}
@@ -36,7 +37,7 @@
             <div class="inline-flex h-20 w-20 bg-slate-100 text-slate-300 rounded-full items-center justify-center text-3xl mb-4">
                 <i class="fas fa-history"></i>
             </div>
-            <p class="text-slate-400 font-bold">Aucune intervention dans l'historique</p>
+            <p class="text-slate-400 font-bold">{% trans "Aucune intervention dans l'historique" %}</p>
         </div>
     {% endif %}
 </div>

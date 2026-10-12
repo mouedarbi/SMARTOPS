@@ -1,5 +1,5 @@
 {% extends 'technician/base_technician.html' %}
-{% load ticket_links %}
+{% load ticket_links i18n %}
 
 {% block content %}
 <!-- Floating Action Button (Démarrer) : uniquement sur ses propres tickets -->
@@ -11,7 +11,7 @@
         <input type="hidden" name="longitude" id="start-longitude">
         <button type="button" id="start-intervention-btn" onclick="startIntervention()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-blue-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-70">
             <i class="fas fa-play text-xs"></i>
-            <span>DÉMARRER L'INTERVENTION</span>
+            <span>{% trans "DÉMARRER L'INTERVENTION" %}</span>
         </button>
     </form>
 </div>
@@ -22,7 +22,7 @@
 <div class="fixed bottom-6 left-0 right-0 px-6 z-20">
     <a href="{% url 'stop_intervention' ticket.id %}" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-2xl shadow-emerald-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
         <i class="fas fa-file-signature text-xs"></i>
-        <span>CLÔTURER (RAPPORT)</span>
+        <span>{% trans "CLÔTURER (RAPPORT)" %}</span>
     </a>
 </div>
 {% endif %}
@@ -31,7 +31,7 @@
     {% if not is_own %}
     <!-- Ticket lié (origine ou suite) assigné à un collègue : consultation seulement -->
     <div class="mb-4 p-3 rounded-2xl bg-slate-100 text-slate-600 text-xs font-bold flex items-center gap-2">
-        <i class="fas fa-eye"></i> Intervention liée, en lecture seule{% if ticket.technician %} · {{ ticket.technician }}{% endif %}
+        <i class="fas fa-eye"></i> {% trans "Intervention liée, en lecture seule" %}{% if ticket.technician %} · {{ ticket.technician }}{% endif %}
     </div>
     {% endif %}
     <!-- Header Ticket -->
@@ -40,7 +40,7 @@
             <i class="fas fa-chevron-left text-xs"></i>
         </a>
         <div class="text-right">
-            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block leading-none mb-1">Status Actuel</span>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest block leading-none mb-1">{% trans "Statut actuel" %}</span>
             <span class="text-xs font-bold px-3 py-1 rounded-full 
                 {% if ticket.status == 'done' %}bg-emerald-50 text-emerald-600
                 {% elif ticket.status == 'in_progress' %}bg-blue-50 text-blue-600
@@ -66,11 +66,11 @@
 
         <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
             <div>
-                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Horaire Prévu</span>
+                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Horaire prévu" %}</span>
                 <p class="text-sm font-bold text-slate-700">{{ ticket.planned_start|date:"d/m/Y" }}<br>{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</p>
             </div>
             <div>
-                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Type</span>
+                <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Type" %}</span>
                 <p class="text-sm font-bold text-blue-600">{{ ticket.get_type_display }}</p>
             </div>
         </div>
@@ -79,7 +79,7 @@
     {% if ticket.status == 'to_reschedule' %}
     <div class="bg-orange-50 border border-orange-100 text-orange-700 rounded-3xl p-5 mb-6 text-xs font-bold leading-relaxed">
         <i class="fas fa-route mr-1"></i>
-        Intervention clôturée « à replanifier ». La suite est transmise au dispatching, qui la réattribuera.
+        {% trans "Intervention clôturée « à replanifier ». La suite est transmise au dispatching, qui la réattribuera." %}
     </div>
     {% endif %}
 
@@ -87,7 +87,7 @@
     <div class="space-y-6">
         <!-- Section: Localisation -->
         <section>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Localisation</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Localisation" %}</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
                 <div class="flex items-start gap-4 mb-4">
                     <div class="h-10 w-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center shrink-0">
@@ -97,7 +97,7 @@
                         <p class="font-bold text-slate-800">{{ ticket.equipment.building.name }}</p>
                         {% with building=ticket.equipment.building %}
                         {% if building.is_address_complete %}
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ building.street }} {{ building.house_number }}{% if building.box %} bte {{ building.box }}{% endif %}<br>{{ building.postal_code }} {{ building.city }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ building.street }} {{ building.house_number }}{% if building.box %} {% trans "bte" %} {{ building.box }}{% endif %}<br>{{ building.postal_code }} {{ building.city }}</p>
                         {% else %}
                         <p class="text-xs text-slate-500 leading-relaxed">{{ building.address }}</p>
                         {% endif %}
@@ -110,7 +110,7 @@
                    target="_blank" rel="noopener"
                    class="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold tracking-wider active:scale-[0.98] transition-all">
                     <i class="fas fa-directions"></i>
-                    ITINÉRAIRE
+                    {% trans "ITINÉRAIRE" %}
                 </a>
                 {% endif %}
             </div>
@@ -119,16 +119,16 @@
         <!-- Section: Temps Réel -->
         {% if ticket.effective_start or ticket.effective_end %}
         <section>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Horodatage Réel</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Horodatage réel" %}</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 grid grid-cols-2 gap-4">
                 <div>
-                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Début Réel</span>
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Début réel" %}</span>
                     <p class="text-sm font-bold text-slate-700">
                         {% if ticket.effective_start %}{{ ticket.effective_start|date:"d/m/Y H:i" }}{% else %}--:--{% endif %}
                     </p>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">Fin Réelle</span>
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Fin réelle" %}</span>
                     <p class="text-sm font-bold text-slate-700">
                         {% if ticket.effective_end %}{{ ticket.effective_end|date:"d/m/Y H:i" }}{% else %}--:--{% endif %}
                     </p>
@@ -139,19 +139,19 @@
 
         <!-- Section: Description Travail -->
         <section>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Consignes / Problème</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Consignes / Problème" %}</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
                 {% if ticket.description %}
                 <p class="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">{% ticket_links ticket.description 'technician_ticket_detail' linkable_ids %}</p>
                 {% else %}
-                <p class="text-sm text-slate-600 leading-relaxed italic">Aucune consigne spécifique renseignée.</p>
+                <p class="text-sm text-slate-600 leading-relaxed italic">{% trans "Aucune consigne spécifique renseignée." %}</p>
                 {% endif %}
             </div>
         </section>
 
         <!-- Section: Photos -->
         <section>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Photos ({{ photos|length }})</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Photos" %} ({{ photos|length }})</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
                 {% if photos %}
                 <div class="grid grid-cols-3 gap-2 mb-4">
@@ -161,7 +161,7 @@
                             <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" loading="lazy" class="h-24 w-full object-cover">
                         </a>
                         {% if is_own and photo.uploaded_by_id == user.id %}
-                        <form method="post" class="absolute top-1 right-1" onsubmit="return confirm('Supprimer ?')">
+                        <form method="post" class="absolute top-1 right-1" onsubmit="return confirm('{% filter escapejs %}{% trans "Supprimer cette photo ?" %}{% endfilter %}')">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete_photo">
                             <input type="hidden" name="photo_id" value="{{ photo.id }}">
@@ -180,18 +180,18 @@
                     <input type="hidden" name="action" value="add_photo">
                     <div class="flex gap-2">
                         <select name="phase" class="text-xs font-bold rounded-xl border border-slate-200 px-2 py-2 bg-white">
-                            <option value="before">Avant</option>
-                            <option value="during" selected>Pendant</option>
-                            <option value="after">Après</option>
+                            <option value="before">{% trans "Avant" %}</option>
+                            <option value="during" selected>{% trans "Pendant" %}</option>
+                            <option value="after">{% trans "Après" %}</option>
                         </select>
-                        <input type="text" name="caption" placeholder="Légende (option)" maxlength="255"
+                        <input type="text" name="caption" placeholder="{% trans "Légende (option)" %}" maxlength="255"
                                class="flex-1 text-xs rounded-xl border border-slate-200 px-3 py-2">
                     </div>
                     <label class="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold cursor-pointer">
-                        <i class="fas fa-camera"></i> PRENDRE / CHOISIR UNE PHOTO
+                        <i class="fas fa-camera"></i> {% trans "PRENDRE / CHOISIR UNE PHOTO" %}
                         <input type="file" name="image" accept="image/*" capture="environment" required class="hidden" id="photo-input">
                     </label>
-                    <p id="photo-status" class="hidden text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">Optimisation de la photo…</p>
+                    <p id="photo-status" class="hidden text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">{% trans "Optimisation de la photo…" %}</p>
                 </form>
                 {% endif %}
                 <script>
@@ -249,11 +249,11 @@
         <!-- Section: Rapport d'intervention -->
         {% if ticket.intervention_report %}
         <section>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">Rapport d'intervention</h3>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Rapport d'intervention" %}</h3>
             <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
                 <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{{ ticket.intervention_report }}</p>
                 {% if ticket.effective_end %}
-                <p class="mt-3 text-[10px] font-black text-slate-300 uppercase tracking-widest">Clôturé le {{ ticket.effective_end|date:"d/m/Y à H:i" }}</p>
+                <p class="mt-3 text-[10px] font-black text-slate-300 uppercase tracking-widest">{% blocktrans with day=ticket.effective_end|date:"d/m/Y" time=ticket.effective_end|date:"H:i" %}Clôturé le {{ day }} à {{ time }}{% endblocktrans %}</p>
                 {% endif %}
             </div>
         </section>
@@ -272,7 +272,7 @@ function startIntervention() {
     const lonField = document.getElementById('start-longitude');
 
     btn.disabled = true;
-    btn.querySelector('span').textContent = 'LOCALISATION...';
+    btn.querySelector('span').textContent = '{% filter escapejs %}{% trans "LOCALISATION..." %}{% endfilter %}';
 
     let submitted = false;
     const submitOnce = () => {

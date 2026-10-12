@@ -12,6 +12,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.conf import settings
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.core.paginator import Paginator
@@ -64,7 +66,7 @@ def technician_login(request):
             messages.error(request, "Identifiants incorrects.")
     
     return render(request, 'technician/login.html', {
-        'page_title': 'Connexion Technicien'
+        'page_title': _('Connexion Technicien')
     })
 
 @login_required(login_url='technician_login')
@@ -105,7 +107,7 @@ def technician_dashboard(request):
     ).order_by('planned_start')
 
     context = {
-        'page_title': 'Mon Planning',
+        'page_title': _('Mon Planning'),
         'tickets_today': tickets_today,
         'tickets_week': tickets_week,
         'tickets_overdue': tickets_overdue,
@@ -134,7 +136,7 @@ def technician_history(request):
     page = Paginator(tickets, 20).get_page(request.GET.get('page'))
 
     return render(request, 'technician/history.html', {
-        'page_title': 'Historique',
+        'page_title': _('Historique'),
         'page': page,
         'now': timezone.now(),
     })
@@ -151,6 +153,12 @@ def technician_profile(request):
         messages.error(request, "Profil technicien introuvable.")
         return redirect('technician_dashboard')
 
+    # Langue de l'interface choisie par le technicien (prise en compte dès la page suivante).
+    if request.method == 'POST' and request.POST.get('language') in dict(settings.LANGUAGES):
+        request.user.language = request.POST['language']
+        request.user.save(update_fields=['language'])
+        return redirect('technician_profile')
+
     stats = MaintenanceTicket.objects.filter(technician=tech_profile).aggregate(
         done=Count('id', filter=Q(status='done')),
         in_progress=Count('id', filter=Q(status='in_progress')),
@@ -158,9 +166,10 @@ def technician_profile(request):
     )
 
     return render(request, 'technician/profile.html', {
-        'page_title': 'Mon Profil',
+        'page_title': _('Mon profil'),
         'tech_profile': tech_profile,
         'stats': stats,
+        'languages': settings.LANGUAGES,
         'now': timezone.now(),
     })
 
@@ -211,7 +220,7 @@ def technician_ticket_detail(request, pk):
         return redirect('technician_ticket_detail', pk=ticket.id)
 
     context = {
-        'page_title': f"Intervention #{ticket.id}",
+        'page_title': _("Intervention #%(id)s") % {'id': ticket.id},
         'ticket': ticket,
         'now': timezone.now(),
         'photos': ticket.photos.all(),
@@ -291,7 +300,7 @@ def stop_intervention(request, pk):
         if not report:
             messages.error(request, "Le rapport d'intervention est obligatoire pour clôturer.")
             return render(request, 'technician/intervention_report.html', {
-                'page_title': f"Rapport #{ticket.id}",
+                'page_title': _("Rapport #%(id)s") % {'id': ticket.id},
                 'ticket': ticket,
                 'now': timezone.now(),
                 'report_value': report,
@@ -313,7 +322,7 @@ def stop_intervention(request, pk):
         return redirect('technician_ticket_detail', pk=pk)
 
     return render(request, 'technician/intervention_report.html', {
-        'page_title': f"Rapport #{ticket.id}",
+        'page_title': _("Rapport #%(id)s") % {'id': ticket.id},
         'ticket': ticket,
         'now': timezone.now(),
         'report_value': ticket.intervention_report,

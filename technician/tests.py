@@ -322,6 +322,24 @@ class TechnicianMenuPagesTests(TestCase):
             self.assertEqual(manager_client.get(reverse(name)).status_code, 302)
 
 
+    def test_technician_chooses_language_from_profile(self):
+        """Étape 10 de la traduction : le technicien choisit sa langue dans son profil terrain."""
+        self.client.login(username='tech1', password='password123')
+        self.client.post(reverse('technician_profile'), {'language': 'nl'})
+        self.tech_user.refresh_from_db()
+        self.assertEqual(self.tech_user.language, 'nl')
+        response = self.client.get(reverse('technician_dashboard'))
+        self.assertContains(response, 'VANDAAG')
+        self.assertContains(response, 'Mijn profiel')
+        self.client.post(reverse('technician_profile'), {'language': 'en'})
+        response = self.client.get(reverse('technician_history'))
+        self.assertContains(response, 'Your completed, to reschedule or canceled work orders.')
+        # Une valeur inconnue est ignorée.
+        self.client.post(reverse('technician_profile'), {'language': 'xx'})
+        self.tech_user.refresh_from_db()
+        self.assertEqual(self.tech_user.language, 'en')
+
+
 @override_settings(
     SECURE_SSL_REDIRECT=False,
     PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
