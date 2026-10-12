@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:39+0200\n"
+"POT-Creation-Date: 2026-10-12 16:42+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -158,6 +158,7 @@ msgid "Date de création"
 msgstr ""
 
 #: inventory/models.py:29 inventory/models.py:39
+#: maintenance/templates/maintenance/ticket_detail.html:105
 #: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
 msgstr "Klant"
@@ -208,6 +209,7 @@ msgid "Adresse du lieu"
 msgstr ""
 
 #: inventory/models.py:55 inventory/models.py:120
+#: maintenance/templates/maintenance/ticket_detail.html:109
 #: maintenance/templates/maintenance/ticket_list.html:71
 msgid "Lieu"
 msgstr "Locatie"
@@ -244,6 +246,7 @@ msgstr "Datum"
 #: inventory/models.py:100 inventory/models.py:122
 #: maintenance/templates/maintenance/_planning_legend.html:8
 #: maintenance/templates/maintenance/_ticket_table.html:10
+#: maintenance/templates/maintenance/ticket_detail.html:132
 msgid "Type"
 msgstr "Type"
 
@@ -409,8 +412,9 @@ msgid "Description du problème / travail"
 msgstr ""
 
 #: maintenance/models.py:90
+#: maintenance/templates/maintenance/ticket_detail.html:253
 msgid "Rapport d'intervention"
-msgstr ""
+msgstr "Interventieverslag"
 
 #: maintenance/models.py:93
 msgid "Événement calendrier"
@@ -437,32 +441,40 @@ msgid "Tickets de Maintenance"
 msgstr ""
 
 #: maintenance/models.py:154
+#: maintenance/templates/maintenance/ticket_detail.html:333
 msgid "Avant intervention"
-msgstr ""
+msgstr "Voor de interventie"
 
 #: maintenance/models.py:155
+#: maintenance/templates/maintenance/ticket_detail.html:334
 msgid "Pendant intervention"
-msgstr ""
+msgstr "Tijdens de interventie"
 
 #: maintenance/models.py:156
+#: maintenance/templates/maintenance/ticket_detail.html:335
 msgid "Après intervention"
-msgstr ""
+msgstr "Na de interventie"
 
 #: maintenance/models.py:163
+#: maintenance/templates/maintenance/ticket_detail.html:4
+#: maintenance/templates/maintenance/ticket_detail.html:5
+#: maintenance/templates/maintenance/ticket_detail.html:150
 msgid "Intervention"
-msgstr ""
+msgstr "Interventie"
 
 #: maintenance/models.py:165
 msgid "Photo"
-msgstr ""
+msgstr "Foto"
 
 #: maintenance/models.py:166
+#: maintenance/templates/maintenance/ticket_detail.html:339
 msgid "Légende"
-msgstr ""
+msgstr "Bijschrift"
 
 #: maintenance/models.py:167
+#: maintenance/templates/maintenance/ticket_detail.html:331
 msgid "Moment"
-msgstr ""
+msgstr "Moment"
 
 #: maintenance/models.py:173
 msgid "Ajoutée par"
@@ -604,28 +616,196 @@ msgstr ""
 #: maintenance/templates/maintenance/ticket_cancel.html:37
 #: maintenance/templates/maintenance/ticket_detail.html:40
 msgid "Annuler le ticket"
-msgstr ""
+msgstr "Ticket annuleren"
 
 #: maintenance/templates/maintenance/ticket_cancel.html:39
 msgid "Retour"
+msgstr "Terug"
+
+#: maintenance/templates/maintenance/ticket_detail.html:24
+msgid ""
+"Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette "
+"action est irréversible."
 msgstr ""
+"Weet u zeker dat u deze interventie definitief wilt verwijderen? Deze actie "
+"kan niet ongedaan worden gemaakt."
+
+#: maintenance/templates/maintenance/ticket_detail.html:27
+msgid "Supprimer"
+msgstr "Verwijderen"
 
 #: maintenance/templates/maintenance/ticket_detail.html:34
 msgid "Modifier la description"
-msgstr ""
+msgstr "Beschrijving wijzigen"
+
+#: maintenance/templates/maintenance/ticket_detail.html:34
+msgid "Modifier la planification"
+msgstr "Planning wijzigen"
 
 #: maintenance/templates/maintenance/ticket_detail.html:46
 #: maintenance/templates/maintenance/ticket_form.html:171
 msgid "Réassigner"
-msgstr ""
+msgstr "Opnieuw toewijzen"
+
+#: maintenance/templates/maintenance/ticket_detail.html:49
+msgid "Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »"
+msgstr "Opent het afdrukvenster: kies « Opslaan als PDF »"
+
+#: maintenance/templates/maintenance/ticket_detail.html:51
+msgid "Exporter PDF"
+msgstr "PDF exporteren"
+
+#: maintenance/templates/maintenance/ticket_detail.html:71
+msgid "Début Réel (Terrain)"
+msgstr "Werkelijke start (terrein)"
+
+#: maintenance/templates/maintenance/ticket_detail.html:76
+msgid "Fin Réelle (Terrain)"
+msgstr "Werkelijk einde (terrein)"
+
+#: maintenance/templates/maintenance/ticket_detail.html:77
+msgid "En cours..."
+msgstr "Bezig..."
 
 #: maintenance/templates/maintenance/ticket_detail.html:84
 msgid "Clôturée : travail non effectué, à replanifier"
-msgstr ""
+msgstr "Afgesloten: werk niet uitgevoerd, opnieuw te plannen"
+
+#: maintenance/templates/maintenance/ticket_detail.html:84
+msgid "Travail en cours"
+msgstr "Werk bezig"
+
+#: maintenance/templates/maintenance/ticket_detail.html:84
+msgid "Intervention Clôturée"
+msgstr "Interventie afgesloten"
 
 #: maintenance/templates/maintenance/ticket_detail.html:87
 msgid "Ticket de suite"
+msgstr "Vervolgticket"
+
+#: maintenance/templates/maintenance/ticket_detail.html:101
+msgid "Informations Client & Lieu"
+msgstr "Gegevens klant & locatie"
+
+#: maintenance/templates/maintenance/ticket_detail.html:119
+msgid "Détails Équipement"
+msgstr "Gegevens toestel"
+
+#: maintenance/templates/maintenance/ticket_detail.html:123
+msgid "Modèle / Nom"
+msgstr "Model / Naam"
+
+#: maintenance/templates/maintenance/ticket_detail.html:137
+msgid "Voir la fiche de l'équipement"
+msgstr "Fiche van het toestel bekijken"
+
+#: maintenance/templates/maintenance/ticket_detail.html:154
+msgid "Rapport"
+msgstr "Verslag"
+
+#: maintenance/templates/maintenance/ticket_detail.html:158
+msgid "Photos"
+msgstr "Foto's"
+
+#: maintenance/templates/maintenance/ticket_detail.html:162
+msgid "Historique"
+msgstr "Geschiedenis"
+
+#: maintenance/templates/maintenance/ticket_detail.html:171
+msgid "Détails de la Planification"
+msgstr "Planningsgegevens"
+
+#: maintenance/templates/maintenance/ticket_detail.html:177
+msgid "Technicien assigné"
+msgstr "Toegewezen technicus"
+
+#: maintenance/templates/maintenance/ticket_detail.html:191
+msgid "Statut actuel"
+msgstr "Huidige status"
+
+#: maintenance/templates/maintenance/ticket_detail.html:199
+msgid "Horaire prévu"
+msgstr "Gepland tijdstip"
+
+#: maintenance/templates/maintenance/ticket_detail.html:208
+msgid "Consignes & Description"
+msgstr "Instructies & beschrijving"
+
+#: maintenance/templates/maintenance/ticket_detail.html:213
+msgid "Aucune consigne spécifique n'a été renseignée pour cette intervention."
+msgstr "Er zijn geen specifieke instructies opgegeven voor deze interventie."
+
+#: maintenance/templates/maintenance/ticket_detail.html:227
+msgid "Durée planifiée"
+msgstr "Geplande duur"
+
+#: maintenance/templates/maintenance/ticket_detail.html:231
+msgid "Durée réelle"
+msgstr "Werkelijke duur"
+
+#: maintenance/templates/maintenance/ticket_detail.html:233
+msgid "En cours…"
+msgstr "Bezig…"
+
+#: maintenance/templates/maintenance/ticket_detail.html:240
+msgid "Écart / planning"
+msgstr "Afwijking / planning"
+
+#: maintenance/templates/maintenance/ticket_detail.html:263
+msgid "Aucun rapport n'a été saisi lors de la clôture de cette intervention."
+msgstr "Er werd geen verslag ingevoerd bij het afsluiten van deze interventie."
+
+#: maintenance/templates/maintenance/ticket_detail.html:265
+msgid ""
+"Le rapport sera renseigné par le technicien à la clôture de l'intervention."
 msgstr ""
+"Het verslag wordt door de technicus ingevuld bij het afsluiten van de "
+"interventie."
+
+#: maintenance/templates/maintenance/ticket_detail.html:273
+#, python-format
+msgid "Clôturé le %(day)s à %(time)s"
+msgstr "Afgesloten op %(day)s om %(time)s"
+
+#: maintenance/templates/maintenance/ticket_detail.html:286
+msgid "Photos de l'intervention"
+msgstr "Foto's van de interventie"
+
+#: maintenance/templates/maintenance/ticket_detail.html:299
+msgid "Supprimer cette photo ?"
+msgstr "Deze foto verwijderen?"
+
+#: maintenance/templates/maintenance/ticket_detail.html:317
+msgid "Aucune photo n'a encore été ajoutée à cette intervention."
+msgstr "Er werd nog geen foto toegevoegd aan deze interventie."
+
+#: maintenance/templates/maintenance/ticket_detail.html:326
+msgid "Fichier"
+msgstr "Bestand"
+
+#: maintenance/templates/maintenance/ticket_detail.html:340
+msgid "Optionnel"
+msgstr "Optioneel"
+
+#: maintenance/templates/maintenance/ticket_detail.html:345
+msgid "Ajouter la photo"
+msgstr "Foto toevoegen"
+
+#: maintenance/templates/maintenance/ticket_detail.html:356
+msgid "Chronologie de l'intervention"
+msgstr "Tijdlijn van de interventie"
+
+#: maintenance/templates/maintenance/ticket_detail.html:379
+msgid "Aucun évènement enregistré."
+msgstr "Geen gebeurtenissen geregistreerd."
+
+#: maintenance/templates/maintenance/ticket_detail.html:384
+msgid "Chronologie reconstituée à partir des horodatages de l'intervention."
+msgstr "Tijdlijn samengesteld op basis van de tijdstempels van de interventie."
+
+#: maintenance/templates/maintenance/ticket_detail.html:398
+msgid "Cliquer n'importe où pour fermer"
+msgstr "Klik ergens om te sluiten"
 
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
@@ -748,6 +928,38 @@ msgid "Page %(number)s sur %(total)s — %(counter)s ticket"
 msgid_plural "Page %(number)s sur %(total)s — %(counter)s tickets"
 msgstr[0] "Pagina %(number)s van %(total)s — %(counter)s ticket"
 msgstr[1] "Pagina %(number)s van %(total)s — %(counter)s tickets"
+
+#: maintenance/views.py:184
+msgid "Ticket créé"
+msgstr "Ticket aangemaakt"
+
+#: maintenance/views.py:188
+msgid "Intervention planifiée"
+msgstr "Interventie gepland"
+
+#: maintenance/views.py:189
+msgid "Sans technicien assigné"
+msgstr "Geen technicus toegewezen"
+
+#: maintenance/views.py:193
+msgid "Démarrage terrain"
+msgstr "Start op het terrein"
+
+#: maintenance/views.py:193
+msgid "Pointage du technicien sur site"
+msgstr "Aanmelding van de technicus ter plaatse"
+
+#: maintenance/views.py:197
+msgid "Photo ajoutée"
+msgstr "Foto toegevoegd"
+
+#: maintenance/views.py:203
+msgid "Clôture terrain"
+msgstr "Afsluiting op het terrein"
+
+#: maintenance/views.py:207
+msgid "Dernière modification de la fiche"
+msgstr "Laatste wijziging van de fiche"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4

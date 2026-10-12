@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
+from django.utils.translation import gettext as _
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .forms import MaintenanceTicketForm, InterventionPhotoForm
 from .calendars import assigned_ticket_ids, get_technician_calendar, ticket_event_bounds
@@ -180,30 +181,30 @@ def _build_ticket_timeline(ticket):
 
     if ticket.created_at:
         events.append({'at': ticket.created_at, 'icon': 'la-plus-circle', 'color': 'slate',
-                       'label': "Ticket créé", 'detail': ticket.get_type_display()})
+                       'label': _("Ticket créé"), 'detail': ticket.get_type_display()})
 
     if ticket.planned_start:
         events.append({'at': ticket.planned_start, 'icon': 'la-calendar-check', 'color': 'blue',
-                       'label': "Intervention planifiée",
-                       'detail': str(ticket.technician) if ticket.technician else "Sans technicien assigné"})
+                       'label': _("Intervention planifiée"),
+                       'detail': str(ticket.technician) if ticket.technician else _("Sans technicien assigné")})
 
     if ticket.effective_start:
         events.append({'at': ticket.effective_start, 'icon': 'la-play-circle', 'color': 'blue',
-                       'label': "Démarrage terrain", 'detail': "Pointage du technicien sur site"})
+                       'label': _("Démarrage terrain"), 'detail': _("Pointage du technicien sur site")})
 
     for photo in ticket.photos.all():
         events.append({'at': photo.uploaded_at, 'icon': 'la-camera', 'color': 'slate',
-                       'label': "Photo ajoutée",
+                       'label': _("Photo ajoutée"),
                        'detail': f"{photo.get_phase_display()}"
                                  + (f" — {photo.caption}" if photo.caption else "")})
 
     if ticket.effective_end:
         events.append({'at': ticket.effective_end, 'icon': 'la-check-circle', 'color': 'emerald',
-                       'label': "Clôture terrain", 'detail': ticket.get_status_display()})
+                       'label': _("Clôture terrain"), 'detail': ticket.get_status_display()})
 
     if ticket.updated_at and ticket.created_at and (ticket.updated_at - ticket.created_at).total_seconds() > 1:
         events.append({'at': ticket.updated_at, 'icon': 'la-edit', 'color': 'slate',
-                       'label': "Dernière modification de la fiche", 'detail': ""})
+                       'label': _("Dernière modification de la fiche"), 'detail': ""})
 
     return sorted(events, key=lambda e: e['at'])
 

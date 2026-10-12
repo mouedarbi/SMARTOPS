@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:39+0200\n"
+"POT-Creation-Date: 2026-10-12 16:42+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -158,6 +158,7 @@ msgid "Date de création"
 msgstr ""
 
 #: inventory/models.py:29 inventory/models.py:39
+#: maintenance/templates/maintenance/ticket_detail.html:105
 #: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
 msgstr "Customer"
@@ -208,6 +209,7 @@ msgid "Adresse du lieu"
 msgstr ""
 
 #: inventory/models.py:55 inventory/models.py:120
+#: maintenance/templates/maintenance/ticket_detail.html:109
 #: maintenance/templates/maintenance/ticket_list.html:71
 msgid "Lieu"
 msgstr "Site"
@@ -244,6 +246,7 @@ msgstr "Date"
 #: inventory/models.py:100 inventory/models.py:122
 #: maintenance/templates/maintenance/_planning_legend.html:8
 #: maintenance/templates/maintenance/_ticket_table.html:10
+#: maintenance/templates/maintenance/ticket_detail.html:132
 msgid "Type"
 msgstr "Type"
 
@@ -409,8 +412,9 @@ msgid "Description du problème / travail"
 msgstr ""
 
 #: maintenance/models.py:90
+#: maintenance/templates/maintenance/ticket_detail.html:253
 msgid "Rapport d'intervention"
-msgstr ""
+msgstr "Work order report"
 
 #: maintenance/models.py:93
 msgid "Événement calendrier"
@@ -437,32 +441,40 @@ msgid "Tickets de Maintenance"
 msgstr ""
 
 #: maintenance/models.py:154
+#: maintenance/templates/maintenance/ticket_detail.html:333
 msgid "Avant intervention"
-msgstr ""
+msgstr "Before the work"
 
 #: maintenance/models.py:155
+#: maintenance/templates/maintenance/ticket_detail.html:334
 msgid "Pendant intervention"
-msgstr ""
+msgstr "During the work"
 
 #: maintenance/models.py:156
+#: maintenance/templates/maintenance/ticket_detail.html:335
 msgid "Après intervention"
-msgstr ""
+msgstr "After the work"
 
 #: maintenance/models.py:163
+#: maintenance/templates/maintenance/ticket_detail.html:4
+#: maintenance/templates/maintenance/ticket_detail.html:5
+#: maintenance/templates/maintenance/ticket_detail.html:150
 msgid "Intervention"
-msgstr ""
+msgstr "Work order"
 
 #: maintenance/models.py:165
 msgid "Photo"
-msgstr ""
+msgstr "Photo"
 
 #: maintenance/models.py:166
+#: maintenance/templates/maintenance/ticket_detail.html:339
 msgid "Légende"
-msgstr ""
+msgstr "Caption"
 
 #: maintenance/models.py:167
+#: maintenance/templates/maintenance/ticket_detail.html:331
 msgid "Moment"
-msgstr ""
+msgstr "When"
 
 #: maintenance/models.py:173
 msgid "Ajoutée par"
@@ -604,28 +616,194 @@ msgstr ""
 #: maintenance/templates/maintenance/ticket_cancel.html:37
 #: maintenance/templates/maintenance/ticket_detail.html:40
 msgid "Annuler le ticket"
-msgstr ""
+msgstr "Cancel the ticket"
 
 #: maintenance/templates/maintenance/ticket_cancel.html:39
 msgid "Retour"
+msgstr "Back"
+
+#: maintenance/templates/maintenance/ticket_detail.html:24
+msgid ""
+"Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette "
+"action est irréversible."
 msgstr ""
+"Are you sure you want to permanently delete this work order? This action "
+"cannot be undone."
+
+#: maintenance/templates/maintenance/ticket_detail.html:27
+msgid "Supprimer"
+msgstr "Delete"
 
 #: maintenance/templates/maintenance/ticket_detail.html:34
 msgid "Modifier la description"
-msgstr ""
+msgstr "Edit the description"
+
+#: maintenance/templates/maintenance/ticket_detail.html:34
+msgid "Modifier la planification"
+msgstr "Edit the schedule"
 
 #: maintenance/templates/maintenance/ticket_detail.html:46
 #: maintenance/templates/maintenance/ticket_form.html:171
 msgid "Réassigner"
-msgstr ""
+msgstr "Reassign"
+
+#: maintenance/templates/maintenance/ticket_detail.html:49
+msgid "Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »"
+msgstr "Opens the print dialog: choose “Save as PDF”"
+
+#: maintenance/templates/maintenance/ticket_detail.html:51
+msgid "Exporter PDF"
+msgstr "Export PDF"
+
+#: maintenance/templates/maintenance/ticket_detail.html:71
+msgid "Début Réel (Terrain)"
+msgstr "Actual start (on site)"
+
+#: maintenance/templates/maintenance/ticket_detail.html:76
+msgid "Fin Réelle (Terrain)"
+msgstr "Actual end (on site)"
+
+#: maintenance/templates/maintenance/ticket_detail.html:77
+msgid "En cours..."
+msgstr "In progress..."
 
 #: maintenance/templates/maintenance/ticket_detail.html:84
 msgid "Clôturée : travail non effectué, à replanifier"
-msgstr ""
+msgstr "Closed: work not done, to reschedule"
+
+#: maintenance/templates/maintenance/ticket_detail.html:84
+msgid "Travail en cours"
+msgstr "Work in progress"
+
+#: maintenance/templates/maintenance/ticket_detail.html:84
+msgid "Intervention Clôturée"
+msgstr "Work order closed"
 
 #: maintenance/templates/maintenance/ticket_detail.html:87
 msgid "Ticket de suite"
-msgstr ""
+msgstr "Follow-up ticket"
+
+#: maintenance/templates/maintenance/ticket_detail.html:101
+msgid "Informations Client & Lieu"
+msgstr "Customer & site details"
+
+#: maintenance/templates/maintenance/ticket_detail.html:119
+msgid "Détails Équipement"
+msgstr "Equipment details"
+
+#: maintenance/templates/maintenance/ticket_detail.html:123
+msgid "Modèle / Nom"
+msgstr "Model / Name"
+
+#: maintenance/templates/maintenance/ticket_detail.html:137
+msgid "Voir la fiche de l'équipement"
+msgstr "View the equipment record"
+
+#: maintenance/templates/maintenance/ticket_detail.html:154
+msgid "Rapport"
+msgstr "Report"
+
+#: maintenance/templates/maintenance/ticket_detail.html:158
+msgid "Photos"
+msgstr "Photos"
+
+#: maintenance/templates/maintenance/ticket_detail.html:162
+msgid "Historique"
+msgstr "History"
+
+#: maintenance/templates/maintenance/ticket_detail.html:171
+msgid "Détails de la Planification"
+msgstr "Scheduling details"
+
+#: maintenance/templates/maintenance/ticket_detail.html:177
+msgid "Technicien assigné"
+msgstr "Assigned technician"
+
+#: maintenance/templates/maintenance/ticket_detail.html:191
+msgid "Statut actuel"
+msgstr "Current status"
+
+#: maintenance/templates/maintenance/ticket_detail.html:199
+msgid "Horaire prévu"
+msgstr "Planned time"
+
+#: maintenance/templates/maintenance/ticket_detail.html:208
+msgid "Consignes & Description"
+msgstr "Instructions & description"
+
+#: maintenance/templates/maintenance/ticket_detail.html:213
+msgid "Aucune consigne spécifique n'a été renseignée pour cette intervention."
+msgstr "No specific instructions were given for this work order."
+
+#: maintenance/templates/maintenance/ticket_detail.html:227
+msgid "Durée planifiée"
+msgstr "Planned duration"
+
+#: maintenance/templates/maintenance/ticket_detail.html:231
+msgid "Durée réelle"
+msgstr "Actual duration"
+
+#: maintenance/templates/maintenance/ticket_detail.html:233
+msgid "En cours…"
+msgstr "In progress…"
+
+#: maintenance/templates/maintenance/ticket_detail.html:240
+msgid "Écart / planning"
+msgstr "Variance / schedule"
+
+#: maintenance/templates/maintenance/ticket_detail.html:263
+msgid "Aucun rapport n'a été saisi lors de la clôture de cette intervention."
+msgstr "No report was entered when this work order was closed."
+
+#: maintenance/templates/maintenance/ticket_detail.html:265
+msgid ""
+"Le rapport sera renseigné par le technicien à la clôture de l'intervention."
+msgstr "The report will be filled in by the technician when closing the work order."
+
+#: maintenance/templates/maintenance/ticket_detail.html:273
+#, python-format
+msgid "Clôturé le %(day)s à %(time)s"
+msgstr "Closed on %(day)s at %(time)s"
+
+#: maintenance/templates/maintenance/ticket_detail.html:286
+msgid "Photos de l'intervention"
+msgstr "Work order photos"
+
+#: maintenance/templates/maintenance/ticket_detail.html:299
+msgid "Supprimer cette photo ?"
+msgstr "Delete this photo?"
+
+#: maintenance/templates/maintenance/ticket_detail.html:317
+msgid "Aucune photo n'a encore été ajoutée à cette intervention."
+msgstr "No photo has been added to this work order yet."
+
+#: maintenance/templates/maintenance/ticket_detail.html:326
+msgid "Fichier"
+msgstr "File"
+
+#: maintenance/templates/maintenance/ticket_detail.html:340
+msgid "Optionnel"
+msgstr "Optional"
+
+#: maintenance/templates/maintenance/ticket_detail.html:345
+msgid "Ajouter la photo"
+msgstr "Add the photo"
+
+#: maintenance/templates/maintenance/ticket_detail.html:356
+msgid "Chronologie de l'intervention"
+msgstr "Work order timeline"
+
+#: maintenance/templates/maintenance/ticket_detail.html:379
+msgid "Aucun évènement enregistré."
+msgstr "No events recorded."
+
+#: maintenance/templates/maintenance/ticket_detail.html:384
+msgid "Chronologie reconstituée à partir des horodatages de l'intervention."
+msgstr "Timeline rebuilt from the work order's timestamps."
+
+#: maintenance/templates/maintenance/ticket_detail.html:398
+msgid "Cliquer n'importe où pour fermer"
+msgstr "Click anywhere to close"
 
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
@@ -706,9 +884,9 @@ msgid ""
 "que soit leur date, de la plus ancienne à la plus récente : une session "
 "ouverte depuis la veille signale une clôture oubliée."
 msgstr ""
-"Work orders started by a technician and not yet closed, whatever their "
-"date, from the oldest to the most recent: a session open since the day "
-"before points to a forgotten closure."
+"Work orders started by a technician and not yet closed, whatever their date, "
+"from the oldest to the most recent: a session open since the day before "
+"points to a forgotten closure."
 
 #: maintenance/templates/maintenance/ticket_list.html:40
 msgid "Aucune intervention en cours"
@@ -747,6 +925,38 @@ msgid "Page %(number)s sur %(total)s — %(counter)s ticket"
 msgid_plural "Page %(number)s sur %(total)s — %(counter)s tickets"
 msgstr[0] "Page %(number)s of %(total)s — %(counter)s ticket"
 msgstr[1] "Page %(number)s of %(total)s — %(counter)s tickets"
+
+#: maintenance/views.py:184
+msgid "Ticket créé"
+msgstr "Ticket created"
+
+#: maintenance/views.py:188
+msgid "Intervention planifiée"
+msgstr "Work order scheduled"
+
+#: maintenance/views.py:189
+msgid "Sans technicien assigné"
+msgstr "No technician assigned"
+
+#: maintenance/views.py:193
+msgid "Démarrage terrain"
+msgstr "Start on site"
+
+#: maintenance/views.py:193
+msgid "Pointage du technicien sur site"
+msgstr "Technician checked in on site"
+
+#: maintenance/views.py:197
+msgid "Photo ajoutée"
+msgstr "Photo added"
+
+#: maintenance/views.py:203
+msgid "Clôture terrain"
+msgstr "Closed on site"
+
+#: maintenance/views.py:207
+msgid "Dernière modification de la fiche"
+msgstr "Last change to the record"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4

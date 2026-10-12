@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load ticket_links i18n %}
 
-{% block title %}Intervention #{{ ticket.id }} | SMARTOPS{% endblock %}
-{% block page_title %}Intervention #{{ ticket.id }}{% endblock %}
+{% block title %}{% trans "Intervention" %} #{{ ticket.id }} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Intervention" %} #{{ ticket.id }}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -21,17 +21,17 @@
         <div class="no-print flex gap-3">
             {% if request.user.is_superuser %}
             <a href="{% url 'ticket_delete' ticket.id %}" 
-               onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette action est irréversible.')"
+               onclick="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette action est irréversible." %}{% endfilter %}')"
                class="px-6 py-3 bg-rose-50 text-rose-600 font-bold rounded-2xl border border-rose-100 hover:bg-rose-100 transition flex items-center gap-2">
                 <i class="las la-trash-alt text-xl"></i>
-                Supprimer
+                {% trans "Supprimer" %}
             </a>
             {% endif %}
             
             {% if ticket.status == 'pending' or ticket.status == 'planned' %}
             <a href="{% url 'ticket_update' ticket.id %}" class="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition flex items-center gap-2">
                 <i class="las la-edit text-xl"></i>
-                {% if ticket.status == 'planned' %}{% trans "Modifier la description" %}{% else %}Modifier la planification{% endif %}
+                {% if ticket.status == 'planned' %}{% trans "Modifier la description" %}{% else %}{% trans "Modifier la planification" %}{% endif %}
             </a>
             {% endif %}
             {% if ticket.status == 'pending' or ticket.status == 'planned' %}
@@ -46,9 +46,9 @@
                 {% trans "Réassigner" %}
             </a>
             {% endif %}
-            <button type="button" onclick="window.print()" title="Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2">
+            <button type="button" onclick="window.print()" title="{% trans "Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF »" %}" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2">
                 <i class="las la-print text-xl"></i>
-                Exporter PDF
+                {% trans "Exporter PDF" %}
             </button>
         </div>
     </div>
@@ -68,20 +68,20 @@
             </div>
             <div class="grid grid-cols-2 gap-8">
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Début Réel (Terrain)</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">{% trans "Début Réel (Terrain)" %}</span>
                     <span class="text-xl font-black">{{ ticket.effective_start|date:"H:i"|default:"--" }}</span>
                     <span class="text-[10px] block opacity-60">{{ ticket.effective_start|date:"d/m/Y" }}</span>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">Fin Réelle (Terrain)</span>
-                    <span class="text-xl font-black">{{ ticket.effective_end|date:"H:i"|default:"En cours..." }}</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest opacity-60 block mb-1">{% trans "Fin Réelle (Terrain)" %}</span>
+                    <span class="text-xl font-black">{% if ticket.effective_end %}{{ ticket.effective_end|date:"H:i" }}{% else %}{% trans "En cours..." %}{% endif %}</span>
                     <span class="text-[10px] block opacity-60">{{ ticket.effective_end|date:"d/m/Y" }}</span>
                 </div>
             </div>
         </div>
         <div class="text-right space-y-2">
             <span class="inline-block px-4 py-2 bg-white/70 rounded-full text-xs font-black uppercase tracking-widest">
-                {% if ticket.status == 'to_reschedule' %}{% trans "Clôturée : travail non effectué, à replanifier" %}{% elif ticket.status == 'in_progress' %}Travail en cours{% else %}Intervention Clôturée{% endif %}
+                {% if ticket.status == 'to_reschedule' %}{% trans "Clôturée : travail non effectué, à replanifier" %}{% elif ticket.status == 'in_progress' %}{% trans "Travail en cours" %}{% else %}{% trans "Intervention Clôturée" %}{% endif %}
             </span>
             {% if follow_up %}
             <a href="{% url 'ticket_detail' follow_up.pk %}" class="block text-sm font-bold underline">{% trans "Ticket de suite" %} #{{ follow_up.pk }} ({{ follow_up.get_status_display }})</a>
@@ -98,15 +98,15 @@
             <!-- Client & Lieu -->
             <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
                 <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
-                    <i class="las la-building text-lg"></i> Informations Client & Lieu
+                    <i class="las la-building text-lg"></i> {% trans "Informations Client & Lieu" %}
                 </h4>
                 <div class="space-y-4">
                     <div>
-                        <span class="text-[10px] font-black text-blue-600 uppercase block mb-1">Client</span>
+                        <span class="text-[10px] font-black text-blue-600 uppercase block mb-1">{% trans "Client" %}</span>
                         <a href="{% url 'client_detail' ticket.equipment.building.client.pk %}" class="font-bold text-slate-800 text-lg hover:text-blue-600 hover:underline">{{ ticket.equipment.building.client.name }}</a>
                     </div>
                     <div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Lieu</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Lieu" %}</span>
                         <a href="{% url 'building_detail' ticket.equipment.building.pk %}" class="font-bold text-slate-700 hover:text-blue-600 hover:underline">{{ ticket.equipment.building.name }}</a>
                         <p class="text-xs text-slate-400 mt-1 leading-relaxed">{{ ticket.equipment.building.address }}</p>
                     </div>
@@ -116,11 +116,11 @@
             <!-- Équipement -->
             <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
                 <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
-                    <i class="las la-tools text-lg"></i> Détails Équipement
+                    <i class="las la-tools text-lg"></i> {% trans "Détails Équipement" %}
                 </h4>
                 <div class="space-y-4">
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Modèle / Nom</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Modèle / Nom" %}</span>
                         <a href="{% url 'equipment_detail' ticket.equipment.pk %}" class="font-black text-slate-800 hover:text-blue-600 hover:underline">{{ ticket.equipment.name }}</a>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -129,12 +129,12 @@
                             <p class="text-sm font-bold text-slate-700">{{ ticket.equipment.serial_number }}</p>
                         </div>
                         <div>
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Type</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Type" %}</span>
                             <p class="text-sm font-bold text-slate-700">{{ ticket.equipment.equipment_type.name }}</p>
                         </div>
                     </div>
                     <a href="{% url 'equipment_detail' ticket.equipment.pk %}" class="flex items-center justify-center gap-2 w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-4 rounded-xl text-xs transition">
-                        <i class="las la-history text-base"></i> Voir la fiche de l'équipement
+                        <i class="las la-history text-base"></i> {% trans "Voir la fiche de l'équipement" %}
                     </a>
                 </div>
             </div>
@@ -147,19 +147,19 @@
             <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 inline-flex flex-wrap gap-1" id="ticket-tabs">
                 <button type="button" data-tab="intervention"
                         class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition bg-slate-900 text-white">
-                    Intervention
+                    {% trans "Intervention" %}
                 </button>
                 <button type="button" data-tab="rapport"
                         class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
-                    Rapport
+                    {% trans "Rapport" %}
                 </button>
                 <button type="button" data-tab="photos"
                         class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
-                    Photos
+                    {% trans "Photos" %}
                 </button>
                 <button type="button" data-tab="historique"
                         class="ticket-tab px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition text-slate-400 hover:bg-slate-50">
-                    Historique
+                    {% trans "Historique" %}
                 </button>
             </div>
 
@@ -168,13 +168,13 @@
                 <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
                     <div class="p-8 border-b border-slate-50">
                         <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                            <i class="las la-info-circle text-lg"></i> Détails de la Planification
+                            <i class="las la-info-circle text-lg"></i> {% trans "Détails de la Planification" %}
                         </h4>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-6">
                                 <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Technicien assigné</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Technicien assigné" %}</span>
                                     <div class="flex items-center gap-3">
                                         <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black">
                                             {{ ticket.technician.user.username|slice:":1"|upper }}
@@ -188,7 +188,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Statut actuel</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Statut actuel" %}</span>
                                     <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-widest">
                                         {{ ticket.get_status_display }}
                                     </span>
@@ -196,7 +196,7 @@
                             </div>
                             <div class="space-y-6">
                                 <div>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Horaire prévu</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Horaire prévu" %}</span>
                                     <p class="text-lg font-black text-slate-800">{{ ticket.planned_start|date:"d F Y" }}</p>
                                     <p class="text-sm font-bold text-slate-400">{{ ticket.planned_start|date:"H:i" }} - {{ ticket.planned_end|date:"H:i" }}</p>
                                 </div>
@@ -205,12 +205,12 @@
                     </div>
 
                     <div class="p-8 bg-slate-50/50">
-                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-3">Consignes & Description</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-3">{% trans "Consignes & Description" %}</span>
                         {% if ticket.description %}
                         <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic whitespace-pre-line">{% ticket_links ticket.description 'ticket_detail' %}</div>
                         {% else %}
                         <div class="bg-white p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed italic">
-                                Aucune consigne spécifique n'a été renseignée pour cette intervention.
+                                {% trans "Aucune consigne spécifique n'a été renseignée pour cette intervention." %}
                         </div>
                         {% endif %}
                     </div>
@@ -224,20 +224,20 @@
                     {% if closure %}
                     <div class="p-8 border-b border-slate-50 grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Durée planifiée</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Durée planifiée" %}</span>
                             <p class="text-lg font-black text-slate-800">{{ closure.planned_label|default:"--" }}</p>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Durée réelle</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Durée réelle" %}</span>
                             <p class="text-lg font-black text-slate-800">
-                                {% if closure.in_progress %}<span class="text-blue-600">En cours…</span>{% else %}{{ closure.real_label|default:"--" }}{% endif %}
+                                {% if closure.in_progress %}<span class="text-blue-600">{% trans "En cours…" %}</span>{% else %}{{ closure.real_label|default:"--" }}{% endif %}
                             </p>
                         </div>
                         <div class="p-4 rounded-2xl border
                             {% if closure.delta_minutes and closure.delta_minutes > 0 %}bg-rose-50 border-rose-100
                             {% elif closure.delta_minutes and closure.delta_minutes < 0 %}bg-emerald-50 border-emerald-100
                             {% else %}bg-slate-50 border-slate-100{% endif %}">
-                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Écart / planning</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Écart / planning" %}</span>
                             <p class="text-lg font-black
                                 {% if closure.delta_minutes and closure.delta_minutes > 0 %}text-rose-600
                                 {% elif closure.delta_minutes and closure.delta_minutes < 0 %}text-emerald-600
@@ -250,7 +250,7 @@
 
                     <div class="p-8">
                         <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                            <i class="las la-file-alt text-lg"></i> Rapport d'intervention
+                            <i class="las la-file-alt text-lg"></i> {% trans "Rapport d'intervention" %}
                         </h4>
 
                         {% if ticket.intervention_report %}
@@ -260,9 +260,9 @@
                             <i class="las la-hourglass-half text-4xl text-slate-300 mb-3 block"></i>
                             <p class="text-sm font-bold text-slate-400">
                                 {% if ticket.status == 'done' %}
-                                    Aucun rapport n'a été saisi lors de la clôture de cette intervention.
+                                    {% trans "Aucun rapport n'a été saisi lors de la clôture de cette intervention." %}
                                 {% else %}
-                                    Le rapport sera renseigné par le technicien à la clôture de l'intervention.
+                                    {% trans "Le rapport sera renseigné par le technicien à la clôture de l'intervention." %}
                                 {% endif %}
                             </p>
                         </div>
@@ -270,7 +270,7 @@
 
                         {% if ticket.effective_end %}
                         <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Clôturé le {{ ticket.effective_end|date:"d/m/Y à H:i" }}
+                            {% blocktrans with day=ticket.effective_end|date:"d/m/Y" time=ticket.effective_end|date:"H:i" %}Clôturé le {{ day }} à {{ time }}{% endblocktrans %}
                             {% if ticket.technician %} · <a href="{% url 'technician_detail' ticket.technician.pk %}" class="hover:text-blue-600 hover:underline">{{ ticket.technician }}</a>{% endif %}
                         </p>
                         {% endif %}
@@ -283,7 +283,7 @@
                 <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
                     <div class="p-8">
                         <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                            <i class="las la-images text-lg"></i> Photos de l'intervention
+                            <i class="las la-images text-lg"></i> {% trans "Photos de l'intervention" %}
                             <span class="text-slate-300">({{ photos|length }})</span>
                         </h4>
 
@@ -296,7 +296,7 @@
                                      data-full="{{ photo.image.url }}" data-caption="{{ photo.caption }}">
                                 <figcaption class="absolute inset-x-0 bottom-0 bg-slate-900/70 text-white text-[10px] font-bold px-2 py-1 flex items-center justify-between">
                                     <span class="uppercase tracking-widest">{{ photo.get_phase_display }}</span>
-                                    <form method="post" onsubmit="return confirm('Supprimer cette photo ?')">
+                                    <form method="post" onsubmit="return confirm('{% filter escapejs %}{% trans "Supprimer cette photo ?" %}{% endfilter %}')">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="delete_photo">
                                         <input type="hidden" name="photo_id" value="{{ photo.id }}">
@@ -314,7 +314,7 @@
                         {% else %}
                         <div class="p-6 mb-8 text-center">
                             <i class="las la-camera text-4xl text-slate-300 mb-3 block"></i>
-                            <p class="text-sm font-bold text-slate-400">Aucune photo n'a encore été ajoutée à cette intervention.</p>
+                            <p class="text-sm font-bold text-slate-400">{% trans "Aucune photo n'a encore été ajoutée à cette intervention." %}</p>
                         </div>
                         {% endif %}
 
@@ -323,26 +323,26 @@
                             <input type="hidden" name="action" value="add_photo">
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div class="sm:col-span-1">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Fichier</label>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Fichier" %}</label>
                                     <input type="file" name="image" accept="image/*" required
                                            class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-900 file:text-white file:font-bold file:text-xs">
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Moment</label>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Moment" %}</label>
                                     <select name="phase" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
-                                        <option value="before">Avant intervention</option>
-                                        <option value="during" selected>Pendant intervention</option>
-                                        <option value="after">Après intervention</option>
+                                        <option value="before">{% trans "Avant intervention" %}</option>
+                                        <option value="during" selected>{% trans "Pendant intervention" %}</option>
+                                        <option value="after">{% trans "Après intervention" %}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Légende</label>
-                                    <input type="text" name="caption" maxlength="255" placeholder="Optionnel"
+                                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">{% trans "Légende" %}</label>
+                                    <input type="text" name="caption" maxlength="255" placeholder="{% trans "Optionnel" %}"
                                            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                                 </div>
                             </div>
                             <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:bg-black transition flex items-center gap-2 text-sm">
-                                <i class="las la-upload text-lg"></i> Ajouter la photo
+                                <i class="las la-upload text-lg"></i> {% trans "Ajouter la photo" %}
                             </button>
                         </form>
                     </div>
@@ -353,7 +353,7 @@
             <div class="ticket-panel hidden" data-panel="historique">
                 <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 p-8">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-8 flex items-center gap-2">
-                        <i class="las la-history text-lg"></i> Chronologie de l'intervention
+                        <i class="las la-history text-lg"></i> {% trans "Chronologie de l'intervention" %}
                     </h4>
 
                     <ol class="relative border-l-2 border-slate-100 ml-3 space-y-8">
@@ -376,12 +376,12 @@
                             {% endif %}
                         </li>
                         {% empty %}
-                        <li class="ml-8 text-sm font-bold text-slate-400">Aucun évènement enregistré.</li>
+                        <li class="ml-8 text-sm font-bold text-slate-400">{% trans "Aucun évènement enregistré." %}</li>
                         {% endfor %}
                     </ol>
 
                     <p class="mt-8 text-[10px] text-slate-300 italic">
-                        Chronologie reconstituée à partir des horodatages de l'intervention.
+                        {% trans "Chronologie reconstituée à partir des horodatages de l'intervention." %}
                     </p>
                 </div>
             </div>
@@ -395,7 +395,7 @@
     <figure class="max-w-4xl w-full text-center">
         <img id="photo-lightbox-img" src="" alt="" class="max-h-[80vh] w-auto mx-auto rounded-2xl shadow-2xl">
         <figcaption id="photo-lightbox-caption" class="mt-4 text-white text-sm font-bold"></figcaption>
-        <p class="mt-2 text-slate-400 text-xs">Cliquer n'importe où pour fermer</p>
+        <p class="mt-2 text-slate-400 text-xs">{% trans "Cliquer n'importe où pour fermer" %}</p>
     </figure>
 </div>
 

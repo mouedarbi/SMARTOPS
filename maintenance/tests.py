@@ -458,6 +458,22 @@ class TicketListSectionsTestCase(TestCase):
         response = self.http.get(reverse('ticket_list'), {'tab': 'toutes'})
         self.assertContains(response, 'Filter')  # dernière langue active : anglais
 
+    def test_ticket_detail_is_translated(self):
+        """Étape 4 de la traduction : fiche d'intervention (onglets, chronologie) en FR / NL / EN."""
+        manager = CustomUser.objects.get(username='chef')
+        ticket = MaintenanceTicket.objects.filter(status='to_reschedule').first()
+        expected = {
+            'fr': ('Détails de la Planification', "Chronologie de l'intervention", 'Ticket créé', 'Ticket de suite'),
+            'nl': ('Planningsgegevens', 'Tijdlijn van de interventie', 'Ticket aangemaakt', 'Vervolgticket'),
+            'en': ('Scheduling details', 'Work order timeline', 'Ticket created', 'Follow-up ticket'),
+        }
+        for language, texts in expected.items():
+            manager.language = language
+            manager.save()
+            response = self.http.get(reverse('ticket_detail', args=[ticket.pk]))
+            for text in texts:
+                self.assertContains(response, text, msg_prefix=language)
+
     def test_to_plan_tab(self):
         """Onglet « À planifier » : sans technicien (suites comprises) et planifiées en retard de moins de 7 jours."""
         response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
