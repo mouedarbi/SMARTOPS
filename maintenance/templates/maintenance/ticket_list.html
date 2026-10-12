@@ -1,26 +1,14 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Tickets de Maintenance | SMARTOPS{% endblock %}
-{% block page_title %}Tickets de Maintenance{% endblock %}
+{% block title %}Liste des interventions | SMARTOPS{% endblock %}
+{% block page_title %}Liste des interventions{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
-    
-    <!-- Actions -->
-    <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h3 class="text-2xl font-black text-slate-800 tracking-tight">Liste des interventions</h3>
-            <p class="text-slate-500 font-medium italic">Suivez et planifiez vos opérations de maintenance.</p>
-        </div>
-        <a href="{% url 'ticket_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
-            <i class="las la-plus-circle text-xl"></i>
-            Nouveau Ticket
-        </a>
-    </div>
 
-    <!-- Onglets : À planifier (par défaut), En cours, Toutes les interventions -->
-    <div class="mb-6 flex flex-wrap gap-2 border-b border-slate-200">
+    <!-- Onglets : À planifier (par défaut), En cours, Toutes les interventions ; création d'un ticket à droite -->
+    <div class="mb-6 flex flex-wrap items-end gap-2 border-b border-slate-200">
         <a href="{% url 'ticket_list' %}?tab=a-planifier" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'a-planifier' %}border-orange-500 text-orange-600{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
             <i class="las la-user-clock"></i> {% trans "À planifier" %}
             <span class="px-2 py-0.5 rounded-full text-xs {% if to_plan %}bg-orange-100 text-orange-700{% else %}bg-slate-100 text-slate-400{% endif %}">{{ to_plan|length }}</span>
@@ -31,6 +19,10 @@
         </a>
         <a href="{% url 'ticket_list' %}?tab=toutes" class="px-5 py-3 -mb-px border-b-2 font-bold text-sm transition flex items-center gap-2 {% if tab == 'toutes' %}border-slate-800 text-slate-800{% else %}border-transparent text-slate-400 hover:text-slate-700{% endif %}">
             <i class="las la-list"></i> {% trans "Toutes les interventions" %}
+        </a>
+        <a href="{% url 'ticket_create' %}" class="ml-auto mb-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
+            <i class="las la-plus-circle text-xl"></i>
+            Nouveau Ticket
         </a>
     </div>
 
