@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:42+0200\n"
+"POT-Creation-Date: 2026-10-12 16:46+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -247,6 +247,7 @@ msgstr "Datum"
 #: maintenance/templates/maintenance/_planning_legend.html:8
 #: maintenance/templates/maintenance/_ticket_table.html:10
 #: maintenance/templates/maintenance/ticket_detail.html:132
+#: maintenance/templates/maintenance/ticket_form.html:112
 msgid "Type"
 msgstr "Type"
 
@@ -310,6 +311,49 @@ msgstr "Toestel"
 #: system/templates/system/dashboard.html:46
 msgid "Équipements"
 msgstr "Toestellen"
+
+#: maintenance/forms.py:45
+msgid "Filtrer par Client"
+msgstr "Filteren op klant"
+
+#: maintenance/forms.py:51
+msgid "Filtrer par lieu"
+msgstr "Filteren op locatie"
+
+#: maintenance/forms.py:57
+msgid "1 heure"
+msgstr "1 uur"
+
+#: maintenance/forms.py:59
+msgid "2 heures"
+msgstr "2 uur"
+
+#: maintenance/forms.py:60
+msgid "3 heures"
+msgstr "3 uur"
+
+#: maintenance/forms.py:61
+msgid "4 heures"
+msgstr "4 uur"
+
+#: maintenance/forms.py:65
+#: maintenance/templates/maintenance/ticket_form.html:144
+msgid "Date de l'intervention"
+msgstr "Datum van de interventie"
+
+#: maintenance/forms.py:72
+#: maintenance/templates/maintenance/ticket_form.html:149
+msgid "Heure de début"
+msgstr "Starttijd"
+
+#: maintenance/forms.py:77
+msgid "Durée estimée"
+msgstr "Geschatte duur"
+
+#: maintenance/forms.py:122
+#: maintenance/templates/maintenance/ticket_form.html:258
+msgid "--- Choisir un équipement ---"
+msgstr "--- Kies een toestel ---"
 
 #: maintenance/models.py:37
 msgid "Liste des compétences (ex: Electrique, Hydraulique)"
@@ -656,14 +700,17 @@ msgid "Exporter PDF"
 msgstr "PDF exporteren"
 
 #: maintenance/templates/maintenance/ticket_detail.html:71
+#: maintenance/templates/maintenance/ticket_form.html:27
 msgid "Début Réel (Terrain)"
 msgstr "Werkelijke start (terrein)"
 
 #: maintenance/templates/maintenance/ticket_detail.html:76
+#: maintenance/templates/maintenance/ticket_form.html:32
 msgid "Fin Réelle (Terrain)"
 msgstr "Werkelijk einde (terrein)"
 
 #: maintenance/templates/maintenance/ticket_detail.html:77
+#: maintenance/templates/maintenance/ticket_form.html:33
 msgid "En cours..."
 msgstr "Bezig..."
 
@@ -716,6 +763,7 @@ msgid "Détails de la Planification"
 msgstr "Planningsgegevens"
 
 #: maintenance/templates/maintenance/ticket_detail.html:177
+#: maintenance/templates/maintenance/ticket_form.html:106
 msgid "Technicien assigné"
 msgstr "Toegewezen technicus"
 
@@ -807,35 +855,129 @@ msgstr "Tijdlijn samengesteld op basis van de tijdstempels van de interventie."
 msgid "Cliquer n'importe où pour fermer"
 msgstr "Klik ergens om te sluiten"
 
+#: maintenance/templates/maintenance/ticket_form.html:15
+msgid "Cette intervention est clôturée et ne peut plus être modifiée."
+msgstr "Deze interventie is afgesloten en kan niet meer worden gewijzigd."
+
+#: maintenance/templates/maintenance/ticket_form.html:15
+msgid "Veuillez renseigner les informations de planification."
+msgstr "Vul de planningsgegevens in."
+
+#: maintenance/templates/maintenance/ticket_form.html:40
+msgid "Validé"
+msgstr "Gevalideerd"
+
+#: maintenance/templates/maintenance/ticket_form.html:40
+msgid "En direct"
+msgstr "Live"
+
+#: maintenance/templates/maintenance/ticket_form.html:61
+msgid "Sélection Rapide"
+msgstr "Snelle selectie"
+
+#: maintenance/templates/maintenance/ticket_form.html:67
+msgid "1. Choisir le Client"
+msgstr "1. Kies de klant"
+
+#: maintenance/templates/maintenance/ticket_form.html:71
+msgid "2. Choisir le lieu"
+msgstr "2. Kies de locatie"
+
+#: maintenance/templates/maintenance/ticket_form.html:75
+msgid "Ou Rechercher par Référence / Nom"
+msgstr "Of zoeken op referentie / naam"
+
+#: maintenance/templates/maintenance/ticket_form.html:77
+msgid "Ex: SN-12345, Ascenseur..."
+msgstr "Bv.: SN-12345, Lift..."
+
+#: maintenance/templates/maintenance/ticket_form.html:86
+msgid "Client & Lieu"
+msgstr "Klant & locatie"
+
+#: maintenance/templates/maintenance/ticket_form.html:96
+msgid "Identification"
+msgstr "Identificatie"
+
+#: maintenance/templates/maintenance/ticket_form.html:101
+msgid "Équipement sélectionné"
+msgstr "Geselecteerd toestel"
+
+#: maintenance/templates/maintenance/ticket_form.html:116
+msgid "Statut de l'intervention"
+msgstr "Status van de interventie"
+
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
+msgstr "Gepland zodra een technicus is toegewezen."
+
+#: maintenance/templates/maintenance/ticket_form.html:127
+msgid "Travail à effectuer"
+msgstr "Uit te voeren werk"
+
+#: maintenance/templates/maintenance/ticket_form.html:139
+msgid "Planification"
+msgstr "Planning"
+
+#: maintenance/templates/maintenance/ticket_form.html:153
+msgid "Durée prévue"
+msgstr "Geplande duur"
+
+#: maintenance/templates/maintenance/ticket_form.html:162
+msgid ""
+"La validation créera automatiquement un événement dans le calendrier partagé "
+"des techniciens."
 msgstr ""
+"Bij het bevestigen wordt automatisch een afspraak aangemaakt in de gedeelde "
+"kalender van de technici."
+
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Enregistrer les modifications"
+msgstr "Wijzigingen opslaan"
+
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Ajouter le ticket"
+msgstr "Ticket toevoegen"
+
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Annuleren"
+
+#: maintenance/templates/maintenance/ticket_form.html:181
+msgid "INTERVENTION ARCHIVÉE"
+msgstr "INTERVENTIE GEARCHIVEERD"
+
+#: maintenance/templates/maintenance/ticket_form.html:184
+msgid "Retour à la liste"
+msgstr "Terug naar de lijst"
 
 #: maintenance/templates/maintenance/ticket_form.html:196
 msgid "Créneau libre chez ce technicien."
-msgstr ""
+msgstr "Vrij tijdslot bij deze technicus."
 
 #: maintenance/templates/maintenance/ticket_form.html:197
 msgid "Ce créneau chevauche une autre intervention de ce technicien."
-msgstr ""
+msgstr "Dit tijdslot overlapt met een andere interventie van deze technicus."
 
 #: maintenance/templates/maintenance/ticket_form.html:198
 msgid ""
 "Chevauchement autorisé pour une urgence : les deux interventions s’affichent "
 "côte à côte."
 msgstr ""
+"Overlapping toegestaan voor een dringende interventie: beide interventies "
+"worden naast elkaar getoond."
 
 #: maintenance/templates/maintenance/ticket_form.html:199
 msgid "Journée complète : choisissez un autre jour."
-msgstr ""
+msgstr "Volle dag: kies een andere dag."
 
 #: maintenance/templates/maintenance/ticket_form.html:202
 msgid "Planning de"
-msgstr ""
+msgstr "Planning van"
 
 #: maintenance/templates/maintenance/ticket_form.html:207
 msgid "Placer en fin de journée"
-msgstr ""
+msgstr "Aan het einde van de dag plaatsen"
 
 #: maintenance/templates/maintenance/ticket_form.html:211
 msgid ""
@@ -843,6 +985,17 @@ msgid ""
 "chevauche une autre intervention. Cliquez sur un créneau libre pour y placer "
 "le ticket."
 msgstr ""
+"Het tijdslot van het ticket verschijnt in het groen als het vrij is, in het "
+"rood als het met een andere interventie overlapt. Klik op een vrij tijdslot "
+"om het ticket daar te plaatsen."
+
+#: maintenance/templates/maintenance/ticket_form.html:242
+msgid "--- Choisir un lieu ---"
+msgstr "--- Kies een locatie ---"
+
+#: maintenance/templates/maintenance/ticket_form.html:314
+msgid "Aucun résultat"
+msgstr "Geen resultaten"
 
 #: maintenance/templates/maintenance/ticket_list.html:4
 #: maintenance/templates/maintenance/ticket_list.html:5
@@ -960,6 +1113,25 @@ msgstr "Afsluiting op het terrein"
 #: maintenance/views.py:207
 msgid "Dernière modification de la fiche"
 msgstr "Laatste wijziging van de fiche"
+
+#: maintenance/views.py:271
+#, python-format
+msgid "Planification #%(id)s"
+msgstr "Planning #%(id)s"
+
+#: maintenance/views.py:301
+#, python-format
+msgid "Annulation #%(id)s"
+msgstr "Annulering #%(id)s"
+
+#: maintenance/views.py:316
+#, python-format
+msgid "Réassignation #%(id)s"
+msgstr "Nieuwe toewijzing #%(id)s"
+
+#: maintenance/views.py:358
+msgid "Nouveau ticket d'intervention"
+msgstr "Nieuw interventieticket"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4

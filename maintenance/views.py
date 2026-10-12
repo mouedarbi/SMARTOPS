@@ -268,7 +268,7 @@ def ticket_update(request, pk):
         return redirect('ticket_detail', pk=ticket.id)
 
     mode = 'description' if ticket.status == 'planned' else None
-    return _ticket_edit(request, ticket, mode, f"Planification #{ticket.id}", f"Intervention #{ticket.id} reprogrammée.")
+    return _ticket_edit(request, ticket, mode, _("Planification #%(id)s") % {'id': ticket.id}, f"Intervention #{ticket.id} reprogrammée.")
 
 
 @login_required
@@ -298,7 +298,7 @@ def ticket_cancel(request, pk):
     return render(request, 'maintenance/ticket_cancel.html', {
         'ticket': ticket,
         'report': report,
-        'page_title': f"Annulation #{ticket.id}",
+        'page_title': _("Annulation #%(id)s") % {'id': ticket.id},
     })
 
 
@@ -313,7 +313,7 @@ def ticket_reassign(request, pk):
     if ticket.status != 'planned':
         messages.warning(request, "Seule une intervention planifiée peut être réassignée.")
         return redirect('ticket_detail', pk=ticket.id)
-    return _ticket_edit(request, ticket, 'reassign', f"Réassignation #{ticket.id}", f"Intervention #{ticket.id} réassignée.")
+    return _ticket_edit(request, ticket, 'reassign', _("Réassignation #%(id)s") % {'id': ticket.id}, f"Intervention #{ticket.id} réassignée.")
 
 
 def _ticket_edit(request, ticket, mode, page_title, success_message):
@@ -355,7 +355,7 @@ def ticket_create(request):
     
     context = {
         'form': form,
-        'page_title': "Nouveau ticket d'intervention"
+        'page_title': _("Nouveau ticket d'intervention")
     }
     return render(request, 'maintenance/ticket_form.html', context)
 

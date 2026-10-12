@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:42+0200\n"
+"POT-Creation-Date: 2026-10-12 16:46+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -247,6 +247,7 @@ msgstr "Date"
 #: maintenance/templates/maintenance/_planning_legend.html:8
 #: maintenance/templates/maintenance/_ticket_table.html:10
 #: maintenance/templates/maintenance/ticket_detail.html:132
+#: maintenance/templates/maintenance/ticket_form.html:112
 msgid "Type"
 msgstr "Type"
 
@@ -310,6 +311,49 @@ msgstr "Equipment"
 #: system/templates/system/dashboard.html:46
 msgid "Équipements"
 msgstr "Equipment"
+
+#: maintenance/forms.py:45
+msgid "Filtrer par Client"
+msgstr "Filter by customer"
+
+#: maintenance/forms.py:51
+msgid "Filtrer par lieu"
+msgstr "Filter by site"
+
+#: maintenance/forms.py:57
+msgid "1 heure"
+msgstr "1 hour"
+
+#: maintenance/forms.py:59
+msgid "2 heures"
+msgstr "2 hours"
+
+#: maintenance/forms.py:60
+msgid "3 heures"
+msgstr "3 hours"
+
+#: maintenance/forms.py:61
+msgid "4 heures"
+msgstr "4 hours"
+
+#: maintenance/forms.py:65
+#: maintenance/templates/maintenance/ticket_form.html:144
+msgid "Date de l'intervention"
+msgstr "Work order date"
+
+#: maintenance/forms.py:72
+#: maintenance/templates/maintenance/ticket_form.html:149
+msgid "Heure de début"
+msgstr "Start time"
+
+#: maintenance/forms.py:77
+msgid "Durée estimée"
+msgstr "Estimated duration"
+
+#: maintenance/forms.py:122
+#: maintenance/templates/maintenance/ticket_form.html:258
+msgid "--- Choisir un équipement ---"
+msgstr "--- Choose a piece of equipment ---"
 
 #: maintenance/models.py:37
 msgid "Liste des compétences (ex: Electrique, Hydraulique)"
@@ -656,14 +700,17 @@ msgid "Exporter PDF"
 msgstr "Export PDF"
 
 #: maintenance/templates/maintenance/ticket_detail.html:71
+#: maintenance/templates/maintenance/ticket_form.html:27
 msgid "Début Réel (Terrain)"
 msgstr "Actual start (on site)"
 
 #: maintenance/templates/maintenance/ticket_detail.html:76
+#: maintenance/templates/maintenance/ticket_form.html:32
 msgid "Fin Réelle (Terrain)"
 msgstr "Actual end (on site)"
 
 #: maintenance/templates/maintenance/ticket_detail.html:77
+#: maintenance/templates/maintenance/ticket_form.html:33
 msgid "En cours..."
 msgstr "In progress..."
 
@@ -716,6 +763,7 @@ msgid "Détails de la Planification"
 msgstr "Scheduling details"
 
 #: maintenance/templates/maintenance/ticket_detail.html:177
+#: maintenance/templates/maintenance/ticket_form.html:106
 msgid "Technicien assigné"
 msgstr "Assigned technician"
 
@@ -758,7 +806,8 @@ msgstr "No report was entered when this work order was closed."
 #: maintenance/templates/maintenance/ticket_detail.html:265
 msgid ""
 "Le rapport sera renseigné par le technicien à la clôture de l'intervention."
-msgstr "The report will be filled in by the technician when closing the work order."
+msgstr ""
+"The report will be filled in by the technician when closing the work order."
 
 #: maintenance/templates/maintenance/ticket_detail.html:273
 #, python-format
@@ -805,35 +854,128 @@ msgstr "Timeline rebuilt from the work order's timestamps."
 msgid "Cliquer n'importe où pour fermer"
 msgstr "Click anywhere to close"
 
+#: maintenance/templates/maintenance/ticket_form.html:15
+msgid "Cette intervention est clôturée et ne peut plus être modifiée."
+msgstr "This work order is closed and can no longer be modified."
+
+#: maintenance/templates/maintenance/ticket_form.html:15
+msgid "Veuillez renseigner les informations de planification."
+msgstr "Please fill in the scheduling details."
+
+#: maintenance/templates/maintenance/ticket_form.html:40
+msgid "Validé"
+msgstr "Validated"
+
+#: maintenance/templates/maintenance/ticket_form.html:40
+msgid "En direct"
+msgstr "Live"
+
+#: maintenance/templates/maintenance/ticket_form.html:61
+msgid "Sélection Rapide"
+msgstr "Quick selection"
+
+#: maintenance/templates/maintenance/ticket_form.html:67
+msgid "1. Choisir le Client"
+msgstr "1. Choose the customer"
+
+#: maintenance/templates/maintenance/ticket_form.html:71
+msgid "2. Choisir le lieu"
+msgstr "2. Choose the site"
+
+#: maintenance/templates/maintenance/ticket_form.html:75
+msgid "Ou Rechercher par Référence / Nom"
+msgstr "Or search by reference / name"
+
+#: maintenance/templates/maintenance/ticket_form.html:77
+msgid "Ex: SN-12345, Ascenseur..."
+msgstr "E.g.: SN-12345, Lift..."
+
+#: maintenance/templates/maintenance/ticket_form.html:86
+msgid "Client & Lieu"
+msgstr "Customer & site"
+
+#: maintenance/templates/maintenance/ticket_form.html:96
+msgid "Identification"
+msgstr "Identification"
+
+#: maintenance/templates/maintenance/ticket_form.html:101
+msgid "Équipement sélectionné"
+msgstr "Selected equipment"
+
+#: maintenance/templates/maintenance/ticket_form.html:116
+msgid "Statut de l'intervention"
+msgstr "Work order status"
+
 #: maintenance/templates/maintenance/ticket_form.html:119
 msgid "Planifié dès qu'un technicien est assigné."
+msgstr "Scheduled as soon as a technician is assigned."
+
+#: maintenance/templates/maintenance/ticket_form.html:127
+msgid "Travail à effectuer"
+msgstr "Work to be done"
+
+#: maintenance/templates/maintenance/ticket_form.html:139
+msgid "Planification"
+msgstr "Scheduling"
+
+#: maintenance/templates/maintenance/ticket_form.html:153
+msgid "Durée prévue"
+msgstr "Planned duration"
+
+#: maintenance/templates/maintenance/ticket_form.html:162
+msgid ""
+"La validation créera automatiquement un événement dans le calendrier partagé "
+"des techniciens."
 msgstr ""
+"Saving will automatically create an event in the technicians' shared "
+"calendar."
+
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Enregistrer les modifications"
+msgstr "Save changes"
+
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Ajouter le ticket"
+msgstr "Add the ticket"
+
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Cancel"
+
+#: maintenance/templates/maintenance/ticket_form.html:181
+msgid "INTERVENTION ARCHIVÉE"
+msgstr "WORK ORDER ARCHIVED"
+
+#: maintenance/templates/maintenance/ticket_form.html:184
+msgid "Retour à la liste"
+msgstr "Back to the list"
 
 #: maintenance/templates/maintenance/ticket_form.html:196
 msgid "Créneau libre chez ce technicien."
-msgstr ""
+msgstr "Free slot for this technician."
 
 #: maintenance/templates/maintenance/ticket_form.html:197
 msgid "Ce créneau chevauche une autre intervention de ce technicien."
-msgstr ""
+msgstr "This slot overlaps another work order of this technician."
 
 #: maintenance/templates/maintenance/ticket_form.html:198
 msgid ""
 "Chevauchement autorisé pour une urgence : les deux interventions s’affichent "
 "côte à côte."
 msgstr ""
+"Overlap allowed for an emergency: both work orders are shown side by side."
 
 #: maintenance/templates/maintenance/ticket_form.html:199
 msgid "Journée complète : choisissez un autre jour."
-msgstr ""
+msgstr "Day fully booked: choose another day."
 
 #: maintenance/templates/maintenance/ticket_form.html:202
 msgid "Planning de"
-msgstr ""
+msgstr "Schedule of"
 
 #: maintenance/templates/maintenance/ticket_form.html:207
 msgid "Placer en fin de journée"
-msgstr ""
+msgstr "Place at the end of the day"
 
 #: maintenance/templates/maintenance/ticket_form.html:211
 msgid ""
@@ -841,6 +983,16 @@ msgid ""
 "chevauche une autre intervention. Cliquez sur un créneau libre pour y placer "
 "le ticket."
 msgstr ""
+"The ticket's slot is shown in green if it is free, in red if it overlaps "
+"another work order. Click a free slot to place the ticket there."
+
+#: maintenance/templates/maintenance/ticket_form.html:242
+msgid "--- Choisir un lieu ---"
+msgstr "--- Choose a site ---"
+
+#: maintenance/templates/maintenance/ticket_form.html:314
+msgid "Aucun résultat"
+msgstr "No results"
 
 #: maintenance/templates/maintenance/ticket_list.html:4
 #: maintenance/templates/maintenance/ticket_list.html:5
@@ -957,6 +1109,25 @@ msgstr "Closed on site"
 #: maintenance/views.py:207
 msgid "Dernière modification de la fiche"
 msgstr "Last change to the record"
+
+#: maintenance/views.py:271
+#, python-format
+msgid "Planification #%(id)s"
+msgstr "Scheduling #%(id)s"
+
+#: maintenance/views.py:301
+#, python-format
+msgid "Annulation #%(id)s"
+msgstr "Cancellation #%(id)s"
+
+#: maintenance/views.py:316
+#, python-format
+msgid "Réassignation #%(id)s"
+msgstr "Reassignment #%(id)s"
+
+#: maintenance/views.py:358
+msgid "Nouveau ticket d'intervention"
+msgstr "New work order ticket"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4

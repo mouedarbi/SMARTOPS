@@ -13,6 +13,7 @@ from django import forms
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from datetime import timedelta, time
 from .models import MaintenanceTicket, Technician, InterventionPhoto
 from .services import NOT_STARTED, find_schedule_conflict, schedule_conflict_message
@@ -41,39 +42,39 @@ class MaintenanceTicketForm(forms.ModelForm):
     client = forms.ModelChoiceField(
         queryset=Client.objects.all(),
         required=False,
-        label="Filtrer par Client",
+        label=_("Filtrer par Client"),
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
     )
     building = forms.ModelChoiceField(
         queryset=Building.objects.none(),
         required=False,
-        label="Filtrer par lieu",
+        label=_("Filtrer par lieu"),
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
     )
 
     # Choix pour les durées
     DURATION_CHOICES = [
-        (3600, '1 heure'),
+        (3600, _('1 heure')),
         (5400, '1h30'),
-        (7200, '2 heures'),
-        (10800, '3 heures'),
-        (14400, '4 heures'),
+        (7200, _('2 heures')),
+        (10800, _('3 heures')),
+        (14400, _('4 heures')),
     ]
 
     planned_date = forms.DateField(
-        label="Date de l'intervention",
+        label=_("Date de l'intervention"),
         widget=forms.DateInput(
             format='%Y-%m-%d',
             attrs={'type': 'date', 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}
         ),
     )
     start_time_slot = forms.ChoiceField(
-        label="Heure de début",
+        label=_("Heure de début"),
         choices=TIME_SLOTS,
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
     )
     duration_seconds = forms.TypedChoiceField(
-        label="Durée estimée",
+        label=_("Durée estimée"),
         choices=DURATION_CHOICES,
         coerce=int,
         initial=5400,
@@ -118,7 +119,7 @@ class MaintenanceTicketForm(forms.ModelForm):
 
         # 1. État par défaut (vide)
         self.fields['equipment'].queryset = Equipment.objects.none()
-        self.fields['equipment'].choices = [('', '--- Choisir un équipement ---')]
+        self.fields['equipment'].choices = [('', _('--- Choisir un équipement ---'))]
 
         # 1.bis Sécurité : Si l'intervention est en cours ou terminée, on verrouille la planification et le statut
         if self.instance and self.instance.pk:

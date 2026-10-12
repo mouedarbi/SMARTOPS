@@ -12,7 +12,7 @@
             <i class="las la-arrow-left text-xl"></i>
         </a>
         <div>
-            <p class="text-slate-500 font-medium italic">{% if ticket.status == 'done' %}Cette intervention est clôturée et ne peut plus être modifiée.{% else %}Veuillez renseigner les informations de planification.{% endif %}</p>
+            <p class="text-slate-500 font-medium italic">{% if ticket.status == 'done' %}{% trans "Cette intervention est clôturée et ne peut plus être modifiée." %}{% else %}{% trans "Veuillez renseigner les informations de planification." %}{% endif %}</p>
         </div>
     </div>
 
@@ -24,20 +24,20 @@
             </div>
             <div class="grid grid-cols-2 gap-8">
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">Début Réel (Terrain)</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">{% trans "Début Réel (Terrain)" %}</span>
                     <span class="text-xl font-black text-emerald-700">{{ ticket.effective_start|date:"H:i"|default:"--" }}</span>
                     <span class="text-[10px] block text-emerald-600/50">{{ ticket.effective_start|date:"d/m/Y" }}</span>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">Fin Réelle (Terrain)</span>
-                    <span class="text-xl font-black text-emerald-700">{{ ticket.effective_end|date:"H:i"|default:"En cours..." }}</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600/50 block mb-1">{% trans "Fin Réelle (Terrain)" %}</span>
+                    <span class="text-xl font-black text-emerald-700">{% if ticket.effective_end %}{{ ticket.effective_end|date:"H:i" }}{% else %}{% trans "En cours..." %}{% endif %}</span>
                     <span class="text-[10px] block text-emerald-600/50">{{ ticket.effective_end|date:"d/m/Y" }}</span>
                 </div>
             </div>
         </div>
         <div class="text-right">
             <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black uppercase tracking-widest">
-                {% if ticket.status == 'done' %}Validé{% else %}Live{% endif %}
+                {% if ticket.status == 'done' %}{% trans "Validé" %}{% else %}{% trans "En direct" %}{% endif %}
             </span>
         </div>
     </div>
@@ -58,23 +58,23 @@
             <div class="space-y-6">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-search text-lg"></i> Sélection Rapide
+                        <i class="las la-search text-lg"></i> {% trans "Sélection Rapide" %}
                     </h4>
                     
                     <div class="space-y-4">
                         {% if not ticket %}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">1. Choisir le Client</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "1. Choisir le Client" %}</label>
                             {{ form.client }}
                         </div>
                         <div id="building_container" class="hidden">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">2. Choisir le lieu</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "2. Choisir le lieu" %}</label>
                             {{ form.building }}
                         </div>
                         <div id="equipment_reference_container" class="space-y-2">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Ou Rechercher par Référence / Nom</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Ou Rechercher par Référence / Nom" %}</label>
                             <div class="relative">
-                                <input type="text" id="equipment_search" class="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm" placeholder="Ex: SN-12345, Ascenseur...">
+                                <input type="text" id="equipment_search" class="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm" placeholder="{% trans "Ex: SN-12345, Ascenseur..." %}">
                                 <i class="las la-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             </div>
                             <div id="search_results" class="hidden mt-2 max-h-40 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg z-10">
@@ -83,7 +83,7 @@
                         </div>
                         {% else %}
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Client & Lieu</p>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{% trans "Client & Lieu" %}</p>
                             <p class="font-black text-slate-800">{{ ticket.equipment.building.client.name }}</p>
                             <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
                         </div>
@@ -93,27 +93,27 @@
 
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-info-circle text-lg"></i> Identification
+                        <i class="las la-info-circle text-lg"></i> {% trans "Identification" %}
                     </h4>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Équipement sélectionné</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Équipement sélectionné" %}</label>
                             {{ form.equipment }}
                         </div>
                         {% if ticket and mode != 'description' %}
                         <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Technicien assigné</label>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Technicien assigné" %}</label>
                             {{ form.technician }}
                         </div>
                         {% endif %}
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Type</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Type" %}</label>
                                 {{ form.type }}
                             </div>
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Statut de l'intervention</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Statut de l'intervention" %}</label>
                                 {# Fixé par le système : « En attente » sans technicien, « Planifié » avec. #}
                                 <p class="px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 font-bold text-slate-700">{% if ticket %}{{ ticket.get_status_display }}{% else %}{% trans "En attente" %}{% endif %}</p>
                                 <p class="mt-1 text-xs text-slate-400">{% trans "Planifié dès qu'un technicien est assigné." %}</p>
@@ -124,7 +124,7 @@
 
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-align-left text-lg"></i> Travail à effectuer
+                        <i class="las la-align-left text-lg"></i> {% trans "Travail à effectuer" %}
                     </h4>
                     <div>
                         {{ form.description }}
@@ -136,21 +136,21 @@
             <div class="space-y-6">
                 <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white">
                     <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
-                        <i class="las la-calendar-check text-lg"></i> Planification
+                        <i class="las la-calendar-check text-lg"></i> {% trans "Planification" %}
                     </h4>
                     
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Date de l'intervention</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Date de l'intervention" %}</label>
                             {{ form.planned_date }}
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Heure de début</label>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Heure de début" %}</label>
                                 {{ form.start_time_slot }}
                             </div>
                             <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Durée prévue</label>
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Durée prévue" %}</label>
                                 {{ form.duration_seconds }}
                             </div>
                         </div>
@@ -159,7 +159,7 @@
                     <div class="mt-8 p-4 bg-blue-700/50 rounded-2xl border border-blue-500/30">
                         <p class="text-xs font-medium text-blue-100 leading-relaxed italic">
                             <i class="las la-lightbulb mr-1"></i>
-                            La validation créera automatiquement un événement dans le calendrier partagé des techniciens.
+                            {% trans "La validation créera automatiquement un événement dans le calendrier partagé des techniciens." %}
                         </p>
                     </div>
                 </div>
@@ -168,20 +168,20 @@
                 <div class="flex flex-col gap-3">
                     <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
-                        {% if mode == 'reassign' %}{% trans "Réassigner" %}{% elif ticket %}Enregistrer les modifications{% else %}Ajouter le ticket{% endif %}
+                        {% if mode == 'reassign' %}{% trans "Réassigner" %}{% elif ticket %}{% trans "Enregistrer les modifications" %}{% else %}{% trans "Ajouter le ticket" %}{% endif %}
                     </button>
                     <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
-                        Annuler
+                        {% trans "Annuler" %}
                     </a>
                 </div>
                 {% else %}
                 <div class="flex flex-col gap-3">
                     <div class="w-full py-4 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-3">
                         <i class="las la-lock text-xl"></i>
-                        INTERVENTION ARCHIVÉE
+                        {% trans "INTERVENTION ARCHIVÉE" %}
                     </div>
                     <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-900 font-black uppercase tracking-widest rounded-2xl border border-slate-200 text-center hover:bg-slate-50 transition">
-                        Retour à la liste
+                        {% trans "Retour à la liste" %}
                     </a>
                 </div>
                 {% endif %}
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`/maintenance/api/buildings/?client_id=${clientId}`)
             .then(res => res.json())
             .then(data => {
-                buildingSelect.innerHTML = '<option value="">--- Choisir un lieu ---</option>';
+                buildingSelect.innerHTML = '<option value="">{% filter escapejs %}{% trans "--- Choisir un lieu ---" %}{% endfilter %}</option>';
                 data.forEach(b => {
                     buildingSelect.add(new Option(b.name, b.id));
                 });
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`/maintenance/api/equipments/?building_id=${buildingId}`)
             .then(res => res.json())
             .then(data => {
-                equipmentSelect.innerHTML = '<option value="">--- Choisir un équipement ---</option>';
+                equipmentSelect.innerHTML = '<option value="">{% filter escapejs %}{% trans "--- Choisir un équipement ---" %}{% endfilter %}</option>';
                 // Le backend renvoie déjà les équipements triés par type puis par nom (croissant) :
                 // on regroupe simplement dans des <optgroup> en préservant cet ordre.
                 let currentGroup = null;
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         searchResults.classList.remove('hidden');
                     } else {
-                        searchResults.innerHTML = '<div class="p-3 text-xs text-slate-400 italic">Aucun résultat</div>';
+                        searchResults.innerHTML = '<div class="p-3 text-xs text-slate-400 italic">{% filter escapejs %}{% trans "Aucun résultat" %}{% endfilter %}</div>';
                         searchResults.classList.remove('hidden');
                     }
                 });
