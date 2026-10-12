@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:53+0200\n"
+"POT-Creation-Date: 2026-10-12 16:57+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -92,6 +92,7 @@ msgid "Nom"
 msgstr "Last name"
 
 #: accounts/templates/accounts/profile.html:71
+#: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
 msgid "Enregistrer"
 msgstr "Save"
@@ -129,11 +130,44 @@ msgid ""
 "L'heure de fin doit être postérieure à l'heure de début de l'intervention."
 msgstr ""
 
+#: inventory/addresses.py:27
+msgid "Belgique"
+msgstr "Belgium"
+
+#: inventory/addresses.py:28
+msgid "France"
+msgstr "France"
+
+#: inventory/addresses.py:29
+msgid "Pays-Bas"
+msgstr "Netherlands"
+
+#: inventory/addresses.py:30
+msgid "Luxembourg"
+msgstr "Luxembourg"
+
+#: inventory/addresses.py:31
+msgid "Allemagne"
+msgstr "Germany"
+
+#: inventory/forms.py:42
+msgid "Rue de la Loi"
+msgstr "Rue de la Loi"
+
+#: inventory/forms.py:46
+msgid "Bruxelles"
+msgstr "Brussels"
+
+#: inventory/forms.py:49
+msgid "Ex. : 2e étage, code porte 1234, entrée par le quai de livraison"
+msgstr "E.g.: 2nd floor, door code 1234, entrance via the loading dock"
+
 #: inventory/models.py:19 inventory/templates/inventory/client_list.html:45
 msgid "Nom du Client"
 msgstr "Customer name"
 
-#: inventory/models.py:20 inventory/templates/inventory/client_detail.html:101
+#: inventory/models.py:20 inventory/templates/inventory/building_list.html:68
+#: inventory/templates/inventory/client_detail.html:101
 msgid "Adresse"
 msgstr "Address"
 
@@ -163,6 +197,7 @@ msgid "Date de création"
 msgstr "Creation date"
 
 #: inventory/models.py:29 inventory/models.py:39
+#: inventory/templates/inventory/building_form.html:12
 #: maintenance/templates/maintenance/ticket_detail.html:105
 #: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
@@ -173,7 +208,8 @@ msgstr "Customer"
 msgid "Clients"
 msgstr "Customers"
 
-#: inventory/models.py:40 inventory/templates/inventory/client_detail.html:100
+#: inventory/models.py:40 inventory/templates/inventory/building_list.html:42
+#: inventory/templates/inventory/client_detail.html:100
 msgid "Nom du lieu"
 msgstr "Site name"
 
@@ -201,7 +237,7 @@ msgstr "City"
 msgid "Pays"
 msgstr "Country"
 
-#: inventory/models.py:48
+#: inventory/models.py:48 inventory/templates/inventory/building_detail.html:53
 msgid "Accès / complément"
 msgstr "Access / additional info"
 
@@ -209,7 +245,7 @@ msgstr "Access / additional info"
 msgid "Étage, code de porte, entrée, consignes d'accès."
 msgstr "Floor, door code, entrance, access instructions."
 
-#: inventory/models.py:52
+#: inventory/models.py:52 inventory/templates/inventory/building_detail.html:46
 msgid "Adresse du lieu"
 msgstr "Site address"
 
@@ -317,10 +353,156 @@ msgstr "Equipment"
 msgid "Équipements"
 msgstr "Equipment"
 
+#: inventory/templates/inventory/building_detail.html:4
+#: inventory/templates/inventory/building_detail.html:5
+msgid "Fiche du lieu"
+msgstr "Site record"
+
+#: inventory/templates/inventory/building_detail.html:13
+msgid "Lieu d'intervention"
+msgstr "Work site"
+
+#: inventory/templates/inventory/building_detail.html:16
+#: inventory/templates/inventory/building_list.html:56
+msgid "Client propriétaire"
+msgstr "Owner (customer)"
+
+#: inventory/templates/inventory/building_detail.html:24
+msgid "Planche QR Codes du lieu"
+msgstr "Site QR code sheet"
+
+#: inventory/templates/inventory/building_detail.html:27
 #: inventory/templates/inventory/client_detail.html:4
 #: inventory/templates/inventory/client_detail.html:5
 msgid "Fiche Client"
 msgstr "Customer record"
+
+#: inventory/templates/inventory/building_detail.html:30
+#: inventory/templates/inventory/building_list.html:91
+#: inventory/templates/inventory/client_detail.html:28
+#: inventory/templates/inventory/client_detail.html:121
+#: inventory/templates/inventory/client_list.html:92
+msgid "Modifier"
+msgstr "Edit"
+
+#: inventory/templates/inventory/building_detail.html:42
+msgid "Localisation"
+msgstr "Location"
+
+#: inventory/templates/inventory/building_detail.html:48
+#: inventory/templates/inventory/building_list.html:85
+#: inventory/templates/inventory/client_detail.html:114
+msgid "Adresse à compléter"
+msgstr "Address to complete"
+
+#: inventory/templates/inventory/building_detail.html:61
+msgid "Itinéraire"
+msgstr "Directions"
+
+#: inventory/templates/inventory/building_detail.html:72
+msgid "Appareils installés"
+msgstr "Installed equipment"
+
+#: inventory/templates/inventory/building_detail.html:75
+msgid "Nouvel Appareil"
+msgstr "New equipment"
+
+#: inventory/templates/inventory/building_detail.html:83
+msgid "Nom de l'appareil"
+msgstr "Equipment name"
+
+#: inventory/templates/inventory/building_detail.html:84
+msgid "Catégorie"
+msgstr "Category"
+
+#: inventory/templates/inventory/building_detail.html:85
+msgid "N° de Série"
+msgstr "Serial no."
+
+#: inventory/templates/inventory/building_detail.html:86
+#: inventory/templates/inventory/building_list.html:69
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+msgid "Actions"
+msgstr "Actions"
+
+#: inventory/templates/inventory/building_detail.html:105
+msgid "Fiche technique"
+msgstr "Technical record"
+
+#: inventory/templates/inventory/building_detail.html:112
+msgid "Aucun appareil répertorié sur ce lieu."
+msgstr "No equipment recorded at this site."
+
+#: inventory/templates/inventory/building_form.html:17
+#, python-format
+msgid "Adresse à compléter. Ancienne adresse : « %(address)s »"
+msgstr "Address to complete. Previous address: “%(address)s”"
+
+#: inventory/templates/inventory/building_form.html:24
+msgid "Adresse d'intervention"
+msgstr "Work site address"
+
+#: inventory/templates/inventory/building_form.html:38
+#: inventory/templates/inventory/client_form.html:16
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Cancel"
+
+#: inventory/templates/inventory/building_list.html:4
+#: inventory/templates/inventory/building_list.html:5
+msgid "Gestion des lieux"
+msgstr "Site management"
+
+#: inventory/templates/inventory/building_list.html:18
+msgid "Rechercher un lieu (nom, adresse, client)..."
+msgstr "Search for a site (name, address, customer)..."
+
+#: inventory/templates/inventory/building_list.html:23
+#: inventory/templates/inventory/client_list.html:23
+#: maintenance/templates/maintenance/ticket_list.html:93
+msgid "Réinitialiser les filtres"
+msgstr "Reset filters"
+
+#: inventory/templates/inventory/building_list.html:29
+#: inventory/templates/inventory/client_list.html:29
+msgid "Rechercher"
+msgstr "Search"
+
+#: inventory/templates/inventory/building_list.html:88
+#: inventory/templates/inventory/client_list.html:89
+msgid "Détails"
+msgstr "Details"
+
+#: inventory/templates/inventory/building_list.html:98
+msgid "Aucun lieu trouvé."
+msgstr "No sites found."
+
+#: inventory/templates/inventory/building_list.html:110
+#: inventory/templates/inventory/client_list.html:111
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: inventory/templates/inventory/building_list.html:115
+#: inventory/templates/inventory/client_list.html:116
+msgid "Première page"
+msgstr "First page"
+
+#: inventory/templates/inventory/building_list.html:119
+#: inventory/templates/inventory/client_list.html:120
+msgid "Précédent"
+msgstr "Previous"
+
+#: inventory/templates/inventory/building_list.html:137
+#: inventory/templates/inventory/client_list.html:138
+msgid "Suivant"
+msgstr "Next"
+
+#: inventory/templates/inventory/building_list.html:139
+#: inventory/templates/inventory/client_list.html:140
+msgid "Dernière page"
+msgstr "Last page"
 
 #: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
 #: maintenance/templates/maintenance/technician_detail.html:25
@@ -345,12 +527,6 @@ msgstr "Created on %(day)s"
 #: maintenance/templates/maintenance/ticket_cancel.html:39
 msgid "Retour"
 msgstr "Back"
-
-#: inventory/templates/inventory/client_detail.html:28
-#: inventory/templates/inventory/client_detail.html:121
-#: inventory/templates/inventory/client_list.html:92
-msgid "Modifier"
-msgstr "Edit"
 
 #: inventory/templates/inventory/client_detail.html:36
 msgid "Informations Générales"
@@ -389,15 +565,6 @@ msgstr "New site"
 msgid "Appareils"
 msgstr "Equipment"
 
-#: inventory/templates/inventory/client_detail.html:103
-#: inventory/templates/inventory/client_list.html:73
-msgid "Actions"
-msgstr "Actions"
-
-#: inventory/templates/inventory/client_detail.html:114
-msgid "Adresse à compléter"
-msgstr "Address to complete"
-
 #: inventory/templates/inventory/client_detail.html:118
 msgid "Voir appareils"
 msgstr "View equipment"
@@ -405,11 +572,6 @@ msgstr "View equipment"
 #: inventory/templates/inventory/client_detail.html:128
 msgid "Aucun lieu enregistré pour ce client."
 msgstr "No sites recorded for this customer."
-
-#: inventory/templates/inventory/client_form.html:16
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Cancel"
 
 #: inventory/templates/inventory/client_list.html:4
 #: inventory/templates/inventory/client_list.html:5
@@ -420,15 +582,6 @@ msgstr "Customer management"
 msgid "Rechercher un client (nom, email, tel, tva)..."
 msgstr "Search for a customer (name, email, phone, VAT)..."
 
-#: inventory/templates/inventory/client_list.html:23
-#: maintenance/templates/maintenance/ticket_list.html:93
-msgid "Réinitialiser les filtres"
-msgstr "Reset filters"
-
-#: inventory/templates/inventory/client_list.html:29
-msgid "Rechercher"
-msgstr "Search"
-
 #: inventory/templates/inventory/client_list.html:34 inventory/views.py:74
 msgid "Nouveau Client"
 msgstr "New customer"
@@ -437,34 +590,9 @@ msgstr "New customer"
 msgid "Date d'Ajout"
 msgstr "Date added"
 
-#: inventory/templates/inventory/client_list.html:89
-msgid "Détails"
-msgstr "Details"
-
 #: inventory/templates/inventory/client_list.html:99
 msgid "Aucun client trouvé."
 msgstr "No customers found."
-
-#: inventory/templates/inventory/client_list.html:111
-#, python-format
-msgid "Page %(number)s sur %(total)s"
-msgstr "Page %(number)s of %(total)s"
-
-#: inventory/templates/inventory/client_list.html:116
-msgid "Première page"
-msgstr "First page"
-
-#: inventory/templates/inventory/client_list.html:120
-msgid "Précédent"
-msgstr "Previous"
-
-#: inventory/templates/inventory/client_list.html:138
-msgid "Suivant"
-msgstr "Next"
-
-#: inventory/templates/inventory/client_list.html:140
-msgid "Dernière page"
-msgstr "Last page"
 
 #: inventory/views.py:89
 msgid "Modifier Client"

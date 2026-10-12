@@ -8,6 +8,7 @@ Description : Formulaires des clients, lieux, équipements et types d'équipemen
 """
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from .models import Client, Building, Equipment, EquipmentType, EquipmentTypeField
 
@@ -38,14 +39,14 @@ class BuildingForm(forms.ModelForm):
         fields = ['name', 'street', 'house_number', 'box', 'postal_code', 'city', 'country', 'access_notes']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl'}),
-            'street': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': 'Rue de la Loi'}),
+            'street': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': _('Rue de la Loi')}),
             'house_number': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '12'}),
             'box': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '3'}),
             'postal_code': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': '1000', 'inputmode': 'numeric'}),
-            'city': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': 'Bruxelles'}),
+            'city': forms.TextInput(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'placeholder': _('Bruxelles')}),
             'country': forms.Select(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl bg-white'}),
             'access_notes': forms.Textarea(attrs={'class': 'w-full p-3 border border-slate-200 rounded-xl', 'rows': 2,
-                                                  'placeholder': 'Ex. : 2e étage, code porte 1234, entrée par le quai de livraison'}),
+                                                  'placeholder': _('Ex. : 2e étage, code porte 1234, entrée par le quai de livraison')}),
         }
 
     def __init__(self, *args, **kwargs):

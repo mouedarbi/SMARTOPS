@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:53+0200\n"
+"POT-Creation-Date: 2026-10-12 16:57+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -92,6 +92,7 @@ msgid "Nom"
 msgstr "Naam"
 
 #: accounts/templates/accounts/profile.html:71
+#: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
 msgid "Enregistrer"
 msgstr "Opslaan"
@@ -129,11 +130,44 @@ msgid ""
 "L'heure de fin doit être postérieure à l'heure de début de l'intervention."
 msgstr ""
 
+#: inventory/addresses.py:27
+msgid "Belgique"
+msgstr "België"
+
+#: inventory/addresses.py:28
+msgid "France"
+msgstr "Frankrijk"
+
+#: inventory/addresses.py:29
+msgid "Pays-Bas"
+msgstr "Nederland"
+
+#: inventory/addresses.py:30
+msgid "Luxembourg"
+msgstr "Luxemburg"
+
+#: inventory/addresses.py:31
+msgid "Allemagne"
+msgstr "Duitsland"
+
+#: inventory/forms.py:42
+msgid "Rue de la Loi"
+msgstr "Wetstraat"
+
+#: inventory/forms.py:46
+msgid "Bruxelles"
+msgstr "Brussel"
+
+#: inventory/forms.py:49
+msgid "Ex. : 2e étage, code porte 1234, entrée par le quai de livraison"
+msgstr "Bv.: 2e verdieping, deurcode 1234, ingang via de laadkaai"
+
 #: inventory/models.py:19 inventory/templates/inventory/client_list.html:45
 msgid "Nom du Client"
 msgstr "Naam van de klant"
 
-#: inventory/models.py:20 inventory/templates/inventory/client_detail.html:101
+#: inventory/models.py:20 inventory/templates/inventory/building_list.html:68
+#: inventory/templates/inventory/client_detail.html:101
 msgid "Adresse"
 msgstr "Adres"
 
@@ -163,6 +197,7 @@ msgid "Date de création"
 msgstr "Aanmaakdatum"
 
 #: inventory/models.py:29 inventory/models.py:39
+#: inventory/templates/inventory/building_form.html:12
 #: maintenance/templates/maintenance/ticket_detail.html:105
 #: maintenance/templates/maintenance/ticket_list.html:80
 msgid "Client"
@@ -173,7 +208,8 @@ msgstr "Klant"
 msgid "Clients"
 msgstr "Klanten"
 
-#: inventory/models.py:40 inventory/templates/inventory/client_detail.html:100
+#: inventory/models.py:40 inventory/templates/inventory/building_list.html:42
+#: inventory/templates/inventory/client_detail.html:100
 msgid "Nom du lieu"
 msgstr "Naam van de locatie"
 
@@ -201,7 +237,7 @@ msgstr "Gemeente"
 msgid "Pays"
 msgstr "Land"
 
-#: inventory/models.py:48
+#: inventory/models.py:48 inventory/templates/inventory/building_detail.html:53
 msgid "Accès / complément"
 msgstr "Toegang / aanvulling"
 
@@ -209,7 +245,7 @@ msgstr "Toegang / aanvulling"
 msgid "Étage, code de porte, entrée, consignes d'accès."
 msgstr "Verdieping, deurcode, ingang, toegangsinstructies."
 
-#: inventory/models.py:52
+#: inventory/models.py:52 inventory/templates/inventory/building_detail.html:46
 msgid "Adresse du lieu"
 msgstr "Adres van de locatie"
 
@@ -305,7 +341,8 @@ msgstr "Het veld '%(name)s' moet numeriek zijn."
 #: inventory/models.py:168 inventory/models.py:170
 #, python-format
 msgid "Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ."
-msgstr "Het veld '%(name)s' moet een geldige datum zijn in het formaat JJJJ-MM-DD."
+msgstr ""
+"Het veld '%(name)s' moet een geldige datum zijn in het formaat JJJJ-MM-DD."
 
 #: inventory/models.py:176 maintenance/models.py:72
 #: system/templates/system/dashboard.html:92
@@ -317,10 +354,156 @@ msgstr "Toestel"
 msgid "Équipements"
 msgstr "Toestellen"
 
+#: inventory/templates/inventory/building_detail.html:4
+#: inventory/templates/inventory/building_detail.html:5
+msgid "Fiche du lieu"
+msgstr "Locatiefiche"
+
+#: inventory/templates/inventory/building_detail.html:13
+msgid "Lieu d'intervention"
+msgstr "Interventielocatie"
+
+#: inventory/templates/inventory/building_detail.html:16
+#: inventory/templates/inventory/building_list.html:56
+msgid "Client propriétaire"
+msgstr "Eigenaar (klant)"
+
+#: inventory/templates/inventory/building_detail.html:24
+msgid "Planche QR Codes du lieu"
+msgstr "QR-codeblad van de locatie"
+
+#: inventory/templates/inventory/building_detail.html:27
 #: inventory/templates/inventory/client_detail.html:4
 #: inventory/templates/inventory/client_detail.html:5
 msgid "Fiche Client"
 msgstr "Klantfiche"
+
+#: inventory/templates/inventory/building_detail.html:30
+#: inventory/templates/inventory/building_list.html:91
+#: inventory/templates/inventory/client_detail.html:28
+#: inventory/templates/inventory/client_detail.html:121
+#: inventory/templates/inventory/client_list.html:92
+msgid "Modifier"
+msgstr "Wijzigen"
+
+#: inventory/templates/inventory/building_detail.html:42
+msgid "Localisation"
+msgstr "Ligging"
+
+#: inventory/templates/inventory/building_detail.html:48
+#: inventory/templates/inventory/building_list.html:85
+#: inventory/templates/inventory/client_detail.html:114
+msgid "Adresse à compléter"
+msgstr "Adres aan te vullen"
+
+#: inventory/templates/inventory/building_detail.html:61
+msgid "Itinéraire"
+msgstr "Route"
+
+#: inventory/templates/inventory/building_detail.html:72
+msgid "Appareils installés"
+msgstr "Geïnstalleerde toestellen"
+
+#: inventory/templates/inventory/building_detail.html:75
+msgid "Nouvel Appareil"
+msgstr "Nieuw toestel"
+
+#: inventory/templates/inventory/building_detail.html:83
+msgid "Nom de l'appareil"
+msgstr "Naam van het toestel"
+
+#: inventory/templates/inventory/building_detail.html:84
+msgid "Catégorie"
+msgstr "Categorie"
+
+#: inventory/templates/inventory/building_detail.html:85
+msgid "N° de Série"
+msgstr "Serienr."
+
+#: inventory/templates/inventory/building_detail.html:86
+#: inventory/templates/inventory/building_list.html:69
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+msgid "Actions"
+msgstr "Acties"
+
+#: inventory/templates/inventory/building_detail.html:105
+msgid "Fiche technique"
+msgstr "Technische fiche"
+
+#: inventory/templates/inventory/building_detail.html:112
+msgid "Aucun appareil répertorié sur ce lieu."
+msgstr "Geen toestellen geregistreerd op deze locatie."
+
+#: inventory/templates/inventory/building_form.html:17
+#, python-format
+msgid "Adresse à compléter. Ancienne adresse : « %(address)s »"
+msgstr "Adres aan te vullen. Vorig adres: « %(address)s »"
+
+#: inventory/templates/inventory/building_form.html:24
+msgid "Adresse d'intervention"
+msgstr "Interventieadres"
+
+#: inventory/templates/inventory/building_form.html:38
+#: inventory/templates/inventory/client_form.html:16
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Annuleren"
+
+#: inventory/templates/inventory/building_list.html:4
+#: inventory/templates/inventory/building_list.html:5
+msgid "Gestion des lieux"
+msgstr "Locatiebeheer"
+
+#: inventory/templates/inventory/building_list.html:18
+msgid "Rechercher un lieu (nom, adresse, client)..."
+msgstr "Een locatie zoeken (naam, adres, klant)..."
+
+#: inventory/templates/inventory/building_list.html:23
+#: inventory/templates/inventory/client_list.html:23
+#: maintenance/templates/maintenance/ticket_list.html:93
+msgid "Réinitialiser les filtres"
+msgstr "Filters wissen"
+
+#: inventory/templates/inventory/building_list.html:29
+#: inventory/templates/inventory/client_list.html:29
+msgid "Rechercher"
+msgstr "Zoeken"
+
+#: inventory/templates/inventory/building_list.html:88
+#: inventory/templates/inventory/client_list.html:89
+msgid "Détails"
+msgstr "Details"
+
+#: inventory/templates/inventory/building_list.html:98
+msgid "Aucun lieu trouvé."
+msgstr "Geen locaties gevonden."
+
+#: inventory/templates/inventory/building_list.html:110
+#: inventory/templates/inventory/client_list.html:111
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Pagina %(number)s van %(total)s"
+
+#: inventory/templates/inventory/building_list.html:115
+#: inventory/templates/inventory/client_list.html:116
+msgid "Première page"
+msgstr "Eerste pagina"
+
+#: inventory/templates/inventory/building_list.html:119
+#: inventory/templates/inventory/client_list.html:120
+msgid "Précédent"
+msgstr "Vorige"
+
+#: inventory/templates/inventory/building_list.html:137
+#: inventory/templates/inventory/client_list.html:138
+msgid "Suivant"
+msgstr "Volgende"
+
+#: inventory/templates/inventory/building_list.html:139
+#: inventory/templates/inventory/client_list.html:140
+msgid "Dernière page"
+msgstr "Laatste pagina"
 
 #: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
 #: maintenance/templates/maintenance/technician_detail.html:25
@@ -345,12 +528,6 @@ msgstr "Aangemaakt op %(day)s"
 #: maintenance/templates/maintenance/ticket_cancel.html:39
 msgid "Retour"
 msgstr "Terug"
-
-#: inventory/templates/inventory/client_detail.html:28
-#: inventory/templates/inventory/client_detail.html:121
-#: inventory/templates/inventory/client_list.html:92
-msgid "Modifier"
-msgstr "Wijzigen"
 
 #: inventory/templates/inventory/client_detail.html:36
 msgid "Informations Générales"
@@ -389,15 +566,6 @@ msgstr "Nieuwe locatie"
 msgid "Appareils"
 msgstr "Toestellen"
 
-#: inventory/templates/inventory/client_detail.html:103
-#: inventory/templates/inventory/client_list.html:73
-msgid "Actions"
-msgstr "Acties"
-
-#: inventory/templates/inventory/client_detail.html:114
-msgid "Adresse à compléter"
-msgstr "Adres aan te vullen"
-
 #: inventory/templates/inventory/client_detail.html:118
 msgid "Voir appareils"
 msgstr "Toestellen bekijken"
@@ -405,11 +573,6 @@ msgstr "Toestellen bekijken"
 #: inventory/templates/inventory/client_detail.html:128
 msgid "Aucun lieu enregistré pour ce client."
 msgstr "Geen locaties geregistreerd voor deze klant."
-
-#: inventory/templates/inventory/client_form.html:16
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Annuleren"
 
 #: inventory/templates/inventory/client_list.html:4
 #: inventory/templates/inventory/client_list.html:5
@@ -420,15 +583,6 @@ msgstr "Klantenbeheer"
 msgid "Rechercher un client (nom, email, tel, tva)..."
 msgstr "Een klant zoeken (naam, e-mail, tel, btw)..."
 
-#: inventory/templates/inventory/client_list.html:23
-#: maintenance/templates/maintenance/ticket_list.html:93
-msgid "Réinitialiser les filtres"
-msgstr "Filters wissen"
-
-#: inventory/templates/inventory/client_list.html:29
-msgid "Rechercher"
-msgstr "Zoeken"
-
 #: inventory/templates/inventory/client_list.html:34 inventory/views.py:74
 msgid "Nouveau Client"
 msgstr "Nieuwe klant"
@@ -437,34 +591,9 @@ msgstr "Nieuwe klant"
 msgid "Date d'Ajout"
 msgstr "Datum toegevoegd"
 
-#: inventory/templates/inventory/client_list.html:89
-msgid "Détails"
-msgstr "Details"
-
 #: inventory/templates/inventory/client_list.html:99
 msgid "Aucun client trouvé."
 msgstr "Geen klanten gevonden."
-
-#: inventory/templates/inventory/client_list.html:111
-#, python-format
-msgid "Page %(number)s sur %(total)s"
-msgstr "Pagina %(number)s van %(total)s"
-
-#: inventory/templates/inventory/client_list.html:116
-msgid "Première page"
-msgstr "Eerste pagina"
-
-#: inventory/templates/inventory/client_list.html:120
-msgid "Précédent"
-msgstr "Vorige"
-
-#: inventory/templates/inventory/client_list.html:138
-msgid "Suivant"
-msgstr "Volgende"
-
-#: inventory/templates/inventory/client_list.html:140
-msgid "Dernière page"
-msgstr "Laatste pagina"
 
 #: inventory/views.py:89
 msgid "Modifier Client"

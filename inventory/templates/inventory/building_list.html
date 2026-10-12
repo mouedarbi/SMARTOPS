@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Gestion des lieux | SMARTOPS{% endblock %}
-{% block page_title %}Gestion des lieux{% endblock %}
+{% block title %}{% trans "Gestion des lieux" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Gestion des lieux" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
@@ -14,18 +15,18 @@
             <input type="hidden" name="order" value="{{ order }}">
             
             <div class="relative flex-grow">
-                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un lieu (nom, adresse, client)..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="text" name="q" value="{{ q }}" placeholder="{% trans "Rechercher un lieu (nom, adresse, client)..." %}" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <i class="las la-search absolute left-3 top-3.5 text-slate-400 text-lg"></i>
             </div>
             
             {% if q or sort != 'name' or order != 'asc' %}
-                <a href="{% url 'building_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-500 font-bold p-2.5 rounded-xl text-sm flex items-center justify-center transition" title="Réinitialiser les filtres">
+                <a href="{% url 'building_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-500 font-bold p-2.5 rounded-xl text-sm flex items-center justify-center transition" title="{% trans "Réinitialiser les filtres" %}">
                     <i class="las la-times text-lg"></i>
                 </a>
             {% endif %}
             
             <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
-                Rechercher
+                {% trans "Rechercher" %}
             </button>
         </form>
 
@@ -38,7 +39,7 @@
                 <tr class="bg-slate-50 border-b border-slate-200">
                     <th class="p-4 pl-8 font-bold text-slate-700 text-xs uppercase tracking-widest">
                         <a href="?q={{ q }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
-                            Nom du lieu
+                            {% trans "Nom du lieu" %}
                             {% if sort == 'name' %}
                                 {% if order == 'asc' %}
                                     <i class="las la-arrow-up text-blue-600 text-sm"></i>
@@ -52,7 +53,7 @@
                     </th>
                     <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
                         <a href="?q={{ q }}&sort=client__name&order={% if sort == 'client__name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
-                            Client propriétaire
+                            {% trans "Client propriétaire" %}
                             {% if sort == 'client__name' %}
                                 {% if order == 'asc' %}
                                     <i class="las la-arrow-up text-blue-600 text-sm"></i>
@@ -64,8 +65,8 @@
                             {% endif %}
                         </a>
                     </th>
-                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">Adresse</th>
-                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">Actions</th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "Adresse" %}</th>
+                    <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest text-right pr-8">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,20 +82,20 @@
                             {{ building.client.name }}
                         </a>
                     </td>
-                    <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}{% if not building.is_address_complete %}<span class="ml-1 inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider">Adresse à compléter</span>{% endif %}</td>
+                    <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}{% if not building.is_address_complete %}<span class="ml-1 inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider">{% trans "Adresse à compléter" %}</span>{% endif %}</td>
                     <td class="p-4 text-right pr-8 text-sm">
                         <a href="{% url 'building_detail' building.pk %}" class="bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-bold py-1.5 px-3 rounded-lg text-xs border border-slate-100 transition mr-2">
-                            Détails
+                            {% trans "Détails" %}
                         </a>
                         <a href="{% url 'building_update' building.pk %}" class="text-slate-400 hover:text-blue-600 transition text-xs font-bold">
-                            Modifier
+                            {% trans "Modifier" %}
                         </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="4" class="p-12 text-center text-slate-400 font-bold italic">
-                        Aucun lieu trouvé.
+                        {% trans "Aucun lieu trouvé." %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -106,16 +107,16 @@
     {% if page_obj.has_other_pages %}
     <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
         <span class="text-xs font-semibold text-slate-500">
-            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+            {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} sur {{ total }}{% endblocktrans %}
         </span>
         
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Première page">
+                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Première page" %}">
                     «
                 </a>
                 <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
-                    Précédent
+                    {% trans "Précédent" %}
                 </a>
             {% endif %}
             
@@ -133,9 +134,9 @@
             
             {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
-                    Suivant
+                    {% trans "Suivant" %}
                 </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="Dernière page">
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Dernière page" %}">
                     »
                 </a>
             {% endif %}

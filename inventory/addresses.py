@@ -11,15 +11,25 @@ Description : Adresse structurée d'un lieu (format des balises addr:* d'OpenStr
 import re
 from urllib.parse import quote_plus
 
-# Pays proposés (code ISO 3166-1 alpha-2, comme addr:country dans OpenStreetMap).
+from django.utils.translation import gettext_lazy as _
+
+# Noms des pays dans l'adresse complète enregistrée (toujours en français, quelle que soit
+# la langue de l'utilisateur) ; code ISO 3166-1 alpha-2, comme addr:country dans OpenStreetMap.
+COUNTRY_NAMES = {
+    'BE': 'Belgique',
+    'FR': 'France',
+    'NL': 'Pays-Bas',
+    'LU': 'Luxembourg',
+    'DE': 'Allemagne',
+}
+# Pays proposés dans le formulaire, libellés dans la langue de l'utilisateur.
 COUNTRY_CHOICES = [
-    ('BE', 'Belgique'),
-    ('FR', 'France'),
-    ('NL', 'Pays-Bas'),
-    ('LU', 'Luxembourg'),
-    ('DE', 'Allemagne'),
+    ('BE', _('Belgique')),
+    ('FR', _('France')),
+    ('NL', _('Pays-Bas')),
+    ('LU', _('Luxembourg')),
+    ('DE', _('Allemagne')),
 ]
-COUNTRY_NAMES = dict(COUNTRY_CHOICES)
 
 # « Rue de la Loi 12 bte 3, 1000 Bruxelles, Belgique » (pays facultatif).
 ADDRESS_PATTERN = re.compile(
@@ -40,7 +50,7 @@ def parse_address(text):
     if not match:
         return None
     parts = {key: (value or '').strip() for key, value in match.groupdict().items()}
-    names_to_codes = {name.lower(): code for code, name in COUNTRY_CHOICES}
+    names_to_codes = {name.lower(): code for code, name in COUNTRY_NAMES.items()}
     parts['country'] = names_to_codes.get(parts['country'].lower(), 'BE')
     return parts
 

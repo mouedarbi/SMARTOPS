@@ -494,3 +494,22 @@ class InventoryTranslationTests(TestCase):
         self._check(reverse('client_update', args=[self.client_obj.pk]), {
             'fr': ('Modifier Client', 'Numéro de TVA'), 'nl': ('Klant wijzigen', 'Btw-nummer'),
             'en': ('Edit customer', 'VAT number')})
+
+    def test_building_screens(self):
+        building = Building.objects.create(client=self.client_obj, name="Site", street="Rue Neuve",
+                                           house_number="1", postal_code="1000", city="Bruxelles")
+        self._check(reverse('building_list'), {
+            'fr': ('Gestion des lieux', 'Client propriétaire'), 'nl': ('Locatiebeheer', 'Eigenaar (klant)'),
+            'en': ('Site management', 'Owner (customer)')})
+        self._check(reverse('building_detail', args=[building.pk]), {
+            'fr': ('Itinéraire', 'Appareils installés'), 'nl': ('Route', 'Geïnstalleerde toestellen'),
+            'en': ('Directions', 'Installed equipment')})
+        self._check(reverse('building_update', args=[building.pk]), {
+            'fr': ("Adresse d'intervention", 'Belgique'), 'nl': ('Interventieadres', 'België'),
+            'en': ('Work site address', 'Belgium')})
+        # Enregistré par un utilisateur anglophone : l'adresse complète garde le nom du pays en français.
+        self.http.post(reverse('building_update', args=[building.pk]), {
+            'name': 'Site', 'street': 'Rue Neuve', 'house_number': '2', 'postal_code': '1000',
+            'city': 'Bruxelles', 'country': 'BE'})
+        building.refresh_from_db()
+        self.assertEqual(building.address, 'Rue Neuve 2, 1000 Bruxelles, Belgique')

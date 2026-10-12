@@ -1,5 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
+{% block title %}{{ title }} | SMARTOPS{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
@@ -7,19 +9,19 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Client</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">{% trans "Client" %}</p>
             <p class="font-bold text-slate-800">{{ client.name }}</p>
         </div>
         {% if form.instance.pk and not form.instance.is_address_complete %}
         <div class="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm font-bold">
-            <i class="las la-exclamation-triangle"></i> Adresse à compléter. Ancienne adresse : « {{ form.instance.address }} »
+            <i class="las la-exclamation-triangle"></i> {% blocktrans with address=form.instance.address %}Adresse à compléter. Ancienne adresse : « {{ address }} »{% endblocktrans %}
         </div>
         {% endif %}
         <div class="space-y-5">
             {% with field=form.name %}{% include "inventory/_building_field.html" %}{% endwith %}
 
             <p class="pt-2 text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
-                <i class="las la-map-marker-alt text-lg"></i> Adresse d'intervention
+                <i class="las la-map-marker-alt text-lg"></i> {% trans "Adresse d'intervention" %}
             </p>
             <div class="grid grid-cols-6 gap-4">
                 <div class="col-span-6 sm:col-span-4">{% with field=form.street %}{% include "inventory/_building_field.html" %}{% endwith %}</div>
@@ -33,10 +35,10 @@
         </div>
         <div class="mt-6 flex justify-end items-center gap-3">
             <a href="{{ cancel_url }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-2 px-6 rounded-xl transition duration-200">
-                Annuler
+                {% trans "Annuler" %}
             </a>
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition duration-200">
-                Enregistrer
+                {% trans "Enregistrer" %}
             </button>
         </div>
     </form>
