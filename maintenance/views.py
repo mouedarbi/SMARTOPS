@@ -107,7 +107,7 @@ def ticket_list(request):
         'in_progress': in_progress,
         'older_late': older_late_count(all_tickets),
         'page_title': "Tickets de Maintenance",
-        'technicians': Technician.objects.select_related('user').order_by('user__username'),
+        'technicians': Technician.objects.select_related('user').order_by('user__first_name', 'user__last_name', 'user__username'),
         'clients': Client.objects.order_by('name'),
         'buildings': Building.objects.select_related('client').order_by('name'),
         'status_choices': MaintenanceTicket.STATUS_CHOICES,

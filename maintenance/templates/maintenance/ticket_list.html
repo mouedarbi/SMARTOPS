@@ -58,7 +58,7 @@
                     <option value="">Tous</option>
                     <option value="none" {% if filters.technician == 'none' %}selected{% endif %}>Non assigné</option>
                     {% for tech in technicians %}
-                    <option value="{{ tech.id }}" {% if filters.technician == tech.id|stringformat:"s" %}selected{% endif %}>{{ tech }}</option>
+                    <option value="{{ tech.id }}" {% if filters.technician == tech.id|stringformat:"s" %}selected{% endif %}>{{ tech }} ({{ tech.user.username }})</option>
                     {% endfor %}
                 </select>
             </div>
