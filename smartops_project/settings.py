@@ -112,6 +112,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.UserLanguageMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'axes.middleware.AxesMiddleware',
@@ -127,6 +128,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'system.context_processors.system_settings',
@@ -282,7 +284,15 @@ LOGGING = {
     },
 }
 
-LANGUAGE_CODE = 'fr-fr'
+# Langues de l'interface : le français est la langue source et la langue par défaut ; chaque
+# utilisateur choisit la sienne dans son profil (accounts.middleware.UserLanguageMiddleware).
+LANGUAGE_CODE = 'fr'
+LANGUAGES = [
+    ('fr', 'Français'),
+    ('nl', 'Nederlands'),
+    ('en', 'English'),
+]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True

@@ -7,6 +7,7 @@ Version : 1.2
 Description : Modèle utilisateur personnalisé avec gestion du soft-delete et contraintes d'intégrité.
 """
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -27,6 +28,13 @@ class CustomUser(AbstractUser):
         choices=ROLE_CHOICES, 
         default='technician',
         verbose_name=_("Rôle")
+    )
+    # Langue de l'interface choisie par l'utilisateur (français par défaut).
+    language = models.CharField(
+        max_length=5,
+        choices=settings.LANGUAGES,
+        default='fr',
+        verbose_name=_("Langue"),
     )
     is_deleted = models.BooleanField(
         default=False, 

@@ -77,7 +77,7 @@ class MyProfileTests(TestCase):
     def test_update_own_details_only(self):
         r = self.client.post(reverse('my_profile'), {
             'action': 'profile', 'first_name': 'Marie-Anne', 'last_name': 'Durand',
-            'email': 'ma@example.com', 'role': 'admin', 'username': 'pirate',
+            'email': 'ma@example.com', 'language': 'fr', 'role': 'admin', 'username': 'pirate',
         })
         self.assertRedirects(r, reverse('my_profile'))
         self.manager.refresh_from_db()
@@ -120,3 +120,32 @@ class MyProfileTests(TestCase):
         self.assertContains(r, 'data-section="parametres" open>')
         r = self.client.get(reverse('equipment_type_list'))
         self.assertContains(r, 'data-section="parametres" open data-active>')
+
+
+@override_settings(SECURE_SSL_REDIRECT=False)
+class UserLanguageTests(TestCase):
+    """Langue de l'interface : celle du profil de l'utilisateur, le français sans connexion."""
+
+    def setUp(self):
+        self.manager = User.objects.create_user(username='chef_nl', password='x', role='manager', language='nl')
+
+    def test_user_language_is_active(self):
+        self.client.force_login(self.manager)
+        r = self.client.get(reverse('my_profile'))
+        self.assertEqual(r.headers['Content-Language'], 'nl')
+        self.assertContains(r, '<html lang="nl">')
+        # Pas de fuite : la langue par défaut est rétablie après la requête.
+        from django.utils import translation
+        self.assertEqual(translation.get_language(), 'fr')
+
+    def test_anonymous_pages_are_in_french(self):
+        r = self.client.get(reverse('login'))
+        self.assertEqual(r.headers['Content-Language'], 'fr')
+
+    def test_language_is_changed_from_the_profile(self):
+        self.client.force_login(self.manager)
+        self.client.post(reverse('my_profile'), {'action': 'profile', 'first_name': '', 'last_name': '',
+                                                 'email': '', 'language': 'en'})
+        self.manager.refresh_from_db()
+        self.assertEqual(self.manager.language, 'en')
+        self.assertEqual(self.client.get(reverse('my_profile')).headers['Content-Language'], 'en')

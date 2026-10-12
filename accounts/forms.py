@@ -19,13 +19,14 @@ class CustomUserForm(forms.ModelForm):
     """
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'is_active']
+        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'language', 'is_active']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
             'first_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
             'last_name': forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
             'email': forms.EmailInput(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
             'role': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
+            'language': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500'}),
         }
 
@@ -52,13 +53,14 @@ class CustomUserCreateForm(CustomUserForm):
 
 class ProfileForm(forms.ModelForm):
     """
-    « Mon profil » : l'utilisateur connecté modifie ses propres nom, prénom et e-mail.
+    « Mon profil » : l'utilisateur connecté modifie ses propres nom, prénom, e-mail et langue.
     L'identifiant, le rôle et l'état du compte restent gérés par un administrateur.
     """
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email', 'language']
         widgets = {
+            'language': forms.Select(attrs={'class': INPUT_CLASS}),
             'first_name': forms.TextInput(attrs={'class': INPUT_CLASS}),
             'last_name': forms.TextInput(attrs={'class': INPUT_CLASS}),
             'email': forms.EmailInput(attrs={'class': INPUT_CLASS}),
