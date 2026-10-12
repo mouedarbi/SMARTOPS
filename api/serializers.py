@@ -7,6 +7,10 @@ Version : 1.0
 Description : Sérialiseurs DRF pour tous les modèles SMARTOPS.
 """
 
+from datetime import timedelta
+
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from drf_spectacular.utils import extend_schema_field
@@ -190,16 +194,66 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
         return None
 
 
+# Heure du geste envoyée par l'application mobile (mode hors-ligne) : elle vient
+# de l'horloge du téléphone, on l'accepte dans des bornes réalistes.
+FIELD_TIME_CLOCK_SKEW = timedelta(minutes=5)
+FIELD_TIME_MAX_DELAY = timedelta(days=7)
+
+
+def validate_field_time(value):
+    """
+    Vérifie une heure terrain : pas plus de 5 min dans le futur (décalage
+    d'horloge toléré), pas plus de 7 jours dans le passé (planning mobile).
+    """
+    if value is None:
+        return value
+    now = timezone.now()
+    if value > now + FIELD_TIME_CLOCK_SKEW:
+        raise serializers.ValidationError(_("L'heure envoyée est dans le futur."))
+    if value < now - FIELD_TIME_MAX_DELAY:
+        raise serializers.ValidationError(_("L'heure envoyée date de plus de 7 jours."))
+    return value
+
+
 class TicketStartSerializer(serializers.Serializer):
-    """Démarrage d'une intervention : position GPS facultative."""
+    """
+    Démarrage d'une intervention : position GPS facultative et heure réelle
+    du démarrage (facultative, envoyée par l'application hors-ligne).
+    """
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+    started_at = serializers.DateTimeField(
+        required=False, allow_null=True,
+        help_text="Heure réelle du démarrage (ISO 8601 avec fuseau). Absente : heure de réception.",
+    )
+
+    def validate_started_at(self, value):
+        """Bornes de l'heure terrain."""
+        return validate_field_time(value)
 
 
 class TicketStopSerializer(serializers.Serializer):
-    """Clôture d'une intervention : rapport et statut final (terminée ou à replanifier)."""
+    """
+    Clôture d'une intervention : rapport, statut final (terminée ou à replanifier)
+    et heure réelle de la clôture (facultative, envoyée par l'application hors-ligne).
+    Le ticket est passé dans le contexte (`ticket`) pour comparer avec son début effectif.
+    """
     intervention_report = serializers.CharField(required=False, allow_blank=True)
     status = serializers.ChoiceField(
         choices=['done', 'to_reschedule'],
         default='done',
     )
+    ended_at = serializers.DateTimeField(
+        required=False, allow_null=True,
+        help_text="Heure réelle de la clôture (ISO 8601 avec fuseau). Absente : heure de réception.",
+    )
+
+    def validate_ended_at(self, value):
+        """Bornes de l'heure terrain, et fin strictement après le début effectif."""
+        value = validate_field_time(value)
+        ticket = self.context.get('ticket')
+        if value is not None and ticket is not None and ticket.effective_start and value <= ticket.effective_start:
+            raise serializers.ValidationError(
+                _("L'heure de fin doit être postérieure à l'heure de début de l'intervention.")
+            )
+        return value

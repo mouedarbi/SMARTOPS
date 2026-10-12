@@ -119,6 +119,19 @@ class TechnicianViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
+def validate_or_detail(serializer, time_field):
+    """
+    Valide le serializer ; une heure terrain refusée (`started_at` / `ended_at`)
+    est renvoyée en `{"detail": "…"}` comme les autres refus de start/stop.
+    Retourne la réponse 400 à renvoyer, ou None si les données sont valides.
+    """
+    if serializer.is_valid():
+        return None
+    if time_field in serializer.errors:
+        return Response({'detail': serializer.errors[time_field][0]}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @extend_schema(tags=['Maintenance'])
 class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     """
@@ -170,10 +183,17 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         request=TicketStartSerializer,
         responses=MaintenanceTicketSerializer,
         summary="Démarrer une intervention",
+        description=(
+            "`started_at` (facultatif) : heure réelle du démarrage, envoyée par l'application "
+            "en différé après un démarrage hors-ligne. Absent ou null : heure de réception."
+        ),
     )
     @action(detail=True, methods=['post'], url_path='start')
     def start(self, request, pk=None):
-        """Passe le ticket en `in_progress` et enregistre l'heure de début."""
+        """
+        Passe le ticket en `in_progress` et enregistre l'heure de début :
+        celle envoyée par l'application (`started_at`), sinon l'heure de réception.
+        """
         ticket = self.get_object()
 
         if ticket.status not in ('pending', 'planned'):
@@ -183,10 +203,12 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
             )
 
         serializer = TicketStartSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        error = validate_or_detail(serializer, 'started_at')
+        if error:
+            return error
 
         ticket.status = 'in_progress'
-        ticket.effective_start = timezone.now()
+        ticket.effective_start = serializer.validated_data.get('started_at') or timezone.now()
         if serializer.validated_data.get('latitude'):
             ticket.start_latitude = serializer.validated_data['latitude']
             ticket.start_longitude = serializer.validated_data['longitude']
@@ -198,11 +220,17 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         request=TicketStopSerializer,
         responses=MaintenanceTicketSerializer,
         summary="Terminer une intervention",
+        description=(
+            "`ended_at` (facultatif) : heure réelle de la clôture, envoyée par l'application "
+            "en différé après une clôture hors-ligne. Absent ou null : heure de réception. "
+            "Elle doit être postérieure au début effectif du ticket."
+        ),
     )
     @action(detail=True, methods=['post'], url_path='stop')
     def stop(self, request, pk=None):
         """
-        Passe le ticket en `done` ou `to_reschedule` et enregistre l'heure de fin.
+        Passe le ticket en `done` ou `to_reschedule` et enregistre l'heure de fin :
+        celle envoyée par l'application (`ended_at`), sinon l'heure de réception.
         En `to_reschedule`, un ticket de suite est créé en attente, sans technicien.
         """
         ticket = self.get_object()
@@ -213,15 +241,18 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = TicketStopSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = TicketStopSerializer(data=request.data, context={'ticket': ticket})
+        error = validate_or_detail(serializer, 'ended_at')
+        if error:
+            return error
 
         report = serializer.validated_data.get('intervention_report') or None
+        ended_at = serializer.validated_data.get('ended_at')
         if serializer.validated_data.get('status') == 'to_reschedule':
-            reschedule_ticket(ticket, report)
+            reschedule_ticket(ticket, report, ended_at=ended_at)
         else:
             ticket.status = 'done'
-            ticket.effective_end = timezone.now()
+            ticket.effective_end = ended_at or timezone.now()
             if report:
                 ticket.intervention_report = report
             ticket.save()

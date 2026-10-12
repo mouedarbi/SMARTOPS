@@ -53,7 +53,7 @@ def related_ticket_ids(technician):
     return ids
 
 
-def reschedule_ticket(ticket, report=None):
+def reschedule_ticket(ticket, report=None, ended_at=None):
     """
     Clôture une intervention en « à replanifier » et crée le ticket de suite.
 
@@ -62,10 +62,13 @@ def reschedule_ticket(ticket, report=None):
     il doit repasser par le dispatching. Il reprend l'équipement, le type,
     les consignes, le rapport du passage et une copie des photos.
 
+    `ended_at` : heure réelle de la clôture (application hors-ligne), sinon
+    l'heure courante. Elle figure aussi dans la description du ticket de suite.
+
     Retourne le ticket de suite.
     """
     with transaction.atomic():
-        ended_at = timezone.now()
+        ended_at = ended_at or timezone.now()
         if report is not None:
             ticket.intervention_report = report
         ticket.status = 'to_reschedule'
