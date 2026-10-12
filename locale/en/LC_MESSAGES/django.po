@@ -1,0 +1,706 @@
+# Traduction anglaise de SMARTOPS Core.
+# Langue source : français.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SMARTOPS Core\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-12 16:31+0200\n"
+"PO-Revision-Date: 2026-10-12 16:35+0200\n"
+"Last-Translator: Mohamed Ouedarbi\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: accounts/models.py:22
+msgid "Administrateur"
+msgstr "Administrator"
+
+#: accounts/models.py:23
+msgid "Gestionnaire"
+msgstr "Manager"
+
+#: accounts/models.py:24 maintenance/models.py:44 maintenance/models.py:73
+msgid "Technicien"
+msgstr "Technician"
+
+#: accounts/models.py:30
+msgid "Rôle"
+msgstr "Role"
+
+#: accounts/models.py:37 accounts/templates/accounts/profile.html:64
+msgid "Langue"
+msgstr "Language"
+
+#: accounts/models.py:41
+msgid "Est supprimé"
+msgstr "Deleted"
+
+#: accounts/models.py:46
+msgid "Date de suppression"
+msgstr "Deletion date"
+
+#: accounts/models.py:80 maintenance/models.py:35
+msgid "Utilisateur"
+msgstr "User"
+
+#: accounts/models.py:81
+msgid "Utilisateurs"
+msgstr "Users"
+
+#: accounts/templates/accounts/profile.html:4
+#: accounts/templates/accounts/profile.html:5 system/templates/base.html:233
+msgid "Mon profil"
+msgstr "My profile"
+
+#: accounts/templates/accounts/profile.html:23
+#: accounts/templates/accounts/profile.html:59
+msgid "E-mail"
+msgstr "Email"
+
+#: accounts/templates/accounts/profile.html:27
+msgid "Compte créé le"
+msgstr "Account created on"
+
+#: accounts/templates/accounts/profile.html:31
+msgid "Dernière connexion"
+msgstr "Last login"
+
+#: accounts/templates/accounts/profile.html:35
+msgid "L'identifiant et le rôle sont gérés par un administrateur."
+msgstr "The username and role are managed by an administrator."
+
+#: accounts/templates/accounts/profile.html:44
+msgid "Mes informations"
+msgstr "My details"
+
+#: accounts/templates/accounts/profile.html:49
+msgid "Prénom"
+msgstr "First name"
+
+#: accounts/templates/accounts/profile.html:54
+msgid "Nom"
+msgstr "Last name"
+
+#: accounts/templates/accounts/profile.html:71
+msgid "Enregistrer"
+msgstr "Save"
+
+#: accounts/templates/accounts/profile.html:81
+msgid "Mot de passe"
+msgstr "Password"
+
+#: accounts/templates/accounts/profile.html:86
+msgid "Mot de passe actuel"
+msgstr "Current password"
+
+#: accounts/templates/accounts/profile.html:91
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+#: accounts/templates/accounts/profile.html:96
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#: accounts/templates/accounts/profile.html:103
+msgid "Changer le mot de passe"
+msgstr "Change password"
+
+#: api/serializers.py:224
+msgid "L'heure envoyée est dans le futur."
+msgstr ""
+
+#: api/serializers.py:226
+msgid "L'heure envoyée date de plus de 7 jours."
+msgstr ""
+
+#: api/serializers.py:269
+msgid ""
+"L'heure de fin doit être postérieure à l'heure de début de l'intervention."
+msgstr ""
+
+#: inventory/models.py:19
+msgid "Nom du Client"
+msgstr ""
+
+#: inventory/models.py:20
+msgid "Adresse"
+msgstr ""
+
+#: inventory/models.py:21
+msgid "Contact"
+msgstr ""
+
+#: inventory/models.py:22
+msgid "Email"
+msgstr ""
+
+#: inventory/models.py:23
+msgid "Téléphone"
+msgstr ""
+
+#: inventory/models.py:24
+msgid "Numéro de TVA"
+msgstr ""
+
+#: inventory/models.py:25
+msgid "Est Actif"
+msgstr ""
+
+#: inventory/models.py:26 maintenance/models.py:95
+msgid "Date de création"
+msgstr ""
+
+#: inventory/models.py:29 inventory/models.py:39
+msgid "Client"
+msgstr ""
+
+#: inventory/models.py:30 system/templates/base.html:129
+msgid "Clients"
+msgstr "Customers"
+
+#: inventory/models.py:40
+msgid "Nom du lieu"
+msgstr ""
+
+#: inventory/models.py:42
+msgid "Rue"
+msgstr ""
+
+#: inventory/models.py:43
+msgid "Numéro"
+msgstr ""
+
+#: inventory/models.py:44
+msgid "Boîte"
+msgstr ""
+
+#: inventory/models.py:45
+msgid "Code postal"
+msgstr ""
+
+#: inventory/models.py:46
+msgid "Ville"
+msgstr ""
+
+#: inventory/models.py:47
+msgid "Pays"
+msgstr ""
+
+#: inventory/models.py:48
+msgid "Accès / complément"
+msgstr ""
+
+#: inventory/models.py:49
+msgid "Étage, code de porte, entrée, consignes d'accès."
+msgstr ""
+
+#: inventory/models.py:52
+msgid "Adresse du lieu"
+msgstr ""
+
+#: inventory/models.py:55 inventory/models.py:120
+msgid "Lieu"
+msgstr ""
+
+#: inventory/models.py:56 system/templates/base.html:134
+msgid "Lieux"
+msgstr "Sites"
+
+#: inventory/models.py:82
+msgid "Nom du type"
+msgstr ""
+
+#: inventory/models.py:85
+msgid "Type d'équipement"
+msgstr ""
+
+#: inventory/models.py:86 system/templates/base.html:154
+msgid "Types d'équipement"
+msgstr "Equipment types"
+
+#: inventory/models.py:96
+msgid "Texte"
+msgstr ""
+
+#: inventory/models.py:97
+msgid "Nombre"
+msgstr ""
+
+#: inventory/models.py:98
+msgid "Date"
+msgstr ""
+
+#: inventory/models.py:100 inventory/models.py:122
+#: maintenance/templates/maintenance/_planning_legend.html:8
+msgid "Type"
+msgstr ""
+
+#: inventory/models.py:101
+msgid "Nom du champ"
+msgstr ""
+
+#: inventory/models.py:102
+msgid "Type de champ"
+msgstr ""
+
+#: inventory/models.py:103
+msgid "Requis"
+msgstr ""
+
+#: inventory/models.py:106
+msgid "Champ personnalisé"
+msgstr ""
+
+#: inventory/models.py:107 inventory/models.py:127
+msgid "Champs personnalisés"
+msgstr ""
+
+#: inventory/models.py:121
+msgid "Nom de l'équipement"
+msgstr ""
+
+#: inventory/models.py:123
+msgid "Numéro de série"
+msgstr ""
+
+#: inventory/models.py:124
+msgid "Date d'installation"
+msgstr ""
+
+#: inventory/models.py:142
+msgid "Les champs personnalisés doivent être un objet JSON valide."
+msgstr ""
+
+#: inventory/models.py:153
+#, python-format
+msgid "Le champ personnalisé '%(name)s' est requis pour ce type d'équipement."
+msgstr ""
+
+#: inventory/models.py:161
+#, python-format
+msgid "Le champ '%(name)s' doit être numérique."
+msgstr ""
+
+#: inventory/models.py:168 inventory/models.py:170
+#, python-format
+msgid "Le champ '%(name)s' doit être une date valide au format AAAA-MM-JJ."
+msgstr ""
+
+#: inventory/models.py:176 maintenance/models.py:72
+msgid "Équipement"
+msgstr ""
+
+#: inventory/models.py:177 system/templates/base.html:139
+msgid "Équipements"
+msgstr "Equipment"
+
+#: maintenance/models.py:37
+msgid "Liste des compétences (ex: Electrique, Hydraulique)"
+msgstr ""
+
+#: maintenance/models.py:37
+msgid "Spécialités"
+msgstr ""
+
+#: maintenance/models.py:38
+msgid "Actif"
+msgstr ""
+
+#: maintenance/models.py:45 system/templates/base.html:91
+msgid "Techniciens"
+msgstr "Technicians"
+
+#: maintenance/models.py:58
+#: maintenance/templates/maintenance/ticket_form.html:118
+msgid "En attente"
+msgstr ""
+
+#: maintenance/models.py:59
+#: maintenance/templates/maintenance/_planning_legend.html:15
+msgid "Planifié"
+msgstr ""
+
+#: maintenance/models.py:60
+#: maintenance/templates/maintenance/_planning_legend.html:16
+#: maintenance/templates/maintenance/ticket_list.html:17
+msgid "En cours"
+msgstr ""
+
+#: maintenance/models.py:61
+#: maintenance/templates/maintenance/_planning_legend.html:18
+msgid "À replanifier"
+msgstr ""
+
+#: maintenance/models.py:62
+#: maintenance/templates/maintenance/_planning_legend.html:17
+msgid "Terminé"
+msgstr ""
+
+#: maintenance/models.py:63
+msgid "Annulé"
+msgstr ""
+
+#: maintenance/models.py:67
+msgid "Maintenance Préventive"
+msgstr ""
+
+#: maintenance/models.py:68
+#: maintenance/templates/maintenance/_planning_legend.html:10
+msgid "Dépannage / Réparation"
+msgstr ""
+
+#: maintenance/models.py:69
+#: maintenance/templates/maintenance/_planning_legend.html:11
+msgid "Urgence"
+msgstr ""
+
+#: maintenance/models.py:74
+msgid "Type d'intervention"
+msgstr ""
+
+#: maintenance/models.py:77
+msgid "Début prévu"
+msgstr ""
+
+#: maintenance/models.py:78
+msgid "Fin prévue"
+msgstr ""
+
+#: maintenance/models.py:81
+msgid "Début réel"
+msgstr ""
+
+#: maintenance/models.py:82
+msgid "Fin réelle"
+msgstr ""
+
+#: maintenance/models.py:85
+msgid "Latitude de début"
+msgstr ""
+
+#: maintenance/models.py:86
+msgid "Longitude de début"
+msgstr ""
+
+#: maintenance/models.py:88
+#: maintenance/templates/maintenance/_planning_legend.html:14
+msgid "Statut"
+msgstr ""
+
+#: maintenance/models.py:89
+msgid "Description du problème / travail"
+msgstr ""
+
+#: maintenance/models.py:90
+msgid "Rapport d'intervention"
+msgstr ""
+
+#: maintenance/models.py:93
+msgid "Événement calendrier"
+msgstr ""
+
+#: maintenance/models.py:96
+msgid "Date de mise à jour"
+msgstr ""
+
+#: maintenance/models.py:104
+msgid "La date de fin prévue doit être postérieure à la date de début prévue."
+msgstr ""
+
+#: maintenance/models.py:108
+msgid "La date de fin réelle doit être postérieure à la date de début réelle."
+msgstr ""
+
+#: maintenance/models.py:130
+msgid "Ticket de Maintenance"
+msgstr ""
+
+#: maintenance/models.py:131
+msgid "Tickets de Maintenance"
+msgstr ""
+
+#: maintenance/models.py:154
+msgid "Avant intervention"
+msgstr ""
+
+#: maintenance/models.py:155
+msgid "Pendant intervention"
+msgstr ""
+
+#: maintenance/models.py:156
+msgid "Après intervention"
+msgstr ""
+
+#: maintenance/models.py:163
+msgid "Intervention"
+msgstr ""
+
+#: maintenance/models.py:165
+msgid "Photo"
+msgstr ""
+
+#: maintenance/models.py:166
+msgid "Légende"
+msgstr ""
+
+#: maintenance/models.py:167
+msgid "Moment"
+msgstr ""
+
+#: maintenance/models.py:173
+msgid "Ajoutée par"
+msgstr ""
+
+#: maintenance/models.py:175
+msgid "Date d'ajout"
+msgstr ""
+
+#: maintenance/models.py:181
+msgid "Photo d'intervention"
+msgstr ""
+
+#: maintenance/models.py:182
+msgid "Photos d'intervention"
+msgstr ""
+
+#: maintenance/templates/maintenance/_planning_legend.html:9
+msgid "Maintenance préventive"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:11
+msgid "Créé le"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:12
+msgid "Date Prévue"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:58
+msgid "EN DIRECT depuis"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:59
+#: maintenance/templates/maintenance/_ticket_table.html:64
+msgid "Prévu"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:62
+msgid "Réalisé le"
+msgstr ""
+
+#: maintenance/templates/maintenance/_ticket_table.html:82
+msgid "Non attribué"
+msgstr ""
+
+#: maintenance/templates/maintenance/calendar.html:13
+#: maintenance/templates/maintenance/technician_detail.html:35
+#: system/templates/base.html:81
+msgid "Planning"
+msgstr "Schedule"
+
+#: maintenance/templates/maintenance/calendar.html:32
+msgid "Aucun technicien enregistré."
+msgstr ""
+
+#: maintenance/templates/maintenance/technician_detail.html:23
+msgid "Dernier login"
+msgstr ""
+
+#: maintenance/templates/maintenance/technician_detail.html:38
+#: system/templates/base.html:86
+msgid "Interventions"
+msgstr "Work orders"
+
+#: maintenance/templates/maintenance/technician_detail.html:41
+msgid "Statistiques"
+msgstr ""
+
+#: maintenance/templates/maintenance/technician_detail.html:44
+msgid "Profil"
+msgstr ""
+
+#: maintenance/templates/maintenance/technician_detail.html:51
+msgid "Ouvrir dans le planning"
+msgstr ""
+
+#: maintenance/templates/maintenance/technician_detail.html:110
+msgid "À réaliser"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:22
+msgid ""
+"Une maintenance préventive est en principe obligatoire : ne l'annulez qu'à "
+"titre exceptionnel."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:29
+msgid "Motif de l'annulation (rapport)"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:31
+msgid "Ex. : le client a rappelé, la panne est résolue."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:33
+msgid ""
+"Ce texte devient le rapport du ticket. L'intervention quitte le planning du "
+"technicien."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:37
+#: maintenance/templates/maintenance/ticket_detail.html:40
+msgid "Annuler le ticket"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_cancel.html:39
+msgid "Retour"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_detail.html:34
+msgid "Modifier la description"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_detail.html:46
+#: maintenance/templates/maintenance/ticket_form.html:171
+msgid "Réassigner"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_detail.html:84
+msgid "Clôturée : travail non effectué, à replanifier"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_detail.html:87
+msgid "Ticket de suite"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_detail.html:186
+msgid "Non assigné"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:119
+msgid "Planifié dès qu'un technicien est assigné."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:196
+msgid "Créneau libre chez ce technicien."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:197
+msgid "Ce créneau chevauche une autre intervention de ce technicien."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:198
+msgid ""
+"Chevauchement autorisé pour une urgence : les deux interventions s’affichent "
+"côte à côte."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:199
+msgid "Journée complète : choisissez un autre jour."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:202
+msgid "Planning de"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:207
+msgid "Placer en fin de journée"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_form.html:211
+msgid ""
+"Le créneau du ticket apparaît en vert s'il est libre, en rouge s'il "
+"chevauche une autre intervention. Cliquez sur un créneau libre pour y placer "
+"le ticket."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_list.html:13
+msgid "À planifier"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_list.html:21
+msgid "Toutes les interventions"
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_list.html:32
+msgid ""
+"Tickets sans technicien (dont les suites d'interventions à replanifier) et "
+"interventions planifiées non démarrées dont le créneau est dépassé depuis "
+"moins de 7 jours, de la plus ancienne date prévue à la plus récente."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_list.html:33
+msgid ""
+"autre(s) intervention(s) planifiée(s) jamais démarrée(s), créneau dépassé "
+"depuis plus de 7 jours (voir l'onglet Toutes les interventions)."
+msgstr ""
+
+#: maintenance/templates/maintenance/ticket_list.html:39
+msgid ""
+"Interventions démarrées par un technicien et pas encore clôturées, quelle "
+"que soit leur date, de la plus ancienne à la plus récente : une session "
+"ouverte depuis la veille signale une clôture oubliée."
+msgstr ""
+
+#: system/templates/base.html:73 system/templates/base.html:213
+msgid "Tableau de Bord"
+msgstr "Dashboard"
+
+#: system/templates/base.html:77
+msgid "Opérations"
+msgstr "Operations"
+
+#: system/templates/base.html:96
+msgid "Application Technicien"
+msgstr "Technician app"
+
+#: system/templates/base.html:104
+msgid "Extensions"
+msgstr "Extensions"
+
+#: system/templates/base.html:122
+msgid "Référentiel"
+msgstr "Master data"
+
+#: system/templates/base.html:147
+msgid "Paramètres"
+msgstr "Settings"
+
+#: system/templates/base.html:159
+msgid "Société & identité"
+msgstr "Company & identity"
+
+#: system/templates/base.html:165
+msgid "Utilisateurs & rôles"
+msgstr "Users & roles"
+
+#: system/templates/base.html:170
+msgid "Modules premium"
+msgstr "Premium modules"
+
+#: system/templates/base.html:175
+msgid "Mises à jour"
+msgstr "Updates"
+
+#: system/templates/base.html:187
+msgid "Dernière synchro"
+msgstr "Last sync"
+
+#: system/templates/base.html:189
+msgid "Connecté au Portail"
+msgstr "Connected to the Portal"
+
+#: system/templates/base.html:194
+msgid "Pas de connexion portail"
+msgstr "No portal connection"
+
+#: system/templates/base.html:209
+msgid "Afficher ou masquer le menu"
+msgstr "Show or hide the menu"
+
+#: system/templates/base.html:238
+msgid "Déconnexion"
+msgstr "Log out"

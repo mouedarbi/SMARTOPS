@@ -149,3 +149,18 @@ class UserLanguageTests(TestCase):
         self.manager.refresh_from_db()
         self.assertEqual(self.manager.language, 'en')
         self.assertEqual(self.client.get(reverse('my_profile')).headers['Content-Language'], 'en')
+
+    def test_layout_and_profile_are_translated(self):
+        """Étape 1 : menu, en-tête, menu utilisateur et « Mon profil » en FR / NL / EN."""
+        expected = {
+            'fr': ('Mon profil', 'Équipements', 'Déconnexion', 'Mes informations', 'Gestionnaire'),
+            'nl': ('Mijn profiel', 'Toestellen', 'Afmelden', 'Mijn gegevens', 'Planner'),
+            'en': ('My profile', 'Equipment', 'Log out', 'My details', 'Manager'),
+        }
+        self.client.force_login(self.manager)
+        for language, texts in expected.items():
+            self.manager.language = language
+            self.manager.save()
+            r = self.client.get(reverse('my_profile'))
+            for text in texts:
+                self.assertContains(r, text, msg_prefix=language)

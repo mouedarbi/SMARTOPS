@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load i18n %}<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"fr" }}">
 <head>
     <meta charset="UTF-8">
@@ -70,30 +70,30 @@
                 <!-- Tableau de bord (sans en-tête de section) -->
                 <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group mt-2 {% if request.resolver_match.url_name == 'dashboard' %}sidebar-item-active{% endif %}">
                     <i class="las la-home text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Tableau de Bord</span>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Tableau de Bord" %}</span>
                 </a>
 
                 <!-- SECTION : OPÉRATIONS (toujours ouverte) -->
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-6">Opérations</p>
+                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-6">{% trans "Opérations" %}</p>
 
                 <a href="{% url 'maintenance_calendar' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'calendar' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                     <i class="las la-calendar text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Planning</span>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Planning" %}</span>
                 </a>
 
                 <a href="{% url 'ticket_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'ticket' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                     <i class="las la-clipboard-list text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Interventions</span>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Interventions" %}</span>
                 </a>
 
                 <a href="{% url 'technician_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'technician' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                     <i class="las la-users-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Techniciens</span>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Techniciens" %}</span>
                 </a>
 
                 <a href="{% url 'technician_login' %}" target="_blank" rel="noopener" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
                     <i class="las la-mobile-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Application Technicien</span>
+                    <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Application Technicien" %}</span>
                     <i class="las la-external-link-alt text-xs text-slate-600 ml-auto"></i>
                 </a>
 
@@ -101,7 +101,7 @@
                 <!-- SECTION : EXTENSIONS (Dynamique via Pluggy, repliable) -->
                 <details class="smo-nav-section mt-4" data-section="extensions" open>
                     <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
-                        <span>Extensions</span>
+                        <span>{% trans "Extensions" %}</span>
                         <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
                     </summary>
                     <div class="mt-1 space-y-1">
@@ -119,24 +119,24 @@
                 <!-- SECTION : RÉFÉRENTIEL (clients, lieux, matériel, repliable) -->
                 <details class="smo-nav-section mt-4" data-section="referentiel" open{% if 'client' in nav_name or 'building' in nav_name or 'equipment' in nav_name and 'type' not in nav_name %} data-active{% endif %}>
                     <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
-                        <span>Référentiel</span>
+                        <span>{% trans "Référentiel" %}</span>
                         <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
                     </summary>
                     <div class="mt-1 space-y-1">
 
                     <a href="{% url 'client_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'client' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-user-tie text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Clients</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Clients" %}</span>
                     </a>
 
                     <a href="{% url 'building_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'building' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-map-marker-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Lieux</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Lieux" %}</span>
                     </a>
 
                     <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name and 'type' not in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-tools text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Équipements</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Équipements" %}</span>
                     </a>
                     </div>
                 </details>
@@ -144,35 +144,35 @@
                 <!-- SECTION : PARAMÈTRES (avec séparateur, repliable) -->
                 <details class="smo-nav-section pt-4 mt-4 border-t border-slate-800/50" data-section="parametres" open{% if 'type' in nav_name or 'user' in nav_name or nav_name == 'system_config' or nav_name == 'plugin_list' or nav_name == 'sync_portal' %} data-active{% endif %}>
                     <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
-                        <span>Paramètres</span>
+                        <span>{% trans "Paramètres" %}</span>
                         <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
                     </summary>
                     <div class="mt-1 space-y-1">
 
                     <a href="{% url 'equipment_type_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'type' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-tags text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Types d'équipement</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Types d'équipement" %}</span>
                     </a>
 
                     <a href="{% url 'system_config' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'system_config' %}sidebar-item-active{% endif %}">
                         <i class="las la-city text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Société &amp; identité</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Société & identité" %}</span>
                     </a>
 
                     {% if user.is_admin or user.is_superuser %}
                     <a href="{% url 'user_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'user' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-users text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Utilisateurs &amp; rôles</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Utilisateurs & rôles" %}</span>
                     </a>
 
                     <a href="{% url 'plugin_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'plugin_list' %}sidebar-item-active{% endif %}">
                         <i class="las la-plug text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Modules premium</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Modules premium" %}</span>
                     </a>
 
                     <a href="{% url 'sync_portal' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if request.resolver_match.url_name == 'sync_portal' %}sidebar-item-active{% endif %}">
                         <i class="las la-sync text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Mises à jour</span>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">{% trans "Mises à jour" %}</span>
                     </a>
                     {% endif %}
                     </div>
@@ -184,17 +184,17 @@
             <!-- Pied : connexion au Portail et identifiant de l'installation -->
             <div class="p-6 border-t border-slate-800 bg-slate-950/50">
                 {% if config.last_sync_portal %}
-                <div class="flex items-center gap-2" title="Dernière synchro : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
+                <div class="flex items-center gap-2" title="{% trans "Dernière synchro" %} : {{ config.last_sync_portal|date:'d/m/Y H:i' }}">
                     <span class="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500"></span>
-                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">Connecté au Portail</span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">{% trans "Connecté au Portail" %}</span>
                 </div>
                 {% else %}
                 <div class="flex items-center gap-2">
                     <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Pas de connexion portail</span>
+                    <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">{% trans "Pas de connexion portail" %}</span>
                 </div>
                 {% endif %}
-                <p class="mt-2 text-[9px] text-slate-500 font-medium truncate">ID : {{ config.installation_uuid|slice:":8" }}...</p>
+                <p class="mt-2 text-[9px] text-slate-500 font-medium truncate">ID : {{ config.installation_uuid|stringformat:"s"|slice:":8" }}…</p>
             </div>
         </aside>
 
@@ -206,11 +206,11 @@
             <!-- Header -->
             <header class="app-header h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
                 <div class="flex items-center gap-2 min-w-0">
-                    <button type="button" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Afficher ou masquer le menu" title="Afficher ou masquer le menu" aria-controls="app-sidebar" aria-expanded="false"
+                    <button type="button" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="{% trans "Afficher ou masquer le menu" %}" title="{% trans "Afficher ou masquer le menu" %}" aria-controls="app-sidebar" aria-expanded="false"
                             class="no-print -ml-2 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition">
                         <i class="las la-bars text-2xl"></i>
                     </button>
-                    <h2 class="text-lg font-bold text-slate-800 truncate">{% block page_title %}Dashboard{% endblock %}</h2>
+                    <h2 class="text-lg font-bold text-slate-800 truncate">{% block page_title %}{% trans "Tableau de Bord" %}{% endblock %}</h2>
                 </div>
 
                 <!-- Utilisateur connecté : avatar + menu (profil, déconnexion) -->
@@ -230,12 +230,12 @@
                             <p class="text-xs text-slate-400 truncate">@{{ user.username }} · {{ user.get_role_display }}</p>
                         </div>
                         <a href="{% url 'my_profile' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition">
-                            <i class="las la-user-circle text-xl"></i> Mon profil
+                            <i class="las la-user-circle text-xl"></i> {% trans "Mon profil" %}
                         </a>
                         <form action="{% url 'logout' %}" method="post" id="logout-form">
                             {% csrf_token %}
                             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 transition">
-                                <i class="las la-sign-out-alt text-xl"></i> Déconnexion
+                                <i class="las la-sign-out-alt text-xl"></i> {% trans "Déconnexion" %}
                             </button>
                         </form>
                     </div>
