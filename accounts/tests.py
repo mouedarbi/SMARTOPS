@@ -112,11 +112,11 @@ class MyProfileTests(TestCase):
         r = self.client.get(reverse('my_profile'))
         self.assertRedirects(r, reverse('technician_profile'), fetch_redirect_response=False)
 
-    def test_menu_opens_section_of_current_page(self):
-        """Menu de gauche en sections repliables : celle de la page affichée est ouverte, pas les autres."""
+    def test_menu_sections(self):
+        """Opérations toujours ouverte (non repliable) ; les autres sections sont repliables, ouvertes par défaut."""
         r = self.client.get(reverse('ticket_list'))
-        self.assertContains(r, 'data-section="operations" data-active open')
-        self.assertNotContains(r, 'data-section="referentiel" data-active open')
+        self.assertNotContains(r, 'data-section="operations"')
+        self.assertContains(r, 'data-section="referentiel" open>')
+        self.assertContains(r, 'data-section="parametres" open>')
         r = self.client.get(reverse('equipment_type_list'))
-        self.assertContains(r, 'data-section="parametres" data-active open')
-        self.assertNotContains(r, 'data-section="referentiel" data-active open')
+        self.assertContains(r, 'data-section="parametres" open data-active>')
