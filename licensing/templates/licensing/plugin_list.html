@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Modules Premium | SMARTOPS{% endblock %}
-{% block page_title %}Gestion des Modules Premium{% endblock %}
+{% block title %}{% trans "Modules premium" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Gestion des Modules Premium" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -14,8 +15,8 @@
         
         <div class="relative z-10">
             <div id="activation-form-container">
-                <h2 class="text-3xl font-black text-white mb-2 tracking-tight">Activer un nouveau module</h2>
-                <p class="text-slate-400 font-medium mb-8">Collez votre clé de licence récupérée sur la Marketplace SMARTOPS pour installer l'extension.</p>
+                <h2 class="text-3xl font-black text-white mb-2 tracking-tight">{% trans "Activer un nouveau module" %}</h2>
+                <p class="text-slate-400 font-medium mb-8">{% trans "Collez votre clé de licence récupérée sur la Marketplace SMARTOPS pour installer l'extension." %}</p>
                 
                 <form id="activation-form" class="flex flex-col md:flex-row gap-4">
                     {% csrf_token %}
@@ -25,7 +26,7 @@
                                placeholder="00000000-0000-0000-0000-000000000000">
                     </div>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-10 py-5 rounded-2xl shadow-xl shadow-blue-900/40 transition-all transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm">
-                        Activer & Installer
+                        {% trans "Activer & Installer" %}
                     </button>
                 </form>
             </div>
@@ -38,13 +39,13 @@
                             <span class="h-3 w-3 rounded-full bg-rose-500"></span>
                             <span class="h-3 w-3 rounded-full bg-amber-500"></span>
                             <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
-                            <span class="ml-4 text-[10px] font-black uppercase tracking-widest text-slate-400">System Terminal</span>
+                            <span class="ml-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Terminal système" %}</span>
                         </div>
                         <div id="install-loader" class="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                     <pre id="install-log" class="p-8 text-xs font-mono text-slate-700 bg-white max-h-[400px] overflow-y-auto whitespace-pre-wrap leading-relaxed"></pre>
                     <div id="install-footer" class="hidden bg-slate-50 px-8 py-4 border-t border-slate-200 text-right">
-                        <button onclick="window.location.reload()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest">Fermer & Actualiser</button>
+                        <button onclick="window.location.reload()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest">{% trans "Fermer & Actualiser" %}</button>
                     </div>
                 </div>
             </div>
@@ -56,19 +57,19 @@
         <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
             <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                 <i class="las la-cubes text-2xl text-blue-600"></i>
-                Modules Installés
+                {% trans "Modules Installés" %}
             </h3>
-            <span class="px-4 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase">{{ plugins.count }} Module(s)</span>
+            <span class="px-4 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-500 uppercase">{% blocktrans count counter=plugins.count %}{{ counter }} module{% plural %}{{ counter }} modules{% endblocktrans %}</span>
         </div>
         
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50 text-[10px] uppercase tracking-widest text-slate-400 font-black">
-                        <th class="px-10 py-5">Module</th>
-                        <th class="px-10 py-5">Version</th>
-                        <th class="px-10 py-5">Date d'installation</th>
-                        <th class="px-10 py-5 text-right">Statut</th>
+                        <th class="px-10 py-5">{% trans "Module" %}</th>
+                        <th class="px-10 py-5">{% trans "Version" %}</th>
+                        <th class="px-10 py-5">{% trans "Date d'installation" %}</th>
+                        <th class="px-10 py-5 text-right">{% trans "Statut" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -96,15 +97,15 @@
                                 {% if plugin.is_active %}
                                     <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase border border-emerald-100">
                                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                        Actif
+                                        {% trans "Actif" %}
                                     </span>
                                     <button onclick="uninstallPlugin('{{ plugin.slug }}', '{{ plugin.name }}')" 
                                             class="text-slate-300 hover:text-rose-600 transition p-2 hover:bg-rose-50 rounded-xl"
-                                            title="Désactiver et Supprimer">
+                                            title="{% trans "Désactiver et Supprimer" %}">
                                         <i class="las la-trash-alt text-xl"></i>
                                     </button>
                                 {% else %}
-                                    <span class="px-4 py-1.5 bg-slate-100 text-slate-400 rounded-full text-[10px] font-black uppercase border border-slate-200">Inactif</span>
+                                    <span class="px-4 py-1.5 bg-slate-100 text-slate-400 rounded-full text-[10px] font-black uppercase border border-slate-200">{% trans "Inactif" %}</span>
                                 {% endif %}
                             </div>
                         </td>
@@ -115,8 +116,8 @@
                             <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
                                 <i class="las la-search text-4xl"></i>
                             </div>
-                            <p class="text-slate-400 font-bold">Aucun module premium activé sur cette instance.</p>
-                            <p class="text-slate-300 text-xs mt-2 italic">Achetez vos modules sur la Marketplace pour étendre les capacités de SMARTOPS.</p>
+                            <p class="text-slate-400 font-bold">{% trans "Aucun module premium activé sur cette instance." %}</p>
+                            <p class="text-slate-300 text-xs mt-2 italic">{% trans "Achetez vos modules sur la Marketplace pour étendre les capacités de SMARTOPS." %}</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -136,7 +137,7 @@
     const loader = document.getElementById('install-loader');
 
     async function streamLogs(url) {
-        logPre.textContent = ">>> Lancement du processus...\n";
+        logPre.textContent = ">>> {% filter escapejs %}{% trans "Lancement du processus..." %}{% endfilter %}\n";
         try {
             const response = await fetch(url);
             const reader = response.body.getReader();
@@ -152,7 +153,7 @@
             loader.classList.add('hidden');
             footer.classList.remove('hidden');
         } catch (err) {
-            logPre.textContent += `\n!!! ERREUR CRITIQUE : ${err.message}`;
+            logPre.textContent += `\n!!! {% filter escapejs %}{% trans "ERREUR CRITIQUE" %}{% endfilter %} : ${err.message}`;
             loader.classList.add('hidden');
             footer.classList.remove('hidden');
         }
@@ -169,7 +170,7 @@
     }
 
     async function uninstallPlugin(slug, name) {
-        if (!confirm(`Êtes-vous sûr de vouloir désinstaller le module "${name}" ?\nCette action supprimera le package Python.`)) {
+        if (!confirm(`{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir désinstaller le module" %}{% endfilter %} "${name}" ?\n{% filter escapejs %}{% trans "Cette action supprimera le package Python." %}{% endfilter %}`)) {
             return;
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });

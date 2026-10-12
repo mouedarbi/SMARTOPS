@@ -10,6 +10,7 @@ Description : Vues pour la gestion des utilisateurs dans l'admin custom.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from .models import CustomUser
 from django.contrib.auth import update_session_auth_hash
 from .forms import CustomUserForm, CustomUserCreateForm, ProfileForm, ProfilePasswordForm
@@ -52,7 +53,7 @@ def user_create(request):
     
     context = {
         'form': form,
-        'page_title': "Nouvel Utilisateur"
+        'page_title': _("Nouvel Utilisateur")
     }
     return render(request, 'accounts/user_form.html', context)
 
@@ -75,7 +76,7 @@ def user_edit(request, pk):
     context = {
         'form': form,
         'user_to_edit': user_to_edit,
-        'page_title': f"Modifier {user_to_edit.username}"
+        'page_title': _("Modifier %(username)s") % {'username': user_to_edit.username}
     }
     return render(request, 'accounts/user_form.html', context)
 

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 21:59+0200\n"
+"POT-Creation-Date: 2026-10-12 22:02+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: English\n"
@@ -33,11 +33,12 @@ msgstr "Manager"
 msgid "Technicien"
 msgstr "Technician"
 
-#: accounts/models.py:30
+#: accounts/models.py:30 accounts/templates/accounts/user_list.html:22
 msgid "Rôle"
 msgstr "Role"
 
 #: accounts/models.py:37 accounts/templates/accounts/profile.html:64
+#: accounts/templates/accounts/user_form.html:45
 msgid "Langue"
 msgstr "Language"
 
@@ -49,7 +50,8 @@ msgstr "Deleted"
 msgid "Date de suppression"
 msgstr "Deletion date"
 
-#: accounts/models.py:80 maintenance/models.py:35
+#: accounts/models.py:80 accounts/templates/accounts/user_list.html:21
+#: maintenance/models.py:35
 msgid "Utilisateur"
 msgstr "User"
 
@@ -64,6 +66,7 @@ msgstr "My profile"
 
 #: accounts/templates/accounts/profile.html:23
 #: accounts/templates/accounts/profile.html:59
+#: accounts/templates/accounts/user_form.html:37
 #: inventory/templates/inventory/client_list.html:57
 #: maintenance/templates/maintenance/technician_list.html:33
 msgid "E-mail"
@@ -74,6 +77,7 @@ msgid "Compte créé le"
 msgstr "Account created on"
 
 #: accounts/templates/accounts/profile.html:31
+#: accounts/templates/accounts/user_list.html:24
 msgid "Dernière connexion"
 msgstr "Last login"
 
@@ -86,14 +90,17 @@ msgid "Mes informations"
 msgstr "My details"
 
 #: accounts/templates/accounts/profile.html:49
+#: accounts/templates/accounts/user_form.html:29
 msgid "Prénom"
 msgstr "First name"
 
 #: accounts/templates/accounts/profile.html:54
+#: accounts/templates/accounts/user_form.html:33
 msgid "Nom"
 msgstr "Last name"
 
 #: accounts/templates/accounts/profile.html:71
+#: accounts/templates/accounts/user_form.html:64
 #: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
 #: inventory/templates/inventory/equipment_form.html:36
@@ -119,6 +126,91 @@ msgstr "Confirmation"
 #: accounts/templates/accounts/profile.html:103
 msgid "Changer le mot de passe"
 msgstr "Change password"
+
+#: accounts/templates/accounts/user_form.html:15
+msgid "Définissez l'identité et les droits d'accès."
+msgstr "Define the identity and access rights."
+
+#: accounts/templates/accounts/user_form.html:25
+msgid "Nom d'utilisateur"
+msgstr "Username"
+
+#: accounts/templates/accounts/user_form.html:41
+msgid "Rôle Système"
+msgstr "System role"
+
+#: accounts/templates/accounts/user_form.html:50
+msgid "Utilisateur Actif"
+msgstr "Active user"
+
+#: accounts/templates/accounts/user_form.html:55
+msgid "Mot de passe initial"
+msgstr "Initial password"
+
+#: accounts/templates/accounts/user_form.html:67
+#: inventory/templates/inventory/building_form.html:38
+#: inventory/templates/inventory/client_form.html:16
+#: inventory/templates/inventory/equipment_form.html:33
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Cancel"
+
+#: accounts/templates/accounts/user_list.html:4
+#: accounts/templates/accounts/user_list.html:5
+msgid "Utilisateurs du système"
+msgstr "System users"
+
+#: accounts/templates/accounts/user_list.html:13 accounts/views.py:56
+msgid "Nouvel Utilisateur"
+msgstr "New user"
+
+#: accounts/templates/accounts/user_list.html:23
+#: inventory/templates/inventory/equipment_detail.html:105
+#: licensing/templates/licensing/plugin_list.html:72 maintenance/models.py:88
+#: maintenance/templates/maintenance/_planning_legend.html:14
+#: maintenance/templates/maintenance/_ticket_table.html:13
+#: maintenance/templates/maintenance/technician_list.html:42
+#: maintenance/templates/maintenance/ticket_list.html:62
+#: system/templates/system/dashboard.html:94
+msgid "Statut"
+msgstr "Status"
+
+#: accounts/templates/accounts/user_list.html:25
+#: inventory/templates/inventory/building_detail.html:86
+#: inventory/templates/inventory/building_list.html:69
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+#: inventory/templates/inventory/equipment_list.html:97
+#: inventory/templates/inventory/equipment_type_list.html:26
+msgid "Actions"
+msgstr "Actions"
+
+#: accounts/templates/accounts/user_list.html:51
+#: inventory/templates/inventory/client_detail.html:16
+#: licensing/templates/licensing/plugin_list.html:100 maintenance/models.py:38
+#: maintenance/templates/maintenance/technician_detail.html:25
+#: maintenance/templates/maintenance/technician_detail.html:161
+#: maintenance/templates/maintenance/technician_list.html:75
+msgid "Actif"
+msgstr "Active"
+
+#: accounts/templates/accounts/user_list.html:56
+msgid "Suspendu"
+msgstr "Suspended"
+
+#: accounts/templates/accounts/user_list.html:61
+#: maintenance/templates/maintenance/technician_detail.html:23
+msgid "Jamais"
+msgstr "Never"
+
+#: accounts/templates/accounts/user_list.html:68
+msgid "Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
+msgstr "Are you sure you want to delete this user?"
+
+#: accounts/views.py:79
+#, python-format
+msgid "Modifier %(username)s"
+msgstr "Edit %(username)s"
 
 #: api/serializers.py:224
 msgid "L'heure envoyée est dans le futur."
@@ -184,10 +276,12 @@ msgstr "Email"
 
 #: inventory/models.py:23 inventory/templates/inventory/client_detail.html:66
 #: inventory/templates/inventory/client_list.html:58
+#: system/templates/system/config_detail.html:85
 msgid "Téléphone"
 msgstr "Phone"
 
 #: inventory/models.py:24 inventory/templates/inventory/client_detail.html:77
+#: system/templates/system/config_detail.html:103
 msgid "Numéro de TVA"
 msgstr "VAT number"
 
@@ -333,6 +427,7 @@ msgstr "Serial number"
 
 #: inventory/models.py:124
 #: inventory/templates/inventory/equipment_detail.html:62
+#: licensing/templates/licensing/plugin_list.html:71
 msgid "Date d'installation"
 msgstr "Installation date"
 
@@ -434,15 +529,6 @@ msgstr "Category"
 msgid "N° de Série"
 msgstr "Serial no."
 
-#: inventory/templates/inventory/building_detail.html:86
-#: inventory/templates/inventory/building_list.html:69
-#: inventory/templates/inventory/client_detail.html:103
-#: inventory/templates/inventory/client_list.html:73
-#: inventory/templates/inventory/equipment_list.html:97
-#: inventory/templates/inventory/equipment_type_list.html:26
-msgid "Actions"
-msgstr "Actions"
-
 #: inventory/templates/inventory/building_detail.html:105
 msgid "Fiche technique"
 msgstr "Technical record"
@@ -459,13 +545,6 @@ msgstr "Address to complete. Previous address: “%(address)s”"
 #: inventory/templates/inventory/building_form.html:24
 msgid "Adresse d'intervention"
 msgstr "Work site address"
-
-#: inventory/templates/inventory/building_form.html:38
-#: inventory/templates/inventory/client_form.html:16
-#: inventory/templates/inventory/equipment_form.html:33
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Cancel"
 
 #: inventory/templates/inventory/building_list.html:4
 #: inventory/templates/inventory/building_list.html:5
@@ -530,14 +609,8 @@ msgstr "Next"
 msgid "Dernière page"
 msgstr "Last page"
 
-#: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
-#: maintenance/templates/maintenance/technician_detail.html:25
-#: maintenance/templates/maintenance/technician_detail.html:161
-#: maintenance/templates/maintenance/technician_list.html:75
-msgid "Actif"
-msgstr "Active"
-
 #: inventory/templates/inventory/client_detail.html:18
+#: licensing/templates/licensing/plugin_list.html:108
 #: maintenance/templates/maintenance/technician_detail.html:27
 #: maintenance/templates/maintenance/technician_detail.html:157
 #: maintenance/templates/maintenance/technician_list.html:77
@@ -666,16 +739,6 @@ msgstr "Ticket ID"
 msgid "Date prévue"
 msgstr "Planned date"
 
-#: inventory/templates/inventory/equipment_detail.html:105
-#: maintenance/models.py:88
-#: maintenance/templates/maintenance/_planning_legend.html:14
-#: maintenance/templates/maintenance/_ticket_table.html:13
-#: maintenance/templates/maintenance/technician_list.html:42
-#: maintenance/templates/maintenance/ticket_list.html:62
-#: system/templates/system/dashboard.html:94
-msgid "Statut"
-msgstr "Status"
-
 #: inventory/templates/inventory/equipment_detail.html:117
 msgid "Préventive"
 msgstr "Preventive"
@@ -774,6 +837,88 @@ msgstr "Edit site"
 #: inventory/views.py:248
 msgid "Nouvel Équipement"
 msgstr "New equipment"
+
+#: licensing/templates/licensing/plugin_list.html:4
+#: system/templates/base.html:170
+msgid "Modules premium"
+msgstr "Premium modules"
+
+#: licensing/templates/licensing/plugin_list.html:5
+msgid "Gestion des Modules Premium"
+msgstr "Premium module management"
+
+#: licensing/templates/licensing/plugin_list.html:18
+msgid "Activer un nouveau module"
+msgstr "Activate a new module"
+
+#: licensing/templates/licensing/plugin_list.html:19
+msgid ""
+"Collez votre clé de licence récupérée sur la Marketplace SMARTOPS pour "
+"installer l'extension."
+msgstr ""
+"Paste the license key you got from the SMARTOPS Marketplace to install the "
+"extension."
+
+#: licensing/templates/licensing/plugin_list.html:29
+msgid "Activer & Installer"
+msgstr "Activate & install"
+
+#: licensing/templates/licensing/plugin_list.html:42
+msgid "Terminal système"
+msgstr "System terminal"
+
+#: licensing/templates/licensing/plugin_list.html:48
+msgid "Fermer & Actualiser"
+msgstr "Close & refresh"
+
+#: licensing/templates/licensing/plugin_list.html:60
+msgid "Modules Installés"
+msgstr "Installed modules"
+
+#: licensing/templates/licensing/plugin_list.html:62
+#, python-format
+msgid "%(counter)s module"
+msgid_plural "%(counter)s modules"
+msgstr[0] "%(counter)s module"
+msgstr[1] "%(counter)s modules"
+
+#: licensing/templates/licensing/plugin_list.html:69
+msgid "Module"
+msgstr "Module"
+
+#: licensing/templates/licensing/plugin_list.html:70
+msgid "Version"
+msgstr "Version"
+
+#: licensing/templates/licensing/plugin_list.html:104
+msgid "Désactiver et Supprimer"
+msgstr "Deactivate and delete"
+
+#: licensing/templates/licensing/plugin_list.html:119
+msgid "Aucun module premium activé sur cette instance."
+msgstr "No premium module activated on this installation."
+
+#: licensing/templates/licensing/plugin_list.html:120
+msgid ""
+"Achetez vos modules sur la Marketplace pour étendre les capacités de "
+"SMARTOPS."
+msgstr "Buy your modules on the Marketplace to extend SMARTOPS."
+
+#: licensing/templates/licensing/plugin_list.html:140
+msgid "Lancement du processus..."
+msgstr "Starting the process..."
+
+#: licensing/templates/licensing/plugin_list.html:156
+msgid "ERREUR CRITIQUE"
+msgstr "CRITICAL ERROR"
+
+#: licensing/templates/licensing/plugin_list.html:173
+msgid "Êtes-vous sûr de vouloir désinstaller le module"
+msgstr "Are you sure you want to uninstall the module"
+
+#: licensing/templates/licensing/plugin_list.html:173
+msgid "Cette action supprimera le package Python."
+msgstr "This will remove the Python package."
 
 #: maintenance/forms.py:45
 msgid "Filtrer par Client"
@@ -1059,10 +1204,6 @@ msgstr "No technician registered."
 msgid "Dernier login"
 msgstr "Last login"
 
-#: maintenance/templates/maintenance/technician_detail.html:23
-msgid "Jamais"
-msgstr "Never"
-
 #: maintenance/templates/maintenance/technician_detail.html:38
 #: system/templates/base.html:86 system/templates/system/dashboard.html:35
 msgid "Interventions"
@@ -1139,6 +1280,7 @@ msgstr "If inactive, they will no longer appear in the scheduling choices."
 
 #: maintenance/templates/maintenance/technician_detail.html:169
 #: maintenance/templates/maintenance/ticket_form.html:171
+#: system/templates/system/config_detail.html:128
 msgid "Enregistrer les modifications"
 msgstr "Save changes"
 
@@ -1687,10 +1829,6 @@ msgstr "Company & identity"
 msgid "Utilisateurs & rôles"
 msgstr "Users & roles"
 
-#: system/templates/base.html:170
-msgid "Modules premium"
-msgstr "Premium modules"
-
 #: system/templates/base.html:175
 msgid "Mises à jour"
 msgstr "Updates"
@@ -1714,6 +1852,74 @@ msgstr "Show or hide the menu"
 #: system/templates/base.html:238
 msgid "Déconnexion"
 msgstr "Log out"
+
+#: system/templates/system/config_detail.html:4
+msgid "Paramètres Système"
+msgstr "System settings"
+
+#: system/templates/system/config_detail.html:5
+msgid "Configuration de l'Instance"
+msgstr "Installation settings"
+
+#: system/templates/system/config_detail.html:19
+msgid "Identité Unique"
+msgstr "Unique identity"
+
+#: system/templates/system/config_detail.html:25
+msgid "ID d'Installation (UUID)"
+msgstr "Installation ID (UUID)"
+
+#: system/templates/system/config_detail.html:26
+msgid "Cliquer pour copier"
+msgstr "Click to copy"
+
+#: system/templates/system/config_detail.html:32
+msgid "Date d'Installation"
+msgstr "Installation date"
+
+#: system/templates/system/config_detail.html:37
+msgid "Version du Noyau"
+msgstr "Core version"
+
+#: system/templates/system/config_detail.html:46
+msgid "Logo Entreprise"
+msgstr "Company logo"
+
+#: system/templates/system/config_detail.html:52
+msgid "Aucun Logo"
+msgstr "No logo"
+
+#: system/templates/system/config_detail.html:64
+msgid "Informations de l'Entreprise"
+msgstr "Company details"
+
+#: system/templates/system/config_detail.html:73
+msgid "Nom de la Société"
+msgstr "Company name"
+
+#: system/templates/system/config_detail.html:79
+msgid "Adresse du Siège"
+msgstr "Head office address"
+
+#: system/templates/system/config_detail.html:91
+msgid "Email de Contact"
+msgstr "Contact email"
+
+#: system/templates/system/config_detail.html:97
+msgid "Site Web"
+msgstr "Website"
+
+#: system/templates/system/config_detail.html:109
+msgid "Mettre à jour le Logo"
+msgstr "Update the logo"
+
+#: system/templates/system/config_detail.html:115
+msgid "Télécharger un fichier"
+msgstr "Upload a file"
+
+#: system/templates/system/config_detail.html:119
+msgid "PNG, JPG jusqu'à 2Mo"
+msgstr "PNG, JPG up to 2 MB"
 
 #: system/templates/system/dashboard.html:5
 msgid "Tableau de Bord Principal"

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ page_title }} | SMARTOPS{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
@@ -11,7 +12,7 @@
             <i class="las la-arrow-left text-xl"></i>
         </a>
         <div>
-            <p class="text-slate-500 font-medium italic">Définissez l'identité et les droits d'accès.</p>
+            <p class="text-slate-500 font-medium italic">{% trans "Définissez l'identité et les droits d'accès." %}</p>
         </div>
     </div>
 
@@ -21,37 +22,37 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Nom d'utilisateur</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Nom d'utilisateur" %}</label>
                     {{ form.username }}
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Prénom</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Prénom" %}</label>
                     {{ form.first_name }}
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Nom</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Nom" %}</label>
                     {{ form.last_name }}
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Email</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "E-mail" %}</label>
                     {{ form.email }}
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Rôle Système</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Rôle Système" %}</label>
                     {{ form.role }}
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Langue</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Langue" %}</label>
                     {{ form.language }}
                 </div>
                 <div class="flex items-center gap-3 pt-6">
                     {{ form.is_active }}
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-700">Utilisateur Actif</label>
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-700">{% trans "Utilisateur Actif" %}</label>
                 </div>
                 
                 {% if form.password %}
                 <div class="md:col-span-2 pt-4 border-t border-slate-50">
-                    <label class="block text-xs font-black uppercase tracking-widest text-blue-600 mb-2">Mot de passe initial</label>
+                    <label class="block text-xs font-black uppercase tracking-widest text-blue-600 mb-2">{% trans "Mot de passe initial" %}</label>
                     {{ form.password }}
                 </div>
                 {% endif %}
@@ -60,10 +61,10 @@
             <div class="pt-8 flex gap-3">
                 <button type="submit" class="flex-grow py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                     <i class="las la-check-circle text-xl"></i>
-                    Enregistrer
+                    {% trans "Enregistrer" %}
                 </button>
                 <a href="{% url 'user_list' %}" class="px-8 py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
-                    Annuler
+                    {% trans "Annuler" %}
                 </a>
             </div>
         </form>

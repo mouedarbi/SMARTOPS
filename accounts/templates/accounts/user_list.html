@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Utilisateurs du système | SMARTOPS{% endblock %}
-{% block page_title %}Utilisateurs du système{% endblock %}
+{% block title %}{% trans "Utilisateurs du système" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Utilisateurs du système" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -9,7 +10,7 @@
     <div class="mb-6 flex justify-end">
         <a href="{% url 'user_create' %}" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
             <i class="las la-user-plus text-xl"></i>
-            Nouvel Utilisateur
+            {% trans "Nouvel Utilisateur" %}
         </a>
     </div>
 
@@ -17,11 +18,11 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50/50 border-b border-slate-100">
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Utilisateur</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Rôle</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Statut</th>
-                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Dernière connexion</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Utilisateur" %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Rôle" %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Statut" %}</th>
+                    <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Dernière connexion" %}</th>
+                    <th class="px-6 py-4 text-right">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
@@ -47,24 +48,24 @@
                         {% if u.is_active %}
                         <span class="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-widest">
                             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            Actif
+                            {% trans "Actif" %}
                         </span>
                         {% else %}
                         <span class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
                             <span class="h-1.5 w-1.5 rounded-full bg-slate-300"></span>
-                            Suspendu
+                            {% trans "Suspendu" %}
                         </span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">
-                        <span class="text-xs font-bold text-slate-500">{{ u.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</span>
+                        <span class="text-xs font-bold text-slate-500">{% if u.last_login %}{{ u.last_login|date:"d/m/Y H:i" }}{% else %}{% trans "Jamais" %}{% endif %}</span>
                     </td>
                     <td class="px-6 py-4 text-right flex justify-end gap-2">
                         <a href="{% url 'user_edit' u.pk %}" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition flex items-center justify-center">
                             <i class="las la-edit text-xl"></i>
                         </a>
                         {% if u != user %}
-                        <a href="{% url 'user_delete' u.pk %}" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center">
+                        <a href="{% url 'user_delete' u.pk %}" onclick="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer cet utilisateur ?" %}{% endfilter %}')" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center">
                             <i class="las la-trash text-xl"></i>
                         </a>
                         {% endif %}

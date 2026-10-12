@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Paramètres Système | SMARTOPS{% endblock %}
-{% block page_title %}Configuration de l'Instance{% endblock %}
+{% block title %}{% trans "Paramètres Système" %} | SMARTOPS{% endblock %}
+{% block page_title %}{% trans "Configuration de l'Instance" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -15,25 +16,25 @@
                 <div class="p-6 bg-blue-600 text-white">
                     <h3 class="text-lg font-bold flex items-center gap-2">
                         <i class="las la-fingerprint text-xl"></i>
-                        Identité Unique
+                        {% trans "Identité Unique" %}
                     </h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">ID d'Installation (UUID)</label>
-                            <div class="mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-xs text-blue-700 font-bold break-all select-all cursor-pointer hover:bg-blue-50 transition" title="Cliquer pour copier">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "ID d'Installation (UUID)" %}</label>
+                            <div class="mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-xs text-blue-700 font-bold break-all select-all cursor-pointer hover:bg-blue-50 transition" title="{% trans "Cliquer pour copier" %}">
                                 {{ config.installation_uuid }}
                             </div>
                         </div>
                         
                         <div class="pt-4 border-t border-slate-50">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Date d'Installation</label>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Date d'Installation" %}</label>
                             <p class="text-sm font-bold text-slate-700 mt-1 italic">{{ config.installed_at|date:"d F Y H:i" }}</p>
                         </div>
 
                         <div class="pt-4 border-t border-slate-50">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Version du Noyau</label>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Version du Noyau" %}</label>
                             <p class="text-sm font-bold text-blue-600 mt-1">v1.0.0-stable</p>
                         </div>
                     </div>
@@ -42,13 +43,13 @@
 
             <!-- Widget Logo -->
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 text-center">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-4 text-left">Logo Entreprise</label>
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-4 text-left">{% trans "Logo Entreprise" %}</label>
                 {% if config.company_logo %}
                     <img src="{{ config.company_logo.url }}" alt="Logo" class="max-h-32 mx-auto rounded-2xl p-2 bg-slate-50 border border-slate-100">
                 {% else %}
                     <div class="h-32 w-32 mx-auto bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
                         <i class="las la-image text-4xl mb-2"></i>
-                        <span class="text-[10px] font-bold">Aucun Logo</span>
+                        <span class="text-[10px] font-bold">{% trans "Aucun Logo" %}</span>
                     </div>
                 {% endif %}
             </div>
@@ -60,7 +61,7 @@
                 <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                     <h3 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                         <i class="las la-building text-2xl text-blue-600"></i>
-                        Informations de l'Entreprise
+                        {% trans "Informations de l'Entreprise" %}
                     </h3>
                 </div>
                 <div class="p-8">
@@ -69,53 +70,53 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Nom de la Société</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Nom de la Société" %}</label>
                                 {{ form.company_name }}
                                 {% if form.company_name.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_name.errors }}</p>{% endif %}
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Adresse du Siège</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Adresse du Siège" %}</label>
                                 {{ form.company_address }}
                                 {% if form.company_address.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_address.errors }}</p>{% endif %}
                             </div>
 
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Téléphone</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Téléphone" %}</label>
                                 {{ form.company_phone }}
                                 {% if form.company_phone.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_phone.errors }}</p>{% endif %}
                             </div>
 
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Email de Contact</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Email de Contact" %}</label>
                                 {{ form.company_email }}
                                 {% if form.company_email.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_email.errors }}</p>{% endif %}
                             </div>
 
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Site Web</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Site Web" %}</label>
                                 {{ form.company_website }}
                                 {% if form.company_website.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_website.errors }}</p>{% endif %}
                             </div>
 
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Numéro de TVA</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Numéro de TVA" %}</label>
                                 {{ form.company_vat }}
                                 {% if form.company_vat.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_vat.errors }}</p>{% endif %}
                             </div>
 
                             <div class="md:col-span-2 pt-4">
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Mettre à jour le Logo</label>
+                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Mettre à jour le Logo" %}</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-200 border-dashed rounded-2xl hover:border-blue-400 transition cursor-pointer">
                                     <div class="space-y-1 text-center">
                                         <i class="las la-cloud-upload-alt text-4xl text-slate-300"></i>
                                         <div class="flex text-sm text-slate-600">
                                             <label for="{{ form.company_logo.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-bold text-blue-600 hover:text-blue-500">
-                                                <span>Télécharger un fichier</span>
+                                                <span>{% trans "Télécharger un fichier" %}</span>
                                                 {{ form.company_logo }}
                                             </label>
                                         </div>
-                                        <p class="text-xs text-slate-500">PNG, JPG jusqu'à 2Mo</p>
+                                        <p class="text-xs text-slate-500">{% trans "PNG, JPG jusqu'à 2Mo" %}</p>
                                         {% if form.company_logo.errors %}<p class="text-red-500 text-xs mt-1">{{ form.company_logo.errors }}</p>{% endif %}
                                     </div>
                                 </div>
@@ -124,7 +125,7 @@
 
                         <div class="pt-8 mt-8 border-t border-slate-50 flex justify-end">
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-blue-100 transition duration-200 transform hover:scale-[1.02]">
-                                Enregistrer les modifications
+                                {% trans "Enregistrer les modifications" %}
                             </button>
                         </div>
                     </form>

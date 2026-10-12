@@ -164,3 +164,23 @@ class UserLanguageTests(TestCase):
             r = self.client.get(reverse('my_profile'))
             for text in texts:
                 self.assertContains(r, text, msg_prefix=language)
+
+    def test_settings_screens_are_translated(self):
+        """Étape 9 : société, utilisateurs et modules en FR / NL / EN."""
+        from system.models import SystemConfiguration
+        config = SystemConfiguration.get_instance()
+        config.company_name = 'Demo'
+        config.save()
+        admin = User.objects.create_user(username='admin_i18n', password='x', role='admin')
+        self.client.force_login(admin)
+        expected = {
+            'system_config': {'fr': 'Informations de l&#x27;Entreprise', 'nl': 'Bedrijfsgegevens', 'en': 'Company details'},
+            'user_list': {'fr': 'Nouvel Utilisateur', 'nl': 'Nieuwe gebruiker', 'en': 'New user'},
+            'plugin_list': {'fr': 'Activer un nouveau module', 'nl': 'Een nieuwe module activeren', 'en': 'Activate a new module'},
+        }
+        for url_name, texts in expected.items():
+            for language, text in texts.items():
+                admin.language = language
+                admin.save()
+                response = self.client.get(reverse(url_name))
+                self.assertContains(response, text.replace('&#x27;', "'"), msg_prefix=f'{language} {url_name}')

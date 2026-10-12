@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 21:59+0200\n"
+"POT-Creation-Date: 2026-10-12 22:02+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -33,11 +33,12 @@ msgstr "Planner"
 msgid "Technicien"
 msgstr "Technicus"
 
-#: accounts/models.py:30
+#: accounts/models.py:30 accounts/templates/accounts/user_list.html:22
 msgid "Rôle"
 msgstr "Rol"
 
 #: accounts/models.py:37 accounts/templates/accounts/profile.html:64
+#: accounts/templates/accounts/user_form.html:45
 msgid "Langue"
 msgstr "Taal"
 
@@ -49,7 +50,8 @@ msgstr "Verwijderd"
 msgid "Date de suppression"
 msgstr "Verwijderingsdatum"
 
-#: accounts/models.py:80 maintenance/models.py:35
+#: accounts/models.py:80 accounts/templates/accounts/user_list.html:21
+#: maintenance/models.py:35
 msgid "Utilisateur"
 msgstr "Gebruiker"
 
@@ -64,6 +66,7 @@ msgstr "Mijn profiel"
 
 #: accounts/templates/accounts/profile.html:23
 #: accounts/templates/accounts/profile.html:59
+#: accounts/templates/accounts/user_form.html:37
 #: inventory/templates/inventory/client_list.html:57
 #: maintenance/templates/maintenance/technician_list.html:33
 msgid "E-mail"
@@ -74,6 +77,7 @@ msgid "Compte créé le"
 msgstr "Account aangemaakt op"
 
 #: accounts/templates/accounts/profile.html:31
+#: accounts/templates/accounts/user_list.html:24
 msgid "Dernière connexion"
 msgstr "Laatste aanmelding"
 
@@ -86,14 +90,17 @@ msgid "Mes informations"
 msgstr "Mijn gegevens"
 
 #: accounts/templates/accounts/profile.html:49
+#: accounts/templates/accounts/user_form.html:29
 msgid "Prénom"
 msgstr "Voornaam"
 
 #: accounts/templates/accounts/profile.html:54
+#: accounts/templates/accounts/user_form.html:33
 msgid "Nom"
 msgstr "Naam"
 
 #: accounts/templates/accounts/profile.html:71
+#: accounts/templates/accounts/user_form.html:64
 #: inventory/templates/inventory/building_form.html:41
 #: inventory/templates/inventory/client_form.html:19
 #: inventory/templates/inventory/equipment_form.html:36
@@ -119,6 +126,91 @@ msgstr "Bevestiging"
 #: accounts/templates/accounts/profile.html:103
 msgid "Changer le mot de passe"
 msgstr "Wachtwoord wijzigen"
+
+#: accounts/templates/accounts/user_form.html:15
+msgid "Définissez l'identité et les droits d'accès."
+msgstr "Bepaal de identiteit en de toegangsrechten."
+
+#: accounts/templates/accounts/user_form.html:25
+msgid "Nom d'utilisateur"
+msgstr "Gebruikersnaam"
+
+#: accounts/templates/accounts/user_form.html:41
+msgid "Rôle Système"
+msgstr "Systeemrol"
+
+#: accounts/templates/accounts/user_form.html:50
+msgid "Utilisateur Actif"
+msgstr "Actieve gebruiker"
+
+#: accounts/templates/accounts/user_form.html:55
+msgid "Mot de passe initial"
+msgstr "Initieel wachtwoord"
+
+#: accounts/templates/accounts/user_form.html:67
+#: inventory/templates/inventory/building_form.html:38
+#: inventory/templates/inventory/client_form.html:16
+#: inventory/templates/inventory/equipment_form.html:33
+#: maintenance/templates/maintenance/ticket_form.html:174
+msgid "Annuler"
+msgstr "Annuleren"
+
+#: accounts/templates/accounts/user_list.html:4
+#: accounts/templates/accounts/user_list.html:5
+msgid "Utilisateurs du système"
+msgstr "Systeemgebruikers"
+
+#: accounts/templates/accounts/user_list.html:13 accounts/views.py:56
+msgid "Nouvel Utilisateur"
+msgstr "Nieuwe gebruiker"
+
+#: accounts/templates/accounts/user_list.html:23
+#: inventory/templates/inventory/equipment_detail.html:105
+#: licensing/templates/licensing/plugin_list.html:72 maintenance/models.py:88
+#: maintenance/templates/maintenance/_planning_legend.html:14
+#: maintenance/templates/maintenance/_ticket_table.html:13
+#: maintenance/templates/maintenance/technician_list.html:42
+#: maintenance/templates/maintenance/ticket_list.html:62
+#: system/templates/system/dashboard.html:94
+msgid "Statut"
+msgstr "Status"
+
+#: accounts/templates/accounts/user_list.html:25
+#: inventory/templates/inventory/building_detail.html:86
+#: inventory/templates/inventory/building_list.html:69
+#: inventory/templates/inventory/client_detail.html:103
+#: inventory/templates/inventory/client_list.html:73
+#: inventory/templates/inventory/equipment_list.html:97
+#: inventory/templates/inventory/equipment_type_list.html:26
+msgid "Actions"
+msgstr "Acties"
+
+#: accounts/templates/accounts/user_list.html:51
+#: inventory/templates/inventory/client_detail.html:16
+#: licensing/templates/licensing/plugin_list.html:100 maintenance/models.py:38
+#: maintenance/templates/maintenance/technician_detail.html:25
+#: maintenance/templates/maintenance/technician_detail.html:161
+#: maintenance/templates/maintenance/technician_list.html:75
+msgid "Actif"
+msgstr "Actief"
+
+#: accounts/templates/accounts/user_list.html:56
+msgid "Suspendu"
+msgstr "Geschorst"
+
+#: accounts/templates/accounts/user_list.html:61
+#: maintenance/templates/maintenance/technician_detail.html:23
+msgid "Jamais"
+msgstr "Nooit"
+
+#: accounts/templates/accounts/user_list.html:68
+msgid "Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
+msgstr "Weet u zeker dat u deze gebruiker wilt verwijderen?"
+
+#: accounts/views.py:79
+#, python-format
+msgid "Modifier %(username)s"
+msgstr "%(username)s wijzigen"
 
 #: api/serializers.py:224
 msgid "L'heure envoyée est dans le futur."
@@ -184,10 +276,12 @@ msgstr "E-mail"
 
 #: inventory/models.py:23 inventory/templates/inventory/client_detail.html:66
 #: inventory/templates/inventory/client_list.html:58
+#: system/templates/system/config_detail.html:85
 msgid "Téléphone"
 msgstr "Telefoon"
 
 #: inventory/models.py:24 inventory/templates/inventory/client_detail.html:77
+#: system/templates/system/config_detail.html:103
 msgid "Numéro de TVA"
 msgstr "Btw-nummer"
 
@@ -333,6 +427,7 @@ msgstr "Serienummer"
 
 #: inventory/models.py:124
 #: inventory/templates/inventory/equipment_detail.html:62
+#: licensing/templates/licensing/plugin_list.html:71
 msgid "Date d'installation"
 msgstr "Installatiedatum"
 
@@ -435,15 +530,6 @@ msgstr "Categorie"
 msgid "N° de Série"
 msgstr "Serienr."
 
-#: inventory/templates/inventory/building_detail.html:86
-#: inventory/templates/inventory/building_list.html:69
-#: inventory/templates/inventory/client_detail.html:103
-#: inventory/templates/inventory/client_list.html:73
-#: inventory/templates/inventory/equipment_list.html:97
-#: inventory/templates/inventory/equipment_type_list.html:26
-msgid "Actions"
-msgstr "Acties"
-
 #: inventory/templates/inventory/building_detail.html:105
 msgid "Fiche technique"
 msgstr "Technische fiche"
@@ -460,13 +546,6 @@ msgstr "Adres aan te vullen. Vorig adres: « %(address)s »"
 #: inventory/templates/inventory/building_form.html:24
 msgid "Adresse d'intervention"
 msgstr "Interventieadres"
-
-#: inventory/templates/inventory/building_form.html:38
-#: inventory/templates/inventory/client_form.html:16
-#: inventory/templates/inventory/equipment_form.html:33
-#: maintenance/templates/maintenance/ticket_form.html:174
-msgid "Annuler"
-msgstr "Annuleren"
 
 #: inventory/templates/inventory/building_list.html:4
 #: inventory/templates/inventory/building_list.html:5
@@ -531,14 +610,8 @@ msgstr "Volgende"
 msgid "Dernière page"
 msgstr "Laatste pagina"
 
-#: inventory/templates/inventory/client_detail.html:16 maintenance/models.py:38
-#: maintenance/templates/maintenance/technician_detail.html:25
-#: maintenance/templates/maintenance/technician_detail.html:161
-#: maintenance/templates/maintenance/technician_list.html:75
-msgid "Actif"
-msgstr "Actief"
-
 #: inventory/templates/inventory/client_detail.html:18
+#: licensing/templates/licensing/plugin_list.html:108
 #: maintenance/templates/maintenance/technician_detail.html:27
 #: maintenance/templates/maintenance/technician_detail.html:157
 #: maintenance/templates/maintenance/technician_list.html:77
@@ -667,16 +740,6 @@ msgstr "Ticket-ID"
 msgid "Date prévue"
 msgstr "Geplande datum"
 
-#: inventory/templates/inventory/equipment_detail.html:105
-#: maintenance/models.py:88
-#: maintenance/templates/maintenance/_planning_legend.html:14
-#: maintenance/templates/maintenance/_ticket_table.html:13
-#: maintenance/templates/maintenance/technician_list.html:42
-#: maintenance/templates/maintenance/ticket_list.html:62
-#: system/templates/system/dashboard.html:94
-msgid "Statut"
-msgstr "Status"
-
 #: inventory/templates/inventory/equipment_detail.html:117
 msgid "Préventive"
 msgstr "Preventief"
@@ -775,6 +838,90 @@ msgstr "Locatie wijzigen"
 #: inventory/views.py:248
 msgid "Nouvel Équipement"
 msgstr "Nieuw toestel"
+
+#: licensing/templates/licensing/plugin_list.html:4
+#: system/templates/base.html:170
+msgid "Modules premium"
+msgstr "Premiummodules"
+
+#: licensing/templates/licensing/plugin_list.html:5
+msgid "Gestion des Modules Premium"
+msgstr "Beheer van premiummodules"
+
+#: licensing/templates/licensing/plugin_list.html:18
+msgid "Activer un nouveau module"
+msgstr "Een nieuwe module activeren"
+
+#: licensing/templates/licensing/plugin_list.html:19
+msgid ""
+"Collez votre clé de licence récupérée sur la Marketplace SMARTOPS pour "
+"installer l'extension."
+msgstr ""
+"Plak uw licentiesleutel van de SMARTOPS Marketplace om de uitbreiding te "
+"installeren."
+
+#: licensing/templates/licensing/plugin_list.html:29
+msgid "Activer & Installer"
+msgstr "Activeren & installeren"
+
+#: licensing/templates/licensing/plugin_list.html:42
+msgid "Terminal système"
+msgstr "Systeemterminal"
+
+#: licensing/templates/licensing/plugin_list.html:48
+msgid "Fermer & Actualiser"
+msgstr "Sluiten & vernieuwen"
+
+#: licensing/templates/licensing/plugin_list.html:60
+msgid "Modules Installés"
+msgstr "Geïnstalleerde modules"
+
+#: licensing/templates/licensing/plugin_list.html:62
+#, python-format
+msgid "%(counter)s module"
+msgid_plural "%(counter)s modules"
+msgstr[0] "%(counter)s module"
+msgstr[1] "%(counter)s modules"
+
+#: licensing/templates/licensing/plugin_list.html:69
+msgid "Module"
+msgstr "Module"
+
+#: licensing/templates/licensing/plugin_list.html:70
+msgid "Version"
+msgstr "Versie"
+
+#: licensing/templates/licensing/plugin_list.html:104
+msgid "Désactiver et Supprimer"
+msgstr "Deactiveren en verwijderen"
+
+#: licensing/templates/licensing/plugin_list.html:119
+msgid "Aucun module premium activé sur cette instance."
+msgstr "Geen premiummodule geactiveerd op deze installatie."
+
+#: licensing/templates/licensing/plugin_list.html:120
+msgid ""
+"Achetez vos modules sur la Marketplace pour étendre les capacités de "
+"SMARTOPS."
+msgstr ""
+"Koop uw modules op de Marketplace om de mogelijkheden van SMARTOPS uit te "
+"breiden."
+
+#: licensing/templates/licensing/plugin_list.html:140
+msgid "Lancement du processus..."
+msgstr "Proces wordt gestart..."
+
+#: licensing/templates/licensing/plugin_list.html:156
+msgid "ERREUR CRITIQUE"
+msgstr "KRITIEKE FOUT"
+
+#: licensing/templates/licensing/plugin_list.html:173
+msgid "Êtes-vous sûr de vouloir désinstaller le module"
+msgstr "Weet u zeker dat u deze module wilt verwijderen:"
+
+#: licensing/templates/licensing/plugin_list.html:173
+msgid "Cette action supprimera le package Python."
+msgstr "Deze actie verwijdert het Python-pakket."
 
 #: maintenance/forms.py:45
 msgid "Filtrer par Client"
@@ -1060,10 +1207,6 @@ msgstr "Geen technicus geregistreerd."
 msgid "Dernier login"
 msgstr "Laatste aanmelding"
 
-#: maintenance/templates/maintenance/technician_detail.html:23
-msgid "Jamais"
-msgstr "Nooit"
-
 #: maintenance/templates/maintenance/technician_detail.html:38
 #: system/templates/base.html:86 system/templates/system/dashboard.html:35
 msgid "Interventions"
@@ -1142,6 +1285,7 @@ msgstr "Indien inactief, verschijnt hij niet meer in de planningskeuzes."
 
 #: maintenance/templates/maintenance/technician_detail.html:169
 #: maintenance/templates/maintenance/ticket_form.html:171
+#: system/templates/system/config_detail.html:128
 msgid "Enregistrer les modifications"
 msgstr "Wijzigingen opslaan"
 
@@ -1694,10 +1838,6 @@ msgstr "Bedrijf & identiteit"
 msgid "Utilisateurs & rôles"
 msgstr "Gebruikers & rollen"
 
-#: system/templates/base.html:170
-msgid "Modules premium"
-msgstr "Premiummodules"
-
 #: system/templates/base.html:175
 msgid "Mises à jour"
 msgstr "Updates"
@@ -1721,6 +1861,74 @@ msgstr "Menu tonen of verbergen"
 #: system/templates/base.html:238
 msgid "Déconnexion"
 msgstr "Afmelden"
+
+#: system/templates/system/config_detail.html:4
+msgid "Paramètres Système"
+msgstr "Systeeminstellingen"
+
+#: system/templates/system/config_detail.html:5
+msgid "Configuration de l'Instance"
+msgstr "Configuratie van de installatie"
+
+#: system/templates/system/config_detail.html:19
+msgid "Identité Unique"
+msgstr "Unieke identiteit"
+
+#: system/templates/system/config_detail.html:25
+msgid "ID d'Installation (UUID)"
+msgstr "Installatie-ID (UUID)"
+
+#: system/templates/system/config_detail.html:26
+msgid "Cliquer pour copier"
+msgstr "Klik om te kopiëren"
+
+#: system/templates/system/config_detail.html:32
+msgid "Date d'Installation"
+msgstr "Installatiedatum"
+
+#: system/templates/system/config_detail.html:37
+msgid "Version du Noyau"
+msgstr "Kernversie"
+
+#: system/templates/system/config_detail.html:46
+msgid "Logo Entreprise"
+msgstr "Bedrijfslogo"
+
+#: system/templates/system/config_detail.html:52
+msgid "Aucun Logo"
+msgstr "Geen logo"
+
+#: system/templates/system/config_detail.html:64
+msgid "Informations de l'Entreprise"
+msgstr "Bedrijfsgegevens"
+
+#: system/templates/system/config_detail.html:73
+msgid "Nom de la Société"
+msgstr "Bedrijfsnaam"
+
+#: system/templates/system/config_detail.html:79
+msgid "Adresse du Siège"
+msgstr "Adres van de hoofdzetel"
+
+#: system/templates/system/config_detail.html:91
+msgid "Email de Contact"
+msgstr "Contact-e-mail"
+
+#: system/templates/system/config_detail.html:97
+msgid "Site Web"
+msgstr "Website"
+
+#: system/templates/system/config_detail.html:109
+msgid "Mettre à jour le Logo"
+msgstr "Logo bijwerken"
+
+#: system/templates/system/config_detail.html:115
+msgid "Télécharger un fichier"
+msgstr "Een bestand uploaden"
+
+#: system/templates/system/config_detail.html:119
+msgid "PNG, JPG jusqu'à 2Mo"
+msgstr "PNG, JPG tot 2 MB"
 
 #: system/templates/system/dashboard.html:5
 msgid "Tableau de Bord Principal"
