@@ -22,6 +22,8 @@ Paramètres : events_url (source JSON, ex. api_events?technician=<pk>), planning
             },
             // Pas de ligne « Toute la journée » : les interventions ont toujours un créneau horaire.
             allDaySlot: false,
+            // Ligne rouge de l'heure actuelle (couleur dans _planning_assets.html).
+            nowIndicator: true,
             slotMinTime: '07:00:00',
             slotMaxTime: '20:00:00',
             // Interventions qui se chevauchent (urgence) : côte à côte, chacune sur la moitié de la largeur.

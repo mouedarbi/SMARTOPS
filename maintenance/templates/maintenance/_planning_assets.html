@@ -16,7 +16,19 @@ Feuilles de style et scripts FullCalendar partagés par les plannings.
         --fc-button-active-border-color: #3b82f6;
         --fc-event-bg-color: #3b82f6;
         --fc-event-border-color: #3b82f6;
+        --fc-now-indicator-color: #ef4444;
     }
+    /* Week-end en gris (colonnes de la semaine et cases du mois). */
+    .fc .fc-timegrid-col.fc-day-sat,
+    .fc .fc-timegrid-col.fc-day-sun,
+    .fc .fc-daygrid-day.fc-day-sat,
+    .fc .fc-daygrid-day.fc-day-sun,
+    .fc .fc-col-header-cell.fc-day-sat,
+    .fc .fc-col-header-cell.fc-day-sun {
+        background: #f1f5f9;
+    }
+    /* Ligne de l'heure actuelle un peu plus visible que le trait par défaut. */
+    .fc .fc-timegrid-now-indicator-line { border-top-width: 2px; }
     .fc .fc-toolbar-title {
         font-weight: 900;
         letter-spacing: -0.025em;
