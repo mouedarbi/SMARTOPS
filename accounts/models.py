@@ -62,6 +62,12 @@ class CustomUser(AbstractUser):
         """Vrai si l'utilisateur est technicien."""
         return self.role == 'technician'
 
+    @property
+    def initials(self):
+        """Initiales pour l'avatar : prénom + nom, sinon les deux premières lettres de l'identifiant."""
+        letters = (self.first_name[:1] + self.last_name[:1]) or self.username[:2]
+        return letters.upper()
+
     class Meta:
         verbose_name = _("Utilisateur")
         verbose_name_plural = _("Utilisateurs")

@@ -11,7 +11,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import CustomUser
-from .forms import CustomUserForm, CustomUserCreateForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import CustomUserForm, CustomUserCreateForm, ProfileForm, ProfilePasswordForm
 
 def is_admin(user):
     """Vrai si l'utilisateur connecté est administrateur ou superutilisateur."""
@@ -91,3 +92,39 @@ def user_delete(request, pk):
         user_to_delete.soft_delete()
         messages.success(request, f"Utilisateur {user_to_delete.username} supprimé.")
     return redirect('user_list')
+
+
+@login_required
+def my_profile(request):
+    """
+    « Mon profil » de l'utilisateur connecté (administrateur ou gestionnaire) : ses données de compte,
+    modification de ses nom, prénom et e-mail, changement de son mot de passe.
+    Un technicien est renvoyé vers le profil de son interface terrain.
+    """
+    if not is_management_staff(request.user):
+        return redirect('technician_profile')
+
+    profile_form = ProfileForm(instance=request.user)
+    password_form = ProfilePasswordForm(request.user)
+
+    if request.method == 'POST':
+        if request.POST.get('action') == 'password':
+            password_form = ProfilePasswordForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                # Garde la session ouverte après le changement de mot de passe.
+                update_session_auth_hash(request, user)
+                messages.success(request, "Mot de passe modifié.")
+                return redirect('my_profile')
+        else:
+            profile_form = ProfileForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Profil mis à jour.")
+                return redirect('my_profile')
+
+    return render(request, 'accounts/profile.html', {
+        'profile_form': profile_form,
+        'password_form': password_form,
+        'page_title': "Mon profil",
+    })

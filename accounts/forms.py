@@ -8,7 +8,10 @@ Description : Formulaires pour la gestion des utilisateurs et des permissions.
 """
 
 from django import forms
+from django.contrib.auth.forms import PasswordChangeForm
 from .models import CustomUser
+
+INPUT_CLASS = 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-sm'
 
 class CustomUserForm(forms.ModelForm):
     """
@@ -45,3 +48,27 @@ class CustomUserCreateForm(CustomUserForm):
         if commit:
             user.save()
         return user
+
+
+class ProfileForm(forms.ModelForm):
+    """
+    « Mon profil » : l'utilisateur connecté modifie ses propres nom, prénom et e-mail.
+    L'identifiant, le rôle et l'état du compte restent gérés par un administrateur.
+    """
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': INPUT_CLASS}),
+            'last_name': forms.TextInput(attrs={'class': INPUT_CLASS}),
+            'email': forms.EmailInput(attrs={'class': INPUT_CLASS}),
+        }
+
+
+class ProfilePasswordForm(PasswordChangeForm):
+    """Changement de son propre mot de passe (ancien mot de passe exigé, règles de AUTH_PASSWORD_VALIDATORS)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = INPUT_CLASS

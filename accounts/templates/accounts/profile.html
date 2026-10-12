@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil | SMARTOPS{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+    <!-- Identité et données du compte -->
+    <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center">
+        <div class="mx-auto h-20 w-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-blue-200">
+            {{ user.initials }}
+        </div>
+        <h3 class="mt-4 text-lg font-black text-slate-800">{{ user.get_full_name|default:user.username }}</h3>
+        <p class="text-xs font-bold text-slate-400">@{{ user.username }}</p>
+        <span class="inline-block mt-3 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {% if user.role == 'admin' %}bg-purple-50 text-purple-600{% else %}bg-blue-50 text-blue-600{% endif %}">
+            {{ user.get_role_display }}
+        </span>
+
+        <dl class="mt-8 space-y-4 text-left text-sm">
+            <div>
+                <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">E-mail</dt>
+                <dd class="font-bold text-slate-700 break-all">{{ user.email|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">Compte créé le</dt>
+                <dd class="font-bold text-slate-700">{{ user.date_joined|date:"d/m/Y" }}</dd>
+            </div>
+            <div>
+                <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dernière connexion</dt>
+                <dd class="font-bold text-slate-700">{{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</dd>
+            </div>
+        </dl>
+        <p class="mt-8 text-xs text-slate-400">L'identifiant et le rôle sont gérés par un administrateur.</p>
+    </section>
+
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Mes informations -->
+        <form method="post" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="profile">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                <i class="las la-id-card text-lg"></i> Mes informations
+            </h4>
+            {% if profile_form.non_field_errors %}<div class="text-sm font-bold text-rose-600">{{ profile_form.non_field_errors }}</div>{% endif %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ profile_form.first_name.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Prénom</label>
+                    {{ profile_form.first_name }}
+                    {% for error in profile_form.first_name.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+                <div>
+                    <label for="{{ profile_form.last_name.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Nom</label>
+                    {{ profile_form.last_name }}
+                    {% for error in profile_form.last_name.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="md:col-span-2">
+                    <label for="{{ profile_form.email.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">E-mail</label>
+                    {{ profile_form.email }}
+                    {% for error in profile_form.email.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center gap-2">
+                    <i class="las la-save text-xl"></i> Enregistrer
+                </button>
+            </div>
+        </form>
+
+        <!-- Mot de passe -->
+        <form method="post" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="password">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                <i class="las la-key text-lg"></i> Mot de passe
+            </h4>
+            {% if password_form.non_field_errors %}<div class="text-sm font-bold text-rose-600">{{ password_form.non_field_errors }}</div>{% endif %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label for="{{ password_form.old_password.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Mot de passe actuel</label>
+                    {{ password_form.old_password }}
+                    {% for error in password_form.old_password.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+                <div>
+                    <label for="{{ password_form.new_password1.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Nouveau mot de passe</label>
+                    {{ password_form.new_password1 }}
+                    {% for error in password_form.new_password1.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+                <div>
+                    <label for="{{ password_form.new_password2.id_for_label }}" class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Confirmation</label>
+                    {{ password_form.new_password2 }}
+                    {% for error in password_form.new_password2.errors %}<p class="mt-1 text-xs font-bold text-rose-600">{{ error }}</p>{% endfor %}
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-black transition flex items-center gap-2">
+                    <i class="las la-lock text-xl"></i> Changer le mot de passe
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
