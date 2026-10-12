@@ -193,17 +193,17 @@ class MaintenanceTicketForm(forms.ModelForm):
         if self.instance.status in NOT_STARTED:
             conflict = find_schedule_conflict(cleaned_data.get('technician'), start, end, exclude_pk=self.instance.pk)
             if conflict and cleaned_data.get('type') == 'emergency':
-                self.overlap_warning = (
-                    f"Urgence placée en chevauchement : {schedule_conflict_message(conflict)} "
-                    "Les créneaux prévus ne bougent pas ; le décalage réel se lira dans les heures réelles."
-                )
+                self.overlap_warning = _(
+                    "Urgence placée en chevauchement : %(conflict)s Les créneaux prévus ne bougent pas ; "
+                    "le décalage réel se lira dans les heures réelles."
+                ) % {'conflict': schedule_conflict_message(conflict)}
             elif conflict:
                 message = schedule_conflict_message(conflict)
                 ticket_ref = f"#{conflict.pk}"
                 before, after = message.split(ticket_ref, 1)
                 self.add_error(None, format_html(
-                    '<strong>Conflit de planning</strong> : {}<a href="{}" target="_blank" class="underline font-bold">{}</a>{}',
-                    before, reverse('ticket_detail', args=[conflict.pk]), ticket_ref, after,
+                    '<strong>{}</strong> : {}<a href="{}" target="_blank" class="underline font-bold">{}</a>{}',
+                    _("Conflit de planning"), before, reverse('ticket_detail', args=[conflict.pk]), ticket_ref, after,
                 ))
         return cleaned_data
 

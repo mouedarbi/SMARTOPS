@@ -209,14 +209,14 @@ def technician_ticket_detail(request, pk):
                 photo.phase = phase
                 photo.uploaded_by = request.user
                 photo.save()
-                messages.success(request, "Photo ajoutée.")
+                messages.success(request, _("Photo ajoutée."))
             else:
-                messages.error(request, "Le fichier envoyé n'est pas une image valide.")
+                messages.error(request, _("Le fichier envoyé n'est pas une image valide."))
         elif action == 'delete_photo':
             photo = ticket.photos.filter(pk=request.POST.get('photo_id'), uploaded_by=request.user).first()
             if photo:
                 photo.delete()
-                messages.success(request, "Photo supprimée.")
+                messages.success(request, _("Photo supprimée."))
         return redirect('technician_ticket_detail', pk=ticket.id)
 
     context = {
@@ -263,9 +263,9 @@ def start_intervention(request, pk):
                 pass
 
         ticket.save()
-        messages.success(request, "Intervention démarrée. Bon travail !")
+        messages.success(request, _("Intervention démarrée. Bon travail !"))
     else:
-        messages.warning(request, "Cette intervention ne peut pas être démarrée.")
+        messages.warning(request, _("Cette intervention ne peut pas être démarrée."))
 
     return redirect('technician_ticket_detail', pk=pk)
 
@@ -288,7 +288,7 @@ def stop_intervention(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician=tech_profile)
 
     if ticket.status != 'in_progress':
-        messages.warning(request, "Cette intervention n'est pas en cours.")
+        messages.warning(request, _("Cette intervention n'est pas en cours."))
         return redirect('technician_ticket_detail', pk=pk)
 
     if request.method == 'POST':
@@ -298,7 +298,7 @@ def stop_intervention(request, pk):
             final_status = 'done'
 
         if not report:
-            messages.error(request, "Le rapport d'intervention est obligatoire pour clôturer.")
+            messages.error(request, _("Le rapport d'intervention est obligatoire pour clôturer."))
             return render(request, 'technician/intervention_report.html', {
                 'page_title': _("Rapport #%(id)s") % {'id': ticket.id},
                 'ticket': ticket,
@@ -311,14 +311,14 @@ def stop_intervention(request, pk):
             follow_up = reschedule_ticket(ticket, report)
             messages.success(
                 request,
-                f"Rapport enregistré. Intervention clôturée, ticket de suite #{follow_up.id} transmis au dispatching.",
+                _("Rapport enregistré. Intervention clôturée, ticket de suite #%(id)s transmis au dispatching.") % {'id': follow_up.id},
             )
         else:
             ticket.intervention_report = report
             ticket.status = final_status
             ticket.effective_end = timezone.now()
             ticket.save()
-            messages.success(request, "Intervention clôturée. Merci et bon travail !")
+            messages.success(request, _("Intervention clôturée. Merci et bon travail !"))
         return redirect('technician_ticket_detail', pk=pk)
 
     return render(request, 'technician/intervention_report.html', {

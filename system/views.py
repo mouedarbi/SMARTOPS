@@ -9,6 +9,7 @@ Description : Vues pour la gestion de la configuration système.
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import SystemConfiguration
 from .forms import SystemConfigurationForm
@@ -26,7 +27,7 @@ def dashboard_view(request):
     
     # Si l'installation n'est pas personnalisée, on force la configuration
     if config.company_name == 'Nouvelle Installation SMARTOPS' or not config.company_name:
-        messages.info(request, "Bienvenue ! Veuillez personnaliser le nom de votre société pour déverrouiller le système.")
+        messages.info(request, _("Bienvenue ! Veuillez personnaliser le nom de votre société pour déverrouiller le système."))
         return redirect('system_config')
 
     # Statistiques
@@ -61,7 +62,7 @@ def system_config_view(request):
         form = SystemConfigurationForm(request.POST, request.FILES, instance=config)
         if form.is_valid():
             form.save()
-            messages.success(request, "Les paramètres système ont été mis à jour avec succès.")
+            messages.success(request, _("Les paramètres système ont été mis à jour avec succès."))
             return redirect('system_config')
         else:
             error_msgs = []
@@ -70,7 +71,7 @@ def system_config_view(request):
                 for error in errors:
                     error_msgs.append(f"'{field_label}' : {error}")
             detailed_error = " | ".join(error_msgs)
-            messages.error(request, f"Une erreur est survenue lors de la mise à jour : {detailed_error}")
+            messages.error(request, _("Une erreur est survenue lors de la mise à jour : %(error)s") % {'error': detailed_error})
     else:
         form = SystemConfigurationForm(instance=config)
         

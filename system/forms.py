@@ -8,6 +8,7 @@ Description : Formulaire de gestion de la configuration système.
 """
 
 from django import forms
+from django.utils.translation import gettext as _
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from .models import SystemConfiguration
@@ -66,6 +67,6 @@ class SystemConfigurationForm(forms.ModelForm):
                 raise ValueError()
         except ValueError:
             raise ValidationError(
-                "Format attendu : 'www.exemple.com' ou 'https://exemple.com' (les tirets du bas '_' sont autorisés)"
+                _("Format attendu : 'www.exemple.com' ou 'https://exemple.com' (les tirets du bas '_' sont autorisés)")
             )
         return website

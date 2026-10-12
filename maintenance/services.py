@@ -12,6 +12,7 @@ import os
 import re
 
 from django.core.files import File
+from django.utils.translation import gettext as _
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.functions import Coalesce
@@ -188,7 +189,11 @@ def find_schedule_conflict(technician, start, end, exclude_pk=None):
 def schedule_conflict_message(conflict):
     """Message lisible (heure locale) pour un conflit trouvé par find_schedule_conflict()."""
     start, end = timezone.localtime(conflict.busy_start), timezone.localtime(conflict.busy_end)
-    when = f"le {start:%d/%m} de {start:%H:%M} à {end:%H:%M}" if start.date() == end.date() \
-        else f"du {start:%d/%m %H:%M} au {end:%d/%m %H:%M}"
+    if start.date() == end.date():
+        when = _("le %(day)s de %(start)s à %(end)s") % {
+            'day': f"{start:%d/%m}", 'start': f"{start:%H:%M}", 'end': f"{end:%H:%M}"}
+    else:
+        when = _("du %(start)s au %(end)s") % {'start': f"{start:%d/%m %H:%M}", 'end': f"{end:%d/%m %H:%M}"}
     place = f"{conflict.equipment.name} – {conflict.equipment.building.name}"
-    return f"{conflict.technician} est déjà affecté à l'intervention #{conflict.pk} ({place}) {when}."
+    return _("%(technician)s est déjà affecté à l'intervention #%(id)s (%(place)s) %(when)s.") % {
+        'technician': conflict.technician, 'id': conflict.pk, 'place': place, 'when': when}

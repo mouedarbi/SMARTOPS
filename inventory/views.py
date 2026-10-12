@@ -67,7 +67,7 @@ def client_create_view(request):
         form = ClientForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Client créé avec succès.")
+            messages.success(request, _("Client créé avec succès."))
             return redirect('client_list')
     else:
         form = ClientForm()
@@ -82,7 +82,7 @@ def client_update_view(request, pk):
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             form.save()
-            messages.success(request, "Informations mises à jour.")
+            messages.success(request, _("Informations mises à jour."))
             return redirect('client_list')
     else:
         form = ClientForm(instance=client)
@@ -150,14 +150,14 @@ def building_create_view(request):
     client_id = request.GET.get('client') or ''
     client = Client.objects.filter(pk=client_id).first() if client_id.isdigit() else None
     if client is None:
-        messages.warning(request, "Un lieu se crée depuis la fiche de son client.")
+        messages.warning(request, _("Un lieu se crée depuis la fiche de son client."))
         return redirect('building_list')
     form = BuildingForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         building = form.save(commit=False)
         building.client = client
         building.save()
-        messages.success(request, "Lieu créé avec succès.")
+        messages.success(request, _("Lieu créé avec succès."))
         return redirect('client_detail', pk=client.pk)
     return render(request, 'inventory/building_form.html', {
         'form': form, 'title': _('Nouveau lieu'), 'client': client,
@@ -173,7 +173,7 @@ def building_update_view(request, pk):
         form = BuildingForm(request.POST, instance=building)
         if form.is_valid():
             form.save()
-            messages.success(request, "Informations du lieu mises à jour.")
+            messages.success(request, _("Informations du lieu mises à jour."))
             return redirect('building_list')
     else:
         form = BuildingForm(instance=building)
@@ -235,14 +235,14 @@ def equipment_create_view(request):
     building = (Building.objects.select_related('client').filter(pk=building_id).first()
                 if building_id.isdigit() else None)
     if building is None:
-        messages.warning(request, "Un équipement se crée depuis la fiche de son lieu.")
+        messages.warning(request, _("Un équipement se crée depuis la fiche de son lieu."))
         return redirect('equipment_list')
     form = EquipmentForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         equipment = form.save(commit=False)
         equipment.building = building
         equipment.save()
-        messages.success(request, "Équipement créé avec succès.")
+        messages.success(request, _("Équipement créé avec succès."))
         return redirect('building_detail', pk=building.pk)
     return render(request, 'inventory/equipment_form.html', {
         'form': form, 'title': _('Nouvel Équipement'), 'building': building,
@@ -276,7 +276,7 @@ def equipment_type_detail_view(request, pk):
             field = form.save(commit=False)
             field.equipment_type = etype
             field.save()
-            messages.success(request, "Champ ajouté.")
+            messages.success(request, _("Champ ajouté."))
             return redirect('equipment_type_detail', pk=pk)
     else:
         form = EquipmentTypeFieldForm()

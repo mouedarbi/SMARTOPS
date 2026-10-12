@@ -16,6 +16,7 @@ import os
 import signal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.http import StreamingHttpResponse, JsonResponse
@@ -79,9 +80,9 @@ def plugin_list_view(request):
                 messages.success(request, result.get('message'))
                 _hot_reload(request)
             else:
-                messages.error(request, result.get('error', "Une erreur est survenue lors de l'activation."))
+                messages.error(request, result.get('error', _("Une erreur est survenue lors de l'activation.")))
         else:
-            messages.warning(request, "Veuillez saisir une clé de licence.")
+            messages.warning(request, _("Veuillez saisir une clé de licence."))
         return redirect('plugin_list')
 
     plugins = Plugin.objects.all().order_by('-installed_at')
@@ -265,9 +266,9 @@ def sync_portal_view(request):
     result = LicenseService.sync_with_portal()
     if result.get('success'):
         if result.get('updates_available'):
-            messages.warning(request, f"Synchronisation réussie. {len(result['module_updates'])} mise(s) à jour disponible(s) !")
+            messages.warning(request, _("Synchronisation réussie. %(count)s mise(s) à jour disponible(s) !") % {'count': len(result['module_updates'])})
         else:
-            messages.success(request, "Votre système est à jour.")
+            messages.success(request, _("Votre système est à jour."))
     else:
-        messages.error(request, f"Échec de la synchronisation : {result.get('error')}")
+        messages.error(request, _("Échec de la synchronisation : %(error)s") % {'error': result.get('error')})
     return redirect('dashboard')

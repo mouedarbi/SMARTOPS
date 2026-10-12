@@ -627,6 +627,22 @@ class ScheduleConflictTestCase(TestCase):
         self.assertIn(reverse('ticket_detail', args=[self.existing.pk]), html)
         self.assertIn('le 15/12 de 09:00 à 10:30', html)
 
+    def test_conflict_message_is_translated(self):
+        """Messages système : le conflit de planning suit la langue du gestionnaire."""
+        manager = CustomUser.objects.get(username='chef_c')
+        manager.language = 'en'
+        manager.save()
+        ticket = self._unassigned_ticket()
+        html = self.http.post(reverse('ticket_update', args=[ticket.pk]), self._form_data()).content.decode()
+        self.assertIn('Scheduling conflict', html)
+        self.assertIn('is already assigned to work order', html)
+        self.assertIn(f'#{self.existing.pk}', html)
+        self.assertIn('on 15/12 from 09:00 to 10:30', html)
+        manager.language = 'nl'
+        manager.save()
+        html = self.http.post(reverse('ticket_update', args=[ticket.pk]), self._form_data()).content.decode()
+        self.assertIn('Planningsconflict', html)
+
     def test_form_accepts_adjacent_slot_other_technician_or_unassigned(self):
         for data in (
             self._form_data(start_time_slot='10:30'),

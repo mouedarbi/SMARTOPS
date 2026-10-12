@@ -58,7 +58,7 @@ class BuildingForm(forms.ModelForm):
         """Code postal en chiffres (4 en Belgique, 5 en France ou en Allemagne)."""
         value = self.cleaned_data['postal_code'].strip()
         if not value.isdigit() or not 4 <= len(value) <= 5:
-            raise forms.ValidationError("Code postal invalide (4 ou 5 chiffres).")
+            raise forms.ValidationError(_("Code postal invalide (4 ou 5 chiffres)."))
         return value
 
 class EquipmentForm(forms.ModelForm):
@@ -127,7 +127,7 @@ class EquipmentForm(forms.ModelForm):
             value = cleaned.get(key)
             if value in (None, ''):
                 if definition.required and key not in self.errors:
-                    self.add_error(key, "Ce champ est requis pour ce type d'équipement.")
+                    self.add_error(key, _("Ce champ est requis pour ce type d'équipement."))
                 continue
             if isinstance(value, float):
                 value = int(value) if value.is_integer() else value

@@ -46,7 +46,7 @@ def user_create(request):
         form = CustomUserCreateForm(request.POST)
         if form.is_valid():
             user = form.save()
-            messages.success(request, f"Utilisateur {user.username} créé avec succès.")
+            messages.success(request, _("Utilisateur %(username)s créé avec succès.") % {'username': user.username})
             return redirect('user_list')
     else:
         form = CustomUserCreateForm()
@@ -68,7 +68,7 @@ def user_edit(request, pk):
         form = CustomUserForm(request.POST, instance=user_to_edit)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Utilisateur {user_to_edit.username} mis à jour.")
+            messages.success(request, _("Utilisateur %(username)s mis à jour.") % {'username': user_to_edit.username})
             return redirect('user_list')
     else:
         form = CustomUserForm(instance=user_to_edit)
@@ -88,10 +88,10 @@ def user_delete(request, pk):
     """
     user_to_delete = get_object_or_404(CustomUser, pk=pk)
     if user_to_delete == request.user:
-        messages.error(request, "Vous ne pouvez pas vous supprimer vous-même.")
+        messages.error(request, _("Vous ne pouvez pas vous supprimer vous-même."))
     else:
         user_to_delete.soft_delete()
-        messages.success(request, f"Utilisateur {user_to_delete.username} supprimé.")
+        messages.success(request, _("Utilisateur %(username)s supprimé.") % {'username': user_to_delete.username})
     return redirect('user_list')
 
 

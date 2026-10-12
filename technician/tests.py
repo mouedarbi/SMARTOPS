@@ -63,6 +63,13 @@ class TechnicianInterventionTests(TestCase):
         self.client_http = HttpClient()
         self.client_http.login(username='tech1', password='password123')
 
+    def test_start_message_follows_technician_language(self):
+        """Messages système : « Intervention démarrée » dans la langue du technicien."""
+        self.tech_user.language = 'nl'
+        self.tech_user.save()
+        response = self.client_http.post(reverse('start_intervention', args=[self.ticket.id]), follow=True)
+        self.assertContains(response, 'Interventie gestart. Veel succes!')
+
     def test_start_intervention(self):
         """Démarrer une intervention met à jour son statut et son heure de début."""
         url = reverse('start_intervention', args=[self.ticket.id])

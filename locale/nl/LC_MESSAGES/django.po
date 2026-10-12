@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SMARTOPS Core\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 22:32+0200\n"
+"POT-Creation-Date: 2026-10-12 22:36+0200\n"
 "PO-Revision-Date: 2026-10-12 16:35+0200\n"
 "Last-Translator: Mohamed Ouedarbi\n"
 "Language-Team: Nederlands\n"
@@ -214,10 +214,29 @@ msgstr "Nooit"
 msgid "Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
 msgstr "Weet u zeker dat u deze gebruiker wilt verwijderen?"
 
+#: accounts/views.py:49
+#, python-format
+msgid "Utilisateur %(username)s créé avec succès."
+msgstr "Gebruiker %(username)s aangemaakt."
+
+#: accounts/views.py:71
+#, python-format
+msgid "Utilisateur %(username)s mis à jour."
+msgstr "Gebruiker %(username)s bijgewerkt."
+
 #: accounts/views.py:79
 #, python-format
 msgid "Modifier %(username)s"
 msgstr "%(username)s wijzigen"
+
+#: accounts/views.py:91
+msgid "Vous ne pouvez pas vous supprimer vous-même."
+msgstr "U kunt uzelf niet verwijderen."
+
+#: accounts/views.py:94
+#, python-format
+msgid "Utilisateur %(username)s supprimé."
+msgstr "Gebruiker %(username)s verwijderd."
 
 #: accounts/views.py:118
 msgid "Mot de passe modifié."
@@ -229,16 +248,16 @@ msgstr "Profiel bijgewerkt."
 
 #: api/serializers.py:224
 msgid "L'heure envoyée est dans le futur."
-msgstr ""
+msgstr "Het verzonden tijdstip ligt in de toekomst."
 
 #: api/serializers.py:226
 msgid "L'heure envoyée date de plus de 7 jours."
-msgstr ""
+msgstr "Het verzonden tijdstip is meer dan 7 dagen oud."
 
 #: api/serializers.py:269
 msgid ""
 "L'heure de fin doit être postérieure à l'heure de début de l'intervention."
-msgstr ""
+msgstr "Het eindtijdstip moet na het starttijdstip van de interventie liggen."
 
 #: inventory/addresses.py:27
 msgid "Belgique"
@@ -271,6 +290,14 @@ msgstr "Brussel"
 #: inventory/forms.py:49
 msgid "Ex. : 2e étage, code porte 1234, entrée par le quai de livraison"
 msgstr "Bv.: 2e verdieping, deurcode 1234, ingang via de laadkaai"
+
+#: inventory/forms.py:61
+msgid "Code postal invalide (4 ou 5 chiffres)."
+msgstr "Ongeldige postcode (4 of 5 cijfers)."
+
+#: inventory/forms.py:130
+msgid "Ce champ est requis pour ce type d'équipement."
+msgstr "Dit veld is verplicht voor dit toesteltype."
 
 #: inventory/models.py:19 inventory/templates/inventory/client_list.html:45
 msgid "Nom du Client"
@@ -845,17 +872,81 @@ msgstr "Type aanmaken"
 msgid "Gérer Champs"
 msgstr "Velden beheren"
 
+#: inventory/views.py:70
+msgid "Client créé avec succès."
+msgstr "Klant aangemaakt."
+
+#: inventory/views.py:85
+msgid "Informations mises à jour."
+msgstr "Gegevens bijgewerkt."
+
 #: inventory/views.py:89
 msgid "Modifier Client"
 msgstr "Klant wijzigen"
+
+#: inventory/views.py:153
+msgid "Un lieu se crée depuis la fiche de son client."
+msgstr "Een locatie wordt aangemaakt vanuit de fiche van de klant."
+
+#: inventory/views.py:160
+msgid "Lieu créé avec succès."
+msgstr "Locatie aangemaakt."
+
+#: inventory/views.py:176
+msgid "Informations du lieu mises à jour."
+msgstr "Gegevens van de locatie bijgewerkt."
 
 #: inventory/views.py:181
 msgid "Modifier le lieu"
 msgstr "Locatie wijzigen"
 
+#: inventory/views.py:238
+msgid "Un équipement se crée depuis la fiche de son lieu."
+msgstr "Een toestel wordt aangemaakt vanuit de fiche van de locatie."
+
+#: inventory/views.py:245
+msgid "Équipement créé avec succès."
+msgstr "Toestel aangemaakt."
+
 #: inventory/views.py:248
 msgid "Nouvel Équipement"
 msgstr "Nieuw toestel"
+
+#: inventory/views.py:279
+msgid "Champ ajouté."
+msgstr "Veld toegevoegd."
+
+#: licensing/services.py:82
+msgid "La Marketplace est injoignable."
+msgstr "De Marketplace is onbereikbaar."
+
+#: licensing/services.py:148
+msgid "Installation non reconnue par le Portail. Contactez le support."
+msgstr "Installatie niet herkend door het Portaal. Neem contact op met de support."
+
+#: licensing/services.py:150
+msgid "Trop de synchronisations : réessayez dans quelques minutes."
+msgstr "Te veel synchronisaties: probeer het over enkele minuten opnieuw."
+
+#: licensing/services.py:152
+#, python-format
+msgid "Erreur Portail (%(status)s)"
+msgstr "Fout van het Portaal (%(status)s)"
+
+#: licensing/services.py:154
+msgid "Le Portail est injoignable."
+msgstr "Het Portaal is onbereikbaar."
+
+#: licensing/services.py:172
+#, python-format
+msgid "Le module '%(slug)s' est déjà installé et actif."
+msgstr "De module '%(slug)s' is al geïnstalleerd en actief."
+
+#: licensing/services.py:198
+#, python-format
+msgid ""
+"Module '%(name)s' activé et installé. Rechargement de l'application en cours…"
+msgstr "Module '%(name)s' geactiveerd en geïnstalleerd. De applicatie wordt herladen…"
 
 #: licensing/templates/licensing/plugin_list.html:4
 #: system/templates/base.html:170
@@ -941,6 +1032,28 @@ msgstr "Weet u zeker dat u deze module wilt verwijderen:"
 msgid "Cette action supprimera le package Python."
 msgstr "Deze actie verwijdert het Python-pakket."
 
+#: licensing/views.py:83
+msgid "Une erreur est survenue lors de l'activation."
+msgstr "Er is een fout opgetreden bij het activeren."
+
+#: licensing/views.py:85
+msgid "Veuillez saisir une clé de licence."
+msgstr "Voer een licentiesleutel in."
+
+#: licensing/views.py:269
+#, python-format
+msgid "Synchronisation réussie. %(count)s mise(s) à jour disponible(s) !"
+msgstr "Synchronisatie geslaagd. %(count)s update(s) beschikbaar!"
+
+#: licensing/views.py:271
+msgid "Votre système est à jour."
+msgstr "Uw systeem is up-to-date."
+
+#: licensing/views.py:273
+#, python-format
+msgid "Échec de la synchronisation : %(error)s"
+msgstr "Synchronisatie mislukt: %(error)s"
+
 #: maintenance/forms.py:45
 msgid "Filtrer par Client"
 msgstr "Filteren op klant"
@@ -983,6 +1096,20 @@ msgstr "Geschatte duur"
 #: maintenance/templates/maintenance/ticket_form.html:258
 msgid "--- Choisir un équipement ---"
 msgstr "--- Kies een toestel ---"
+
+#: maintenance/forms.py:197
+#, python-format
+msgid ""
+"Urgence placée en chevauchement : %(conflict)s Les créneaux prévus ne "
+"bougent pas ; le décalage réel se lira dans les heures réelles."
+msgstr ""
+"Dringende interventie overlappend ingepland: %(conflict)s De geplande "
+"tijdsloten blijven ongewijzigd; de werkelijke verschuiving blijkt uit de "
+"werkelijke tijden."
+
+#: maintenance/forms.py:206
+msgid "Conflit de planning"
+msgstr "Planningsconflict"
 
 #: maintenance/forms.py:225
 msgid "Spécialités (séparées par des virgules)"
@@ -1073,7 +1200,7 @@ msgstr "Lengtegraad bij start"
 
 #: maintenance/models.py:89
 msgid "Description du problème / travail"
-msgstr ""
+msgstr "Beschrijving van het probleem / werk"
 
 #: maintenance/models.py:90
 #: maintenance/templates/maintenance/ticket_detail.html:253
@@ -1083,27 +1210,27 @@ msgstr "Interventieverslag"
 
 #: maintenance/models.py:93
 msgid "Événement calendrier"
-msgstr ""
+msgstr "Kalenderafspraak"
 
 #: maintenance/models.py:96
 msgid "Date de mise à jour"
-msgstr ""
+msgstr "Datum van bijwerking"
 
 #: maintenance/models.py:104
 msgid "La date de fin prévue doit être postérieure à la date de début prévue."
-msgstr ""
+msgstr "Het geplande einde moet na de geplande start liggen."
 
 #: maintenance/models.py:108
 msgid "La date de fin réelle doit être postérieure à la date de début réelle."
-msgstr ""
+msgstr "Het werkelijke einde moet na de werkelijke start liggen."
 
 #: maintenance/models.py:130
 msgid "Ticket de Maintenance"
-msgstr ""
+msgstr "Onderhoudsticket"
 
 #: maintenance/models.py:131
 msgid "Tickets de Maintenance"
-msgstr ""
+msgstr "Onderhoudstickets"
 
 #: maintenance/models.py:154
 #: maintenance/templates/maintenance/ticket_detail.html:333
@@ -1143,19 +1270,38 @@ msgstr "Moment"
 
 #: maintenance/models.py:173
 msgid "Ajoutée par"
-msgstr ""
+msgstr "Toegevoegd door"
 
 #: maintenance/models.py:175
 msgid "Date d'ajout"
-msgstr ""
+msgstr "Datum toegevoegd"
 
 #: maintenance/models.py:181
 msgid "Photo d'intervention"
-msgstr ""
+msgstr "Interventiefoto"
 
 #: maintenance/models.py:182
 msgid "Photos d'intervention"
+msgstr "Interventiefoto's"
+
+#: maintenance/services.py:193
+#, python-format
+msgid "le %(day)s de %(start)s à %(end)s"
+msgstr "op %(day)s van %(start)s tot %(end)s"
+
+#: maintenance/services.py:196
+#, python-format
+msgid "du %(start)s au %(end)s"
+msgstr "van %(start)s tot %(end)s"
+
+#: maintenance/services.py:198
+#, python-format
+msgid ""
+"%(technician)s est déjà affecté à l'intervention #%(id)s (%(place)s) "
+"%(when)s."
 msgstr ""
+"%(technician)s is al toegewezen aan interventie #%(id)s (%(place)s) "
+"%(when)s."
 
 #: maintenance/templates/maintenance/_planning_legend.html:9
 msgid "Maintenance préventive"
@@ -1780,6 +1926,18 @@ msgid_plural "Page %(number)s sur %(total)s — %(counter)s tickets"
 msgstr[0] "Pagina %(number)s van %(total)s — %(counter)s ticket"
 msgstr[1] "Pagina %(number)s van %(total)s — %(counter)s tickets"
 
+#: maintenance/views.py:148
+msgid "Photo ajoutée à l'intervention."
+msgstr "Foto toegevoegd aan de interventie."
+
+#: maintenance/views.py:150 technician/views.py:214
+msgid "Le fichier envoyé n'est pas une image valide."
+msgstr "Het verzonden bestand is geen geldige afbeelding."
+
+#: maintenance/views.py:156 technician/views.py:219
+msgid "Photo supprimée."
+msgstr "Foto verwijderd."
+
 #: maintenance/views.py:184
 msgid "Ticket créé"
 msgstr "Ticket aangemaakt"
@@ -1812,29 +1970,87 @@ msgstr "Afsluiting op het terrein"
 msgid "Dernière modification de la fiche"
 msgstr "Laatste wijziging van de fiche"
 
+#: maintenance/views.py:267
+msgid ""
+"Cette intervention ne peut plus être modifiée car elle est déjà en cours ou "
+"clôturée."
+msgstr ""
+"Deze interventie kan niet meer worden gewijzigd omdat ze al bezig of "
+"afgesloten is."
+
 #: maintenance/views.py:271
 #, python-format
 msgid "Planification #%(id)s"
 msgstr "Planning #%(id)s"
+
+#: maintenance/views.py:271
+#, python-format
+msgid "Intervention #%(id)s reprogrammée."
+msgstr "Interventie #%(id)s opnieuw ingepland."
+
+#: maintenance/views.py:284
+msgid "Seule une intervention pas encore démarrée peut être annulée."
+msgstr "Alleen een nog niet gestarte interventie kan worden geannuleerd."
+
+#: maintenance/views.py:294
+#, python-format
+msgid "Intervention #%(id)s annulée."
+msgstr "Interventie #%(id)s geannuleerd."
+
+#: maintenance/views.py:296
+msgid "Le motif de l'annulation est obligatoire."
+msgstr "De reden van de annulering is verplicht."
 
 #: maintenance/views.py:301
 #, python-format
 msgid "Annulation #%(id)s"
 msgstr "Annulering #%(id)s"
 
+#: maintenance/views.py:314
+msgid "Seule une intervention planifiée peut être réassignée."
+msgstr "Alleen een geplande interventie kan opnieuw worden toegewezen."
+
 #: maintenance/views.py:316
 #, python-format
 msgid "Réassignation #%(id)s"
 msgstr "Nieuwe toewijzing #%(id)s"
 
+#: maintenance/views.py:316
+#, python-format
+msgid "Intervention #%(id)s réassignée."
+msgstr "Interventie #%(id)s opnieuw toegewezen."
+
+#: maintenance/views.py:351
+#, python-format
+msgid "Nouveau ticket #%(id)s créé avec succès."
+msgstr "Nieuw ticket #%(id)s aangemaakt."
+
 #: maintenance/views.py:358
 msgid "Nouveau ticket d'intervention"
 msgstr "Nieuw interventieticket"
+
+#: maintenance/views.py:371
+#, python-format
+msgid "Intervention #%(id)s supprimée définitivement."
+msgstr "Interventie #%(id)s definitief verwijderd."
+
+#: maintenance/views.py:422
+#, python-format
+msgid "Profil de %(name)s mis à jour."
+msgstr "Profiel van %(name)s bijgewerkt."
 
 #: maintenance/views.py:441
 #, python-format
 msgid "Profil Technicien : %(name)s"
 msgstr "Profiel technicus: %(name)s"
+
+#: system/forms.py:70
+msgid ""
+"Format attendu : 'www.exemple.com' ou 'https://exemple.com' (les tirets du "
+"bas '_' sont autorisés)"
+msgstr ""
+"Verwacht formaat: 'www.voorbeeld.be' of 'https://voorbeeld.be' (underscores "
+"'_' zijn toegestaan)"
 
 #: system/templates/base.html:73 system/templates/base.html:213
 #: system/templates/system/dashboard.html:4
@@ -2011,6 +2227,22 @@ msgstr "module(s) kunnen worden bijgewerkt."
 #: system/templates/system/dashboard.html:192
 msgid "Mettre à jour maintenant"
 msgstr "Nu bijwerken"
+
+#: system/views.py:30
+msgid ""
+"Bienvenue ! Veuillez personnaliser le nom de votre société pour "
+"déverrouiller le système."
+msgstr ""
+"Welkom! Vul de naam van uw bedrijf in om het systeem te ontgrendelen."
+
+#: system/views.py:65
+msgid "Les paramètres système ont été mis à jour avec succès."
+msgstr "De systeeminstellingen zijn bijgewerkt."
+
+#: system/views.py:74
+#, python-format
+msgid "Une erreur est survenue lors de la mise à jour : %(error)s"
+msgstr "Er is een fout opgetreden bij het bijwerken: %(error)s"
 
 #: technician/templates/technician/base_technician.html:27
 msgid "Terrain"
@@ -2223,15 +2455,48 @@ msgstr "Technicusprofiel niet gevonden."
 msgid "Mon Planning"
 msgstr "Mijn planning"
 
+#: technician/views.py:212
+msgid "Photo ajoutée."
+msgstr "Foto toegevoegd."
+
 #: technician/views.py:223
 #, python-format
 msgid "Intervention #%(id)s"
 msgstr "Interventie #%(id)s"
 
+#: technician/views.py:266
+msgid "Intervention démarrée. Bon travail !"
+msgstr "Interventie gestart. Veel succes!"
+
+#: technician/views.py:268
+msgid "Cette intervention ne peut pas être démarrée."
+msgstr "Deze interventie kan niet worden gestart."
+
+#: technician/views.py:291
+msgid "Cette intervention n'est pas en cours."
+msgstr "Deze interventie is niet bezig."
+
+#: technician/views.py:301
+msgid "Le rapport d'intervention est obligatoire pour clôturer."
+msgstr "Het interventieverslag is verplicht om af te sluiten."
+
 #: technician/views.py:303 technician/views.py:325
 #, python-format
 msgid "Rapport #%(id)s"
 msgstr "Verslag #%(id)s"
+
+#: technician/views.py:314
+#, python-format
+msgid ""
+"Rapport enregistré. Intervention clôturée, ticket de suite #%(id)s transmis "
+"au dispatching."
+msgstr ""
+"Verslag opgeslagen. Interventie afgesloten, vervolgticket #%(id)s doorgestuurd "
+"naar de dispatching."
+
+#: technician/views.py:321
+msgid "Intervention clôturée. Merci et bon travail !"
+msgstr "Interventie afgesloten. Bedankt en goed gewerkt!"
 
 #: templates/registration/lockout.html:6 templates/registration/lockout.html:17
 msgid "Accès temporairement bloqué"
@@ -2243,8 +2508,10 @@ msgid ""
 "Trop de tentatives de connexion échouées (%(counter)s) pour cet identifiant."
 msgid_plural ""
 "Trop de tentatives de connexion échouées (%(counter)s) pour cet identifiant."
-msgstr[0] "Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
-msgstr[1] "Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
+msgstr[0] ""
+"Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
+msgstr[1] ""
+"Te veel mislukte aanmeldpogingen (%(counter)s) voor deze gebruikersnaam."
 
 #: templates/registration/lockout.html:24
 #, python-format

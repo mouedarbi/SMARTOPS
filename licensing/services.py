@@ -12,6 +12,7 @@ import logging
 import requests
 from django.db import models
 from django.conf import settings
+from django.utils.translation import gettext as _
 from .models import Plugin
 from system.models import SystemConfiguration
 
@@ -78,7 +79,7 @@ class LicenseService:
                 
         except requests.exceptions.RequestException as e:
             logger.error(f"Erreur de connexion Marketplace : {e}")
-            return {"success": False, "error": "La Marketplace est injoignable."}
+            return {"success": False, "error": _("La Marketplace est injoignable.")}
 
     @classmethod
     def _installation_auth_headers(cls, sys_config):
@@ -144,13 +145,13 @@ class LicenseService:
                 sys_config.save()
                 return data
             elif response.status_code == 401:
-                return {"success": False, "error": "Installation non reconnue par le Portail. Contactez le support."}
+                return {"success": False, "error": _("Installation non reconnue par le Portail. Contactez le support.")}
             elif response.status_code == 429:
-                return {"success": False, "error": "Trop de synchronisations : réessayez dans quelques minutes."}
+                return {"success": False, "error": _("Trop de synchronisations : réessayez dans quelques minutes.")}
             else:
-                return {"success": False, "error": f"Erreur Portail ({response.status_code})"}
+                return {"success": False, "error": _("Erreur Portail (%(status)s)") % {'status': response.status_code}}
         except (requests.exceptions.RequestException, ValueError):
-            return {"success": False, "error": "Le Portail est injoignable."}
+            return {"success": False, "error": _("Le Portail est injoignable.")}
 
     @classmethod
     def activate_plugin(cls, key):
@@ -168,7 +169,7 @@ class LicenseService:
         
         # 2. Contrôle local : Déjà installé ?
         if Plugin.objects.filter(slug=plugin_slug, is_active=True).exists():
-            return {"success": False, "error": f"Le module '{plugin_slug}' est déjà installé et actif."}
+            return {"success": False, "error": _("Le module '%(slug)s' est déjà installé et actif.") % {'slug': plugin_slug}}
 
         # 3. Enregistrement / Mise à jour en base locale (Prépare l'injection dans settings)
         plugin, created = Plugin.objects.get_or_create(slug=plugin_slug)
@@ -194,6 +195,6 @@ class LicenseService:
         
         return {
             "success": True,
-            "message": f"Module '{plugin.name}' activé et installé. Rechargement de l'application en cours…",
+            "message": _("Module '%(name)s' activé et installé. Rechargement de l'application en cours…") % {'name': plugin.name},
             "plugin": plugin
         }

@@ -145,15 +145,15 @@ def ticket_detail(request, pk):
                 photo.phase = phase
                 photo.uploaded_by = request.user
                 photo.save()
-                messages.success(request, "Photo ajoutée à l'intervention.")
+                messages.success(request, _("Photo ajoutée à l'intervention."))
             else:
-                messages.error(request, "Le fichier envoyé n'est pas une image valide.")
+                messages.error(request, _("Le fichier envoyé n'est pas une image valide."))
 
         elif action == 'delete_photo':
             photo = ticket.photos.filter(pk=request.POST.get('photo_id')).first()
             if photo:
                 photo.delete()
-                messages.success(request, "Photo supprimée.")
+                messages.success(request, _("Photo supprimée."))
 
         return redirect(reverse('ticket_detail', kwargs={'pk': ticket.id}) + '#photos')
 
@@ -264,11 +264,11 @@ def ticket_update(request, pk):
 
     # Sécurité : Pas d'édition si déjà commencé/fini
     if ticket.status in ['in_progress', 'done', 'canceled', 'to_reschedule']:
-        messages.warning(request, "Cette intervention ne peut plus être modifiée car elle est déjà en cours ou clôturée.")
+        messages.warning(request, _("Cette intervention ne peut plus être modifiée car elle est déjà en cours ou clôturée."))
         return redirect('ticket_detail', pk=ticket.id)
 
     mode = 'description' if ticket.status == 'planned' else None
-    return _ticket_edit(request, ticket, mode, _("Planification #%(id)s") % {'id': ticket.id}, f"Intervention #{ticket.id} reprogrammée.")
+    return _ticket_edit(request, ticket, mode, _("Planification #%(id)s") % {'id': ticket.id}, _("Intervention #%(id)s reprogrammée.") % {'id': ticket.id})
 
 
 @login_required
@@ -281,7 +281,7 @@ def ticket_cancel(request, pk):
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     if ticket.status not in ('pending', 'planned'):
-        messages.warning(request, "Seule une intervention pas encore démarrée peut être annulée.")
+        messages.warning(request, _("Seule une intervention pas encore démarrée peut être annulée."))
         return redirect('ticket_detail', pk=ticket.id)
 
     report = ''
@@ -291,9 +291,9 @@ def ticket_cancel(request, pk):
             ticket.status = 'canceled'
             ticket.intervention_report = report
             ticket.save()
-            messages.success(request, f"Intervention #{ticket.id} annulée.")
+            messages.success(request, _("Intervention #%(id)s annulée.") % {'id': ticket.id})
             return redirect('ticket_detail', pk=ticket.id)
-        messages.error(request, "Le motif de l'annulation est obligatoire.")
+        messages.error(request, _("Le motif de l'annulation est obligatoire."))
 
     return render(request, 'maintenance/ticket_cancel.html', {
         'ticket': ticket,
@@ -311,9 +311,9 @@ def ticket_reassign(request, pk):
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     if ticket.status != 'planned':
-        messages.warning(request, "Seule une intervention planifiée peut être réassignée.")
+        messages.warning(request, _("Seule une intervention planifiée peut être réassignée."))
         return redirect('ticket_detail', pk=ticket.id)
-    return _ticket_edit(request, ticket, 'reassign', _("Réassignation #%(id)s") % {'id': ticket.id}, f"Intervention #{ticket.id} réassignée.")
+    return _ticket_edit(request, ticket, 'reassign', _("Réassignation #%(id)s") % {'id': ticket.id}, _("Intervention #%(id)s réassignée.") % {'id': ticket.id})
 
 
 def _ticket_edit(request, ticket, mode, page_title, success_message):
@@ -348,7 +348,7 @@ def ticket_create(request):
         form = MaintenanceTicketForm(request.POST)
         if form.is_valid():
             ticket = form.save()
-            messages.success(request, f"Nouveau ticket #{ticket.id} créé avec succès.")
+            messages.success(request, _("Nouveau ticket #%(id)s créé avec succès.") % {'id': ticket.id})
             return redirect('ticket_list')
     else:
         form = MaintenanceTicketForm()
@@ -368,7 +368,7 @@ def ticket_delete(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
     ticket_id = ticket.id
     ticket.delete()
-    messages.success(request, f"Intervention #{ticket_id} supprimée définitivement.")
+    messages.success(request, _("Intervention #%(id)s supprimée définitivement.") % {'id': ticket_id})
     return redirect('ticket_list')
 
 @login_required
@@ -419,7 +419,7 @@ def technician_detail(request, pk):
         form = TechnicianForm(request.POST, instance=technician)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Profil de {technician} mis à jour.")
+            messages.success(request, _("Profil de %(name)s mis à jour.") % {'name': technician})
             return redirect(f"{reverse('technician_detail', args=[technician.pk])}?tab=profil")
         tab = 'profil'
     else:
