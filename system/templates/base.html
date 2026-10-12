@@ -16,6 +16,10 @@
         @media (min-width: 1024px) {
             html.sidebar-collapsed .app-sidebar { display: none; }
         }
+        /* Sections du menu repliables (<details>) : chevron tourné quand la section est ouverte */
+        .smo-nav-summary { list-style: none; }
+        .smo-nav-summary::-webkit-details-marker { display: none; }
+        .smo-nav-section:not([open]) .smo-nav-chevron { transform: rotate(-90deg); }
         .sidebar-item-active {
             background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 100%);
             border-left: 4px solid #3b82f6;
@@ -60,6 +64,7 @@
             </div>
 
             <!-- Navigation -->
+            {% with nav_name=request.resolver_match.url_name|default:'' %}
             <nav class="flex-grow p-4 space-y-1 overflow-y-auto">
                 
                 <!-- Tableau de bord (sans en-tête de section) -->
@@ -68,63 +73,88 @@
                     <span class="font-bold text-slate-400 group-hover:text-blue-400">Tableau de Bord</span>
                 </a>
 
-                <!-- SECTION : OPÉRATIONS -->
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Opérations</p>
+                <!-- SECTION : OPÉRATIONS (repliable) -->
+                <details class="smo-nav-section mt-6" data-section="operations"{% if 'calendar' in nav_name or 'ticket' in nav_name or 'technician' in nav_name %} data-active open{% endif %}>
+                    <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
+                        <span>Opérations</span>
+                        <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
+                    </summary>
+                    <div class="mt-1 space-y-1">
 
-                <a href="{% url 'maintenance_calendar' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'calendar' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-calendar text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Planning</span>
-                </a>
+                    <a href="{% url 'maintenance_calendar' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'calendar' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-calendar text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Planning</span>
+                    </a>
 
-                <a href="{% url 'ticket_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'ticket' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-clipboard-list text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Interventions</span>
-                </a>
+                    <a href="{% url 'ticket_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'ticket' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-clipboard-list text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Interventions</span>
+                    </a>
 
-                <a href="{% url 'technician_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'technician' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-users-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Techniciens</span>
-                </a>
+                    <a href="{% url 'technician_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'technician' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-users-cog text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Techniciens</span>
+                    </a>
 
-                <a href="{% url 'technician_login' %}" target="_blank" rel="noopener" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="las la-mobile-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Application Technicien</span>
-                    <i class="las la-external-link-alt text-xs text-slate-600 ml-auto"></i>
-                </a>
+                    <a href="{% url 'technician_login' %}" target="_blank" rel="noopener" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                        <i class="las la-mobile-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Application Technicien</span>
+                        <i class="las la-external-link-alt text-xs text-slate-600 ml-auto"></i>
+                    </a>
+                    </div>
+                </details>
 
                 {% if plugin_menus %}
-                <!-- SECTION : EXTENSIONS (Dynamique via Pluggy) -->
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Extensions</p>
+                <!-- SECTION : EXTENSIONS (Dynamique via Pluggy, repliable) -->
+                <details class="smo-nav-section mt-2" data-section="extensions">
+                    <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
+                        <span>Extensions</span>
+                        <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
+                    </summary>
+                    <div class="mt-1 space-y-1">
 
-                {% for menu in plugin_menus %}
-                <a href="{{ menu.url }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
-                    <i class="las {{ menu.icon|default:'la-cube' }} text-xl text-blue-400 group-hover:text-blue-300 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-white">{{ menu.label }}</span>
-                </a>
-                {% endfor %}
+                    {% for menu in plugin_menus %}
+                    <a href="{{ menu.url }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group">
+                        <i class="las {{ menu.icon|default:'la-cube' }} text-xl text-blue-400 group-hover:text-blue-300 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-white">{{ menu.label }}</span>
+                    </a>
+                    {% endfor %}
+                    </div>
+                </details>
                 {% endif %}
 
-                <!-- SECTION : RÉFÉRENTIEL (clients, lieux, matériel) -->
-                <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 mt-8">Référentiel</p>
+                <!-- SECTION : RÉFÉRENTIEL (clients, lieux, matériel, repliable) -->
+                <details class="smo-nav-section mt-2" data-section="referentiel"{% if 'client' in nav_name or 'building' in nav_name or 'equipment' in nav_name and 'type' not in nav_name %} data-active open{% endif %}>
+                    <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
+                        <span>Référentiel</span>
+                        <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
+                    </summary>
+                    <div class="mt-1 space-y-1">
 
-                <a href="{% url 'client_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'client' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-user-tie text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Clients</span>
-                </a>
+                    <a href="{% url 'client_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'client' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-user-tie text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Clients</span>
+                    </a>
 
-                <a href="{% url 'building_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'building' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-map-marker-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Lieux</span>
-                </a>
+                    <a href="{% url 'building_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'building' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-map-marker-alt text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Lieux</span>
+                    </a>
 
-                <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name and 'type' not in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
-                    <i class="las la-tools text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
-                    <span class="font-bold text-slate-400 group-hover:text-blue-400">Équipements</span>
-                </a>
+                    <a href="{% url 'equipment_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'equipment' in request.resolver_match.url_name and 'type' not in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                        <i class="las la-tools text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
+                        <span class="font-bold text-slate-400 group-hover:text-blue-400">Équipements</span>
+                    </a>
+                    </div>
+                </details>
 
-                <!-- SECTION : PARAMÈTRES (Avec séparateur) -->
-                <div class="pt-8 mt-8 border-t border-slate-800/50">
-                    <p class="px-4 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Paramètres</p>
+                <!-- SECTION : PARAMÈTRES (avec séparateur, repliable) -->
+                <details class="smo-nav-section pt-4 mt-4 border-t border-slate-800/50" data-section="parametres"{% if 'type' in nav_name or 'user' in nav_name or nav_name == 'system_config' or nav_name == 'plugin_list' or nav_name == 'sync_portal' %} data-active open{% endif %}>
+                    <summary class="smo-nav-summary flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer select-none text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-300 transition">
+                        <span>Paramètres</span>
+                        <i class="smo-nav-chevron las la-angle-down text-sm transition-transform"></i>
+                    </summary>
+                    <div class="mt-1 space-y-1">
 
                     <a href="{% url 'equipment_type_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition group {% if 'type' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
                         <i class="las la-tags text-xl text-slate-500 group-hover:text-blue-400 transition"></i>
@@ -152,9 +182,11 @@
                         <span class="font-bold text-slate-400 group-hover:text-blue-400">Mises à jour</span>
                     </a>
                     {% endif %}
-                </div>
+                    </div>
+                </details>
 
             </nav>
+            {% endwith %}
 
             <!-- Pied : connexion au Portail et identifiant de l'installation -->
             <div class="p-6 border-t border-slate-800 bg-slate-950/50">
@@ -269,6 +301,21 @@
             setSidebar(document.getElementById('app-sidebar').classList.contains('-translate-x-full'));
         }
         function closeSidebar() { setSidebar(false); }
+
+        // Sections du menu : état ouvert/fermé mémorisé dans le navigateur ; la section de la page
+        // courante reste toujours ouverte.
+        document.querySelectorAll('.smo-nav-section').forEach(function (section) {
+            const key = 'smo-nav-' + section.dataset.section;
+            if (!section.hasAttribute('data-active')) {
+                try {
+                    const saved = localStorage.getItem(key);
+                    if (saved !== null) section.open = saved === '1';
+                } catch (e) {}
+            }
+            section.addEventListener('toggle', function () {
+                try { localStorage.setItem(key, section.open ? '1' : '0'); } catch (e) {}
+            });
+        });
 
         // Menu de l'utilisateur connecté (en-tête) : clic sur l'avatar, fermé par un clic ailleurs ou Échap.
         function setUserMenu(open) {
