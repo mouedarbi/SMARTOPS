@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from maintenance.models import MaintenanceTicket, Technician, InterventionPhoto
-from inventory.models import Equipment, EquipmentType, Building, Client as CompanyClient
+from inventory.models import Equipment, EquipmentType, EquipmentTypeField, Building, Client as CompanyClient
 from datetime import timedelta, datetime, timezone as dt_timezone
 from unittest import mock
 import zoneinfo
@@ -195,6 +195,49 @@ class TechnicianInterventionTests(TestCase):
         
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.status, 'done') # No change
+
+    def test_detail_shows_equipment_sheet_and_history(self):
+        """Fiche de l'intervention : type, caractéristiques et historique de l'appareil, sans nom de collègue."""
+        EquipmentTypeField.objects.create(equipment_type=self.eq_type, field_name='Marque', field_type='text')
+        EquipmentTypeField.objects.create(equipment_type=self.eq_type, field_name='Mise en service', field_type='date')
+        EquipmentTypeField.objects.create(equipment_type=self.eq_type, field_name='Couleur', field_type='text')
+        self.equipment.custom_fields = {'Marque': 'Viessmann', 'Mise en service': '2020-03-05', 'Couleur': ''}
+        self.equipment.save()
+        colleague = User.objects.create_user(
+            username='tech_passe', password='password123', role='technician', first_name='Paul', last_name='Ancien',
+        )
+        end = timezone.now() - timedelta(days=3)
+        MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=colleague.technician_profile, type='repair', status='done',
+            planned_start=end - timedelta(hours=2), planned_end=end - timedelta(hours=1),
+            effective_start=end - timedelta(hours=1), effective_end=end,
+            intervention_report='Remplacement de la sonde de température.',
+        )
+
+        response = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id]))
+
+        self.assertContains(response, 'Test Type · SN12345')
+        self.assertContains(response, 'Équipement')
+        self.assertContains(response, 'Test Client')
+        self.assertContains(response, 'Viessmann')
+        self.assertContains(response, '05/03/2020')
+        self.assertNotContains(response, 'Couleur')
+        self.assertContains(response, "Historique de l'appareil")
+        self.assertContains(response, 'Remplacement de la sonde de température.')
+        self.assertContains(response, timezone.localtime(end).strftime('%d/%m/%Y'))
+        self.assertNotContains(response, 'Première intervention sur cet appareil')
+        self.assertNotContains(response, 'Ancien')
+
+    def test_detail_first_intervention_on_equipment(self):
+        """Sans intervention clôturée sur l'appareil : message de première intervention, traduit."""
+        response = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id]))
+        self.assertContains(response, 'Première intervention sur cet appareil')
+
+        self.tech_user.language = 'nl'
+        self.tech_user.save()
+        response = self.client_http.get(reverse('technician_ticket_detail', args=[self.ticket.id]))
+        self.assertContains(response, 'Geschiedenis van het toestel')
+        self.assertContains(response, 'Eerste interventie op dit toestel')
 
     def test_security_access(self):
         """Un technicien ne peut ni consulter ni démarrer l'intervention d'un autre technicien."""

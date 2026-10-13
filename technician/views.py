@@ -16,6 +16,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import Http404
@@ -23,7 +24,10 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from maintenance.models import MaintenanceTicket, InterventionPhoto
 from maintenance.forms import InterventionPhotoForm
-from maintenance.services import related_ticket_ids, reschedule_ticket, technician_tickets, with_display_start
+from maintenance.services import (
+    equipment_characteristics, equipment_history, related_ticket_ids, reschedule_ticket, technician_tickets,
+    with_display_start,
+)
 from maintenance.templatetags.ticket_links import referenced_ticket_ids
 
 def is_technician(user):
@@ -187,7 +191,9 @@ def technician_ticket_detail(request, pk):
         messages.error(request, _("Profil technicien introuvable."))
         return redirect('technician_dashboard')
 
-    ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    ticket = get_object_or_404(
+        MaintenanceTicket.objects.select_related('equipment__equipment_type', 'equipment__building__client'), pk=pk,
+    )
     is_own = ticket.technician_id == tech_profile.pk
     related_ids = related_ticket_ids(tech_profile)
     if not is_own and ticket.pk not in related_ids:
@@ -219,9 +225,17 @@ def technician_ticket_detail(request, pk):
                 messages.success(request, _("Photo supprimée."))
         return redirect('technician_ticket_detail', pk=ticket.id)
 
+    # Caractéristiques de l'appareil ; une date (AAAA-MM-JJ) devient une date pour l'affichage d/m/Y.
+    characteristics = equipment_characteristics(ticket.equipment)
+    for row in characteristics:
+        if row['type'] == 'date' and isinstance(row['value'], str):
+            row['value'] = parse_date(row['value']) or row['value']
+
     context = {
         'page_title': _("Intervention #%(id)s") % {'id': ticket.id},
         'ticket': ticket,
+        'characteristics': characteristics,
+        'history': equipment_history(ticket),
         'now': timezone.now(),
         'photos': ticket.photos.all(),
         'is_own': is_own,

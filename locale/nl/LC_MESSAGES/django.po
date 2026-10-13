@@ -2560,3 +2560,11 @@ msgstr "Aanmelden"
 #: templates/registration/login.html:55
 msgid "Système Auto-Hébergé."
 msgstr "Zelf-gehost systeem."
+
+#: technician/templates/technician/ticket_detail.html:159
+msgid "Historique de l'appareil"
+msgstr "Geschiedenis van het toestel"
+
+#: technician/templates/technician/ticket_detail.html:176
+msgid "Première intervention sur cet appareil"
+msgstr "Eerste interventie op dit toestel"

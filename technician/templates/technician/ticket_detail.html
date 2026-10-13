@@ -60,7 +60,7 @@
             </div>
             <div>
                 <h2 class="font-black text-slate-800 text-lg leading-tight">{{ ticket.equipment.name }}</h2>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">{{ ticket.equipment.serial_number }}</p>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">{{ ticket.equipment.equipment_type.name }} · {{ ticket.equipment.serial_number }}</p>
             </div>
         </div>
 
@@ -85,6 +85,44 @@
 
     <!-- Single Page Sections -->
     <div class="space-y-6">
+        <!-- Section: Équipement (type, installation, client, caractéristiques) -->
+        {% with equipment=ticket.equipment %}
+        {% if equipment.equipment_type or equipment.installed_at or characteristics %}
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Équipement" %}</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Type d'équipement" %}</span>
+                        <p class="text-sm font-bold text-slate-700">{{ equipment.equipment_type.name }}</p>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Date d'installation" %}</span>
+                        <p class="text-sm font-bold text-slate-700">{{ equipment.installed_at|date:"d/m/Y"|default:"—" }}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-[10px] font-black text-slate-300 uppercase block mb-1">{% trans "Client" %}</span>
+                        <p class="text-sm font-bold text-slate-700">{{ equipment.building.client.name }}</p>
+                    </div>
+                </div>
+                {% if characteristics %}
+                <div class="mt-4 pt-4 border-t border-slate-50">
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-2">{% trans "Caractéristiques" %}</span>
+                    <dl class="space-y-1">
+                        {% for row in characteristics %}
+                        <div class="flex justify-between gap-4 text-xs">
+                            <dt class="text-slate-400 font-bold">{{ row.label }}</dt>
+                            <dd class="text-slate-700 font-bold text-right">{% if row.type == 'date' %}{{ row.value|date:"d/m/Y"|default:row.value }}{% else %}{{ row.value }}{% endif %}</dd>
+                        </div>
+                        {% endfor %}
+                    </dl>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+        {% endwith %}
+
         <!-- Section: Localisation -->
         <section>
             <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Localisation" %}</h3>
@@ -112,6 +150,30 @@
                     <i class="fas fa-directions"></i>
                     {% trans "ITINÉRAIRE" %}
                 </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Section: Historique de l'appareil (5 dernières interventions clôturées) -->
+        <section>
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">{% trans "Historique de l'appareil" %}</h3>
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                {% if history %}
+                <ul class="divide-y divide-slate-50">
+                    {% for past in history %}
+                    <li class="py-3 first:pt-0 last:pb-0">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <span class="text-xs font-bold text-slate-700">{{ past.history_date|date:"d/m/Y" }} · {{ past.get_type_display }}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if past.status == 'done' %}bg-emerald-50 text-emerald-600{% else %}bg-orange-50 text-orange-600{% endif %}">{{ past.get_status_display }}</span>
+                        </div>
+                        {% if past.intervention_report %}
+                        <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 whitespace-pre-line">{{ past.intervention_report }}</p>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-sm text-slate-600 leading-relaxed italic">{% trans "Première intervention sur cet appareil" %}</p>
                 {% endif %}
             </div>
         </section>

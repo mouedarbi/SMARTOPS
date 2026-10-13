@@ -2546,3 +2546,11 @@ msgstr "Sign in"
 #: templates/registration/login.html:55
 msgid "Système Auto-Hébergé."
 msgstr "Self-hosted system."
+
+#: technician/templates/technician/ticket_detail.html:159
+msgid "Historique de l'appareil"
+msgstr "Equipment history"
+
+#: technician/templates/technician/ticket_detail.html:176
+msgid "Première intervention sur cet appareil"
+msgstr "First work order on this equipment"
