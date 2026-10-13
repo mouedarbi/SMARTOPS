@@ -28,7 +28,9 @@ class SmartOpsTokenObtainPairSerializer(TokenObtainPairSerializer):
 from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
 from maintenance.calendars import get_technician_calendar
-from maintenance.services import NOT_STARTED, find_schedule_conflict, schedule_conflict_message
+from maintenance.services import (
+    NOT_STARTED, equipment_characteristics, equipment_history, find_schedule_conflict, schedule_conflict_message,
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -146,6 +148,72 @@ class InterventionPhotoSerializer(serializers.ModelSerializer):
         return None
 
 
+class EquipmentCharacteristicSerializer(serializers.Serializer):
+    """Caractéristique renseignée d'un appareil (champ personnalisé de son type)."""
+    label = serializers.CharField()
+    type = serializers.CharField(help_text="Type du champ : text, number ou date.")
+    value = serializers.JSONField(help_text="Valeur brute : texte, nombre, ou date AAAA-MM-JJ.")
+
+
+class EquipmentBuildingSerializer(serializers.ModelSerializer):
+    """Lieu de l'appareil, avec son client, son adresse et ses consignes d'accès."""
+    client_name = serializers.CharField(source='client.name', read_only=True)
+    is_address_complete = serializers.BooleanField(read_only=True)
+    navigation_url = serializers.CharField(read_only=True, allow_null=True)
+
+    class Meta:
+        model = Building
+        fields = [
+            'name', 'client_name',
+            'street', 'house_number', 'box', 'postal_code', 'city',
+            'address', 'is_address_complete', 'access_notes', 'navigation_url',
+        ]
+
+
+class EquipmentHistorySerializer(serializers.ModelSerializer):
+    """
+    Intervention passée sur l'appareil. `date` : fin réelle, sinon fin prévue.
+    Pas de nom de technicien : l'historique dit ce qui a été fait, pas qui l'a fait.
+    """
+    # Codes en texte simple : un second enum « status » renommerait ceux du schéma existant.
+    type = serializers.CharField(read_only=True)
+    type_display = serializers.CharField(source='get_type_display', read_only=True)
+    status = serializers.CharField(read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    date = serializers.DateTimeField(source='history_date', read_only=True)
+    report = serializers.CharField(source='intervention_report', read_only=True)
+
+    class Meta:
+        model = MaintenanceTicket
+        fields = ['id', 'type', 'type_display', 'status', 'status_display', 'date', 'report']
+
+
+class EquipmentDetailSerializer(serializers.ModelSerializer):
+    """
+    Fiche de l'appareil transmise avec le ticket au technicien : type, caractéristiques,
+    lieu et, sur le détail d'un ticket seulement, l'historique (null dans les listes).
+    """
+    type_name = serializers.CharField(source='equipment_type.name', read_only=True)
+    characteristics = serializers.SerializerMethodField()
+    building = EquipmentBuildingSerializer(read_only=True)
+    history = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Equipment
+        fields = ['name', 'serial_number', 'type_name', 'installed_at', 'characteristics', 'building', 'history']
+
+    @extend_schema_field(EquipmentCharacteristicSerializer(many=True))
+    def get_characteristics(self, obj):
+        """Caractéristiques renseignées, dans l'ordre des champs du type."""
+        return equipment_characteristics(obj)
+
+    @extend_schema_field(EquipmentHistorySerializer(many=True, allow_null=True))
+    def get_history(self, obj):
+        """Historique calculé par MaintenanceTicketSerializer (`history` du contexte), sinon null."""
+        history = self.context.get('history')
+        return None if history is None else EquipmentHistorySerializer(history, many=True).data
+
+
 class MaintenanceTicketSerializer(serializers.ModelSerializer):
     """Ticket de maintenance avec ses libellés et ses photos."""
     equipment_name = serializers.CharField(source='equipment.name', read_only=True)
@@ -153,11 +221,12 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     type_display = serializers.CharField(source='get_type_display', read_only=True)
     photos = InterventionPhotoSerializer(many=True, read_only=True)
+    equipment_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = MaintenanceTicket
         fields = [
-            'id', 'equipment', 'equipment_name',
+            'id', 'equipment', 'equipment_name', 'equipment_detail',
             'technician', 'technician_name',
             'type', 'type_display',
             'planned_start', 'planned_end',
@@ -197,6 +266,16 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
             if conflict and current('type') != 'emergency':
                 raise serializers.ValidationError({'planned_start': f"Conflit de planning : {schedule_conflict_message(conflict)}"})
         return attrs
+
+    @extend_schema_field(EquipmentDetailSerializer)
+    def get_equipment_detail(self, obj):
+        """
+        Fiche de l'appareil. L'historique n'est calculé que sur le détail d'un ticket
+        (action `retrieve`) : dans les listes, une requête par ticket serait de trop.
+        """
+        view = self.context.get('view')
+        history = equipment_history(obj) if getattr(view, 'action', None) == 'retrieve' else None
+        return EquipmentDetailSerializer(obj.equipment, context={'history': history}).data
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_technician_name(self, obj):

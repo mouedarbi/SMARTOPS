@@ -54,6 +54,35 @@ def related_ticket_ids(technician):
     return ids
 
 
+def equipment_characteristics(equipment):
+    """
+    Caractéristiques renseignées de l'appareil, dans l'ordre des champs de son type :
+    [{label, type, value}]. Les champs sans valeur sont omis ; `value` est la valeur brute.
+    """
+    values = equipment.custom_fields or {}
+    rows = []
+    for field in sorted(equipment.equipment_type.fields.all(), key=lambda f: f.id):
+        value = values.get(field.field_name)
+        if value is None or value == "":
+            continue
+        rows.append({'label': field.field_name, 'type': field.field_type, 'value': value})
+    return rows
+
+
+def equipment_history(ticket, limit=5):
+    """
+    Dernières interventions terminées ou à replanifier sur le même appareil, ce ticket exclu,
+    de la plus récente à la plus ancienne. `history_date` : fin réelle, sinon fin prévue.
+    Le technicien n'est pas chargé : l'historique dit ce qui a été fait, pas qui l'a fait.
+    """
+    return list(
+        MaintenanceTicket.objects.filter(equipment_id=ticket.equipment_id, status__in=('done', 'to_reschedule'))
+        .exclude(pk=ticket.pk)
+        .annotate(history_date=Coalesce('effective_end', 'planned_end'))
+        .order_by('-history_date', '-pk')[:limit]
+    )
+
+
 def reschedule_ticket(ticket, report=None, ended_at=None):
     """
     Clôture une intervention en « à replanifier » et crée le ticket de suite.

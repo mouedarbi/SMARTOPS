@@ -151,6 +151,11 @@ def validate_or_detail(serializer, time_field):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Relations lues par `equipment_detail` (fiche de l'appareil) dans MaintenanceTicketSerializer.
+EQUIPMENT_DETAIL_RELATED = ('equipment__equipment_type', 'equipment__building__client')
+EQUIPMENT_DETAIL_PREFETCH = ('equipment__equipment_type__fields',)
+
+
 @extend_schema(tags=['Maintenance'])
 class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     """
@@ -166,8 +171,8 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         Filtres : ?status= et, pour la gestion, ?technician=.
         """
         qs = MaintenanceTicket.objects.select_related(
-            'equipment', 'technician', 'technician__user'
-        ).order_by('-created_at')
+            'equipment', 'technician', 'technician__user', *EQUIPMENT_DETAIL_RELATED
+        ).prefetch_related(*EQUIPMENT_DETAIL_PREFETCH).order_by('-created_at')
 
         if self.request.user.role == 'technician':
             try:
@@ -339,7 +344,9 @@ class MyInterventionsView(APIView):
 
         # Datation : début effectif si démarrée, sinon début prévu
         range_end = week_end if request.query_params.get('range', 'today') == 'week' else today_end
-        tickets = with_display_start(technician_tickets(tech)).filter(
+        tickets = with_display_start(technician_tickets(tech)).select_related(
+            'technician__user', *EQUIPMENT_DETAIL_RELATED
+        ).prefetch_related('photos', *EQUIPMENT_DETAIL_PREFETCH).filter(
             display_start__gte=today_start,
             display_start__lt=range_end,
         ).order_by('display_start')

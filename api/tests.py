@@ -12,12 +12,13 @@ Description : Tests de l'API REST SMARTOPS v0.2.0.
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 from rest_framework import status
 from datetime import timedelta
 
 from accounts.models import CustomUser
-from inventory.models import Client, Building, EquipmentType, Equipment
+from inventory.models import Client, Building, EquipmentType, EquipmentTypeField, Equipment
 from maintenance.models import Technician, MaintenanceTicket
 
 
@@ -536,6 +537,135 @@ class RolePermissionsAPITestCase(TestCase):
         r = self.api.post(f'/api/v1/tickets/{self.ticket_a.id}/stop/', {'status': 'done'})
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertEqual(r.data['status'], 'done')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class EquipmentDetailAPITestCase(TestCase):
+    """Fiche de l'appareil (`equipment_detail`) transmise avec le ticket au technicien."""
+
+    def setUp(self):
+        self.api = APIClient()
+        user = CustomUser.objects.create_user(
+            username='tech_fiche', password='pass', role='technician', first_name='Jean', last_name='Terrain',
+        )
+        colleague = CustomUser.objects.create_user(
+            username='tech_collegue', password='pass', role='technician', first_name='Paul', last_name='Collegue',
+        )
+        token = self.api.post('/api/v1/auth/token/', {'username': 'tech_fiche', 'password': 'pass'}).data['access']
+        self.api.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.tech = Technician.objects.get(user=user)
+        self.colleague = Technician.objects.get(user=colleague)
+
+        client_obj = Client.objects.create(name='Immo Tilleuls SRL', address='Rue Haute 12', contact_name='Ann', email='a@t.be')
+        building = Building.objects.create(
+            client=client_obj, name='Résidence Les Tilleuls', street='Rue Haute', house_number='12',
+            postal_code='1000', city='Bruxelles', access_notes='Code porte 1234',
+        )
+        eq_type = EquipmentType.objects.create(name='Chaudière gaz')
+        # Créés dans cet ordre : c'est l'ordre attendu des caractéristiques.
+        EquipmentTypeField.objects.create(equipment_type=eq_type, field_name='Marque', field_type='text')
+        EquipmentTypeField.objects.create(equipment_type=eq_type, field_name='Puissance (kW)', field_type='number')
+        EquipmentTypeField.objects.create(equipment_type=eq_type, field_name='Révision', field_type='date')
+        EquipmentTypeField.objects.create(equipment_type=eq_type, field_name='Couleur', field_type='text')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Chaudière RDC', equipment_type=eq_type, serial_number='SN-0042',
+            installed_at='2019-04-12',
+            custom_fields={'Puissance (kW)': 24, 'Marque': 'Viessmann', 'Révision': '2026-01-15', 'Couleur': ''},
+        )
+        now = timezone.now()
+        self.ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech, type='maintenance',
+            planned_start=now, planned_end=now + timedelta(hours=1),
+        )
+
+    def past_ticket(self, days_ago, status='done', report='', effective=True):
+        """Intervention passée du collègue sur le même appareil, terminée il y a `days_ago` jours."""
+        end = timezone.now() - timedelta(days=days_ago)
+        return MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.colleague, type='repair', status=status,
+            planned_start=end - timedelta(hours=3), planned_end=end - timedelta(hours=1),
+            effective_start=(end - timedelta(hours=2)) if effective else None,
+            effective_end=end if effective else None,
+            intervention_report=report,
+        )
+
+    def test_retrieve_returns_equipment_detail(self):
+        r = self.api.get(f'/api/v1/tickets/{self.ticket.id}/')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data['equipment_name'], 'Chaudière RDC')
+        detail = r.data['equipment_detail']
+        self.assertEqual(
+            (detail['name'], detail['serial_number'], detail['type_name'], detail['installed_at']),
+            ('Chaudière RDC', 'SN-0042', 'Chaudière gaz', '2019-04-12'),
+        )
+        # Ordre des champs du type, champ vide omis, valeur brute.
+        self.assertEqual(detail['characteristics'], [
+            {'label': 'Marque', 'type': 'text', 'value': 'Viessmann'},
+            {'label': 'Puissance (kW)', 'type': 'number', 'value': 24},
+            {'label': 'Révision', 'type': 'date', 'value': '2026-01-15'},
+        ])
+        building = detail['building']
+        self.assertEqual(building['name'], 'Résidence Les Tilleuls')
+        self.assertEqual(building['client_name'], 'Immo Tilleuls SRL')
+        self.assertEqual(building['address'], 'Rue Haute 12, 1000 Bruxelles, Belgique')
+        self.assertEqual(building['box'], '')
+        self.assertTrue(building['is_address_complete'])
+        self.assertEqual(building['access_notes'], 'Code porte 1234')
+        self.assertTrue(building['navigation_url'].startswith('https://www.google.com/maps/dir/'))
+        self.assertEqual(detail['history'], [])
+
+    def test_history_last_five_done_or_rescheduled(self):
+        oldest = self.past_ticket(30, report='Ancien passage')
+        recent = [self.past_ticket(days, report=f'Passage J-{days}') for days in (10, 8, 6, 4)]
+        rescheduled = self.past_ticket(2, status='to_reschedule', report='Pièce à commander')
+        # Ni annulé, ni en cours, ni planifié.
+        self.past_ticket(1, status='canceled')
+        self.past_ticket(1, status='in_progress', effective=False)
+        r = self.api.get(f'/api/v1/tickets/{self.ticket.id}/')
+        history = r.data['equipment_detail']['history']
+        expected = [rescheduled] + recent[::-1]
+        self.assertEqual([row['id'] for row in history], [t.id for t in expected])
+        self.assertNotIn(oldest.id, [row['id'] for row in history])
+        self.assertNotIn(self.ticket.id, [row['id'] for row in history])
+        first = history[0]
+        self.assertEqual(
+            (first['type'], first['status'], first['report']), ('repair', 'to_reschedule', 'Pièce à commander'),
+        )
+        self.assertEqual(set(first), {'id', 'type', 'type_display', 'status', 'status_display', 'date', 'report'})
+
+    def test_history_date_falls_back_to_planned_end(self):
+        past = self.past_ticket(3, effective=False)
+        r = self.api.get(f'/api/v1/tickets/{self.ticket.id}/')
+        row = r.data['equipment_detail']['history'][0]
+        self.assertEqual(row['id'], past.id)
+        self.assertEqual(parse_datetime(row['date']), past.planned_end)
+        self.assertEqual(row['report'], '')
+
+    def test_history_has_no_technician_name(self):
+        self.past_ticket(2, report='Remplacement de la sonde')
+        r = self.api.get(f'/api/v1/tickets/{self.ticket.id}/')
+        history = r.content.decode().split('"history"')[1]
+        for name in ('Paul', 'Collegue', 'tech_collegue'):
+            self.assertNotIn(name, history)
+
+    def test_lists_return_null_history(self):
+        self.past_ticket(2)
+        r = self.api.get('/api/v1/tickets/')
+        self.assertIsNone(r.data['results'][0]['equipment_detail']['history'])
+        self.assertEqual(len(r.data['results'][0]['equipment_detail']['characteristics']), 3)
+        r = self.api.get('/api/v1/my/interventions/')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data[0]['id'], self.ticket.id)
+        self.assertIsNone(r.data[0]['equipment_detail']['history'])
+        self.assertEqual(r.data[0]['equipment_detail']['building']['client_name'], 'Immo Tilleuls SRL')
+
+    def test_technician_still_denied_equipments_and_buildings(self):
+        for url in ('/api/v1/equipments/', f'/api/v1/equipments/{self.equipment.id}/',
+                    '/api/v1/buildings/', f'/api/v1/buildings/{self.equipment.building_id}/'):
+            self.assertEqual(self.api.get(url).status_code, status.HTTP_403_FORBIDDEN, url)
 
 
 @override_settings(
