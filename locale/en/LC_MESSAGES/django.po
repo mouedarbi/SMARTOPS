@@ -816,6 +816,10 @@ msgstr "Unassigned"
 msgid "Aucune intervention enregistrée pour cet appareil."
 msgstr "No work orders recorded for this equipment."
 
+#: maintenance/templates/maintenance/ticket_form.html
+msgid "Dernière intervention"
+msgstr "Last work order"
+
 #: inventory/templates/inventory/equipment_form.html:25
 msgid "Attributs du type"
 msgstr "Type attributes"
@@ -1854,11 +1858,11 @@ msgstr "All work orders"
 msgid ""
 "Tickets sans technicien (dont les suites d'interventions à replanifier) et "
 "interventions planifiées non démarrées dont le créneau est dépassé depuis "
-"moins de 7 jours, de la plus ancienne date prévue à la plus récente."
+"moins de 7 jours."
 msgstr ""
 "Tickets without a technician (including follow-ups of work orders to "
 "reschedule) and scheduled work orders not started whose slot passed less "
-"than 7 days ago, from the oldest to the most recent planned date."
+"than 7 days ago."
 
 #: maintenance/templates/maintenance/ticket_list.html:33
 msgid ""
@@ -1875,12 +1879,11 @@ msgstr "No tickets to schedule"
 #: maintenance/templates/maintenance/ticket_list.html:39
 msgid ""
 "Interventions démarrées par un technicien et pas encore clôturées, quelle "
-"que soit leur date, de la plus ancienne à la plus récente : une session "
-"ouverte depuis la veille signale une clôture oubliée."
+"que soit leur date : une session ouverte depuis la veille signale une "
+"clôture oubliée."
 msgstr ""
-"Work orders started by a technician and not yet closed, whatever their date, "
-"from the oldest to the most recent: a session open since the day before "
-"points to a forgotten closure."
+"Work orders started by a technician and not yet closed, whatever their date: "
+"a session open since the day before points to a forgotten closure."
 
 #: maintenance/templates/maintenance/ticket_list.html:40
 msgid "Aucune intervention en cours"
@@ -1903,11 +1906,17 @@ msgstr "Results"
 
 #: maintenance/templates/maintenance/ticket_list.html:103
 msgid ""
-"Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur "
-"l'en-tête ID, Créé le ou Date prévue pour changer le tri."
+"Par défaut, le dernier ticket créé en premier. Cliquez sur l'en-tête ID, "
+"Créé le ou Date prévue pour changer le tri."
 msgstr ""
-"By default from the most recent to the oldest planned date. Click the ID, "
-"Created on or Planned date header to change the sort order."
+"By default the most recently created ticket first. Click the ID, Created on "
+"or Planned date header to change the sort order."
+
+#: maintenance/templates/maintenance/ticket_list.html
+msgid ""
+"Rechercher (n°, équipement, S/N, lieu, client, technicien, description)..."
+msgstr ""
+"Search (no., equipment, S/N, location, client, technician, description)..."
 
 #: maintenance/templates/maintenance/ticket_list.html:110
 #, python-format

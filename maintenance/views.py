@@ -33,10 +33,10 @@ def ticket_list(request):
     """
     Liste des interventions en trois onglets :
     - « À planifier » (par défaut) : file des tickets qui attendent le gestionnaire ;
-    - « En cours » (?tab=en-cours) : interventions démarrées et pas encore clôturées, quelle que soit
-      leur date, du démarrage le plus ancien au plus récent (les clôtures oubliées remontent) ;
-    - « Toutes les interventions » (?tab=toutes) : filtres par technicien, date, statut, lieu
-      et client, tri par colonne et pagination.
+    - « En cours » (?tab=en-cours) : interventions démarrées et pas encore clôturées, quelle que soit leur date ;
+    - « Toutes les interventions » (?tab=toutes) : tous les tickets.
+    Dans chaque onglet : filtres (technicien, date, statut, lieu, client), tri par colonne (par défaut
+    le dernier ticket créé en premier) et pagination.
     """
     from inventory.models import Client, Building
 
@@ -45,9 +45,9 @@ def ticket_list(request):
     ).order_by('-planned_start')
     all_tickets = tickets
 
-    # Tri de la liste complète par en-tête de colonne ; par défaut, date prévue la plus récente d'abord.
+    # Tri par en-tête de colonne ; par défaut, le dernier ticket créé en premier.
     sort = request.GET.get('sort')
-    sort = sort if sort in TICKET_LIST_SORTS else 'planned_start'
+    sort = sort if sort in TICKET_LIST_SORTS else 'created_at'
     order = 'asc' if request.GET.get('order') == 'asc' else 'desc'
 
     technician_id = request.GET.get('technician') or ''
@@ -79,17 +79,28 @@ def ticket_list(request):
     if tab not in ('a-planifier', 'en-cours', 'toutes'):
         # Un lien filtré, trié ou paginé sans onglet vise la liste complète.
         tab = 'toutes' if filtering or request.GET.get('sort') or request.GET.get('page') else 'a-planifier'
-    in_progress = list(all_tickets.filter(status='in_progress').order_by('effective_start', 'pk'))
-    # File « À planifier » : toujours calculée sans filtre, pour le compteur de l'onglet.
-    to_plan = tickets_to_plan(all_tickets)
-    tickets = tickets.order_by(f"{'-' if order == 'desc' else ''}{sort}", '-pk')
+    # Compteurs des onglets : toujours calculés sans filtre ni recherche.
+    in_progress_count = all_tickets.filter(status='in_progress').count()
+    to_plan_count = len(tickets_to_plan(all_tickets))
 
-    paginator = Paginator(tickets, 25)
+    # Filtres communs aux trois onglets ; les compteurs ci-dessus restent sans filtre.
+    rows = tickets.filter(status='in_progress') if tab == 'en-cours' else tickets
+    ordering = (f"{'-' if order == 'desc' else ''}{sort}", '-pk')
+    if tab == 'a-planifier':
+        # File calculée en Python (motif de chaque ticket) : tri appliqué à la liste.
+        rows = tickets_to_plan(rows)
+        rows.sort(key=lambda t: t.pk, reverse=True)
+        rows.sort(key=lambda t: getattr(t, sort), reverse=(order == 'desc'))
+    else:
+        rows = rows.order_by(*ordering)
+
+    paginator = Paginator(rows, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
 
-    # Pour préserver les filtres actifs dans les liens de pagination.
+    # Pour préserver l'onglet, la recherche, le tri et les filtres dans les liens de pagination.
     querystring = request.GET.copy()
     querystring.pop('page', None)
+    querystring['tab'] = tab
     # Pour les liens de tri : filtres actifs, sans le tri ni la page.
     sort_querystring = querystring.copy()
     sort_querystring.pop('sort', None)
@@ -104,8 +115,8 @@ def ticket_list(request):
         'order': order,
         'filtering': filtering,
         'tab': tab,
-        'to_plan': to_plan,
-        'in_progress': in_progress,
+        'to_plan_count': to_plan_count,
+        'in_progress_count': in_progress_count,
         'older_late': older_late_count(all_tickets),
         'page_title': "Liste des interventions",
         'technicians': Technician.objects.select_related('user').order_by('user__first_name', 'user__last_name', 'user__username'),
@@ -477,6 +488,22 @@ def api_get_buildings(request):
     """Lieux d'un client au format JSON (formulaire de ticket)."""
     client_id = request.GET.get('client_id')
     from inventory.models import Building
+
+    # ?id=<pk> : résumé d'un lieu pour la fiche affichée dans le formulaire d'intervention.
+    building_id = request.GET.get('id')
+    if building_id:
+        building = Building.objects.select_related('client').filter(pk=building_id).first() if building_id.isdigit() else None
+        if building is None:
+            return JsonResponse({}, status=404)
+        return JsonResponse({
+            'address': building.address,
+            'access_notes': building.access_notes,
+            'contact': building.client.contact_name,
+            'phone': building.client.phone,
+            'navigation_url': building.navigation_url,
+            'url': reverse('building_detail', args=[building.pk]),
+        })
+
     buildings = Building.objects.filter(client_id=client_id).values('id', 'name')
     return JsonResponse(list(buildings), safe=False)
 
@@ -489,6 +516,33 @@ def api_get_equipments(request):
     from inventory.models import Equipment
 
     equipments = Equipment.objects.select_related('equipment_type', 'building').all()
+
+    # ?id=<pk> : résumé d'un équipement pour la fiche affichée dans le formulaire d'intervention.
+    equipment_id = request.GET.get('id')
+    if equipment_id:
+        equipment = equipments.filter(pk=equipment_id).first() if equipment_id.isdigit() else None
+        if equipment is None:
+            return JsonResponse({}, status=404)
+        # Dernière intervention clôturée sur l'appareil, avant maintenant : récurrence, ce qui s'est passé.
+        last = (MaintenanceTicket.objects
+                .filter(equipment=equipment, status='done', effective_end__lte=timezone.now())
+                .order_by('-effective_end').first())
+        last_ticket = None
+        if last:
+            last_ticket = {
+                'label': f"#{last.pk} · {timezone.localtime(last.effective_end):%d/%m/%Y} · {last.get_type_display()}",
+                'url': reverse('ticket_detail', args=[last.pk]),
+            }
+        return JsonResponse({
+            'last_ticket': last_ticket,
+            'name': equipment.name,
+            'type': equipment.equipment_type.name,
+            'serial_number': equipment.serial_number,
+            'building': equipment.building.name,
+            'installed_at': equipment.installed_at.strftime('%d/%m/%Y'),
+            'url': reverse('equipment_detail', args=[equipment.pk]),
+        })
+
     if building_id:
         equipments = equipments.filter(building_id=building_id)
     if search:

@@ -43,13 +43,13 @@ class MaintenanceTicketForm(forms.ModelForm):
         queryset=Client.objects.all(),
         required=False,
         label=_("Filtrer par Client"),
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
+        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
     )
     building = forms.ModelChoiceField(
         queryset=Building.objects.none(),
         required=False,
         label=_("Filtrer par lieu"),
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
+        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
     )
 
     # Choix pour les durées
@@ -65,20 +65,20 @@ class MaintenanceTicketForm(forms.ModelForm):
         label=_("Date de l'intervention"),
         widget=forms.DateInput(
             format='%Y-%m-%d',
-            attrs={'type': 'date', 'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}
+            attrs={'type': 'date', 'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}
         ),
     )
     start_time_slot = forms.ChoiceField(
         label=_("Heure de début"),
         choices=TIME_SLOTS,
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
+        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
     )
     duration_seconds = forms.TypedChoiceField(
         label=_("Durée estimée"),
         choices=DURATION_CHOICES,
         coerce=int,
         initial=5400,
-        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
+        widget=forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
     )
 
     class Meta:
@@ -86,9 +86,10 @@ class MaintenanceTicketForm(forms.ModelForm):
         # Le statut est fixé par le système (voir MaintenanceTicket.save()).
         fields = ['equipment', 'technician', 'type', 'description']
         widgets = {
-            'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
-            'technician': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
-            'description': forms.Textarea(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
+            'equipment': forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'technician': forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
+            'type': forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
+            'description': forms.Textarea(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
         }
 
     # Champs modifiables selon l'écran, pour un ticket « Planifié » :
@@ -103,6 +104,8 @@ class MaintenanceTicketForm(forms.ModelForm):
 
     def __init__(self, *args, mode=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Pas d'intervention sans consigne pour le technicien (aussi vérifié par le navigateur).
+        self.fields['description'].required = True
         if mode:
             for name, field in self.fields.items():
                 if name not in self.EDITABLE_FIELDS[mode]:

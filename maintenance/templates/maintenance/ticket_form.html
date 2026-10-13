@@ -7,15 +7,6 @@
 {% block content %}
 <div class="w-full">
     
-    <div class="mb-8 flex items-center gap-4">
-        <a href="{% url 'ticket_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
-            <i class="las la-arrow-left text-xl"></i>
-        </a>
-        <div>
-            <p class="text-slate-500 font-medium italic">{% if ticket.status == 'done' %}{% trans "Cette intervention est clôturée et ne peut plus être modifiée." %}{% else %}{% trans "Veuillez renseigner les informations de planification." %}{% endif %}</p>
-        </div>
-    </div>
-
     {% if ticket.effective_start or ticket.effective_end %}
     <div class="mb-8 p-6 bg-emerald-50 border border-emerald-100 rounded-[32px] flex items-center justify-between">
         <div class="flex items-center gap-6">
@@ -43,7 +34,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" class="space-y-6">
+    <form method="POST" class="space-y-4">
         {% csrf_token %}
         {% if form.errors %}
         <div class="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-5 text-sm space-y-1" role="alert">
@@ -53,20 +44,20 @@
         {% endif %}
         
         <!-- Ligne 1 : Client | Matériel -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                    <i class="las la-search text-lg"></i> {% trans "Sélection Rapide" %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-3 flex items-center gap-2">
+                    <i class="las la-search text-base"></i> {% trans "Sélection Rapide" %}
                 </h4>
 
-                <div class="space-y-4">
+                <div class="space-y-3">
                     {% if not ticket %}
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "1. Choisir le Client" %}</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{% trans "1. Choisir le Client" %}</label>
                         {{ form.client }}
                     </div>
                     <div id="building_container" class="hidden">
-                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "2. Choisir le lieu" %}</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{% trans "2. Choisir le lieu" %}</label>
                         {{ form.building }}
                     </div>
                     {% else %}
@@ -76,67 +67,89 @@
                         <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
                     </div>
                     {% endif %}
+                    <!-- Fiche résumée du lieu choisi (remplie par le script plus bas) -->
+                    <div id="building-info" class="hidden p-3 rounded-xl bg-slate-50 border border-slate-100"
+                         data-url="{% url 'api_get_buildings' %}" data-building="{{ ticket.equipment.building_id|default:'' }}">
+                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Adresse du lieu" %}</dt><dd class="font-bold text-slate-800 whitespace-pre-line" data-info="address"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Téléphone" %}</dt><dd class="font-bold text-slate-800" data-info="phone"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Contact" %}</dt><dd class="font-bold text-slate-800" data-info="contact"></dd></div>
+                            <div class="flex flex-wrap items-end gap-4">
+                                <a id="building-info-navigation" href="#" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline">
+                                    <i class="las la-directions"></i> {% trans "Itinéraire" %}
+                                </a>
+                                <a id="building-info-link" href="#" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline">
+                                    <i class="las la-external-link-alt"></i> {% trans "Lieu" %}
+                                </a>
+                            </div>
+                            <div class="col-span-2"><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Accès / complément" %}</dt><dd class="font-bold text-slate-800 whitespace-pre-line" data-info="access_notes"></dd></div>
+                        </dl>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                    <i class="las la-info-circle text-lg"></i> {% trans "Identification" %}
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-3 flex items-center gap-2">
+                    <i class="las la-info-circle text-base"></i> {% trans "Identification" %}
                 </h4>
 
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Équipement sélectionné" %}</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{% trans "Équipement sélectionné" %}</label>
                         {{ form.equipment }}
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Type" %}</label>
-                            {{ form.type }}
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Statut de l'intervention" %}</label>
-                            {# Fixé par le système : « En attente » sans technicien, « Planifié » avec. #}
-                            <p class="px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 font-bold text-slate-700">{% if ticket %}{{ ticket.get_status_display }}{% else %}{% trans "En attente" %}{% endif %}</p>
-                            <p class="mt-1 text-xs text-slate-400">{% trans "Planifié dès qu'un technicien est assigné." %}</p>
-                        </div>
+                    <!-- Fiche résumée de l'équipement choisi (remplie par le script plus bas) -->
+                    <div id="equipment-info" class="hidden p-3 rounded-xl bg-slate-50 border border-slate-100"
+                         data-url="{% url 'api_get_equipments' %}">
+                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Nom de l'équipement" %}</dt><dd class="font-bold text-slate-800" data-info="name"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Type" %}</dt><dd class="font-bold text-slate-800" data-info="type"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Numéro de série" %}</dt><dd class="font-bold text-slate-800" data-info="serial_number"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Date d'installation" %}</dt><dd class="font-bold text-slate-800" data-info="installed_at"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Lieu" %}</dt><dd class="font-bold text-slate-800" data-info="building"></dd></div>
+                            <div><dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Dernière intervention" %}</dt>
+                                <dd class="font-bold text-slate-800"><a id="equipment-last-ticket" href="#" target="_blank" class="text-blue-600 hover:underline"></a><span id="equipment-no-ticket" class="text-slate-400 font-medium">{% trans "Aucune intervention enregistrée pour cet appareil." %}</span></dd></div>
+                        </dl>
+                        <a id="equipment-info-link" href="#" target="_blank" class="inline-flex items-center gap-1 mt-2 text-xs font-bold text-blue-600 hover:underline">
+                            <i class="las la-external-link-alt"></i> {% trans "Voir la fiche de l'équipement" %}
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Ligne 2 : Technicien et créneau | Travail à effectuer et validation -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {# Listes déroulantes : options en texte foncé, sinon elles héritent du blanc de la tuile. #}
-            <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white [&_option]:text-slate-900 [&_option]:bg-white">
-                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
-                    <i class="las la-calendar-check text-lg"></i> {% trans "Planification" %}
+            <div class="bg-blue-600 p-5 rounded-2xl shadow-lg shadow-blue-200 text-white [&_option]:text-slate-900 [&_option]:bg-white">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-3 flex items-center gap-2">
+                    <i class="las la-calendar-check text-base"></i> {% trans "Planification" %}
                 </h4>
 
-                <div class="space-y-5">
+                <div class="space-y-3">
                     {% if mode != 'description' %}
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Technicien assigné" %}</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">{% trans "Technicien assigné" %}</label>
                         {{ form.technician }}
                     </div>
                     {% endif %}
                     <div>
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Date de l'intervention" %}</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">{% trans "Date de l'intervention" %}</label>
                         {{ form.planned_date }}
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Heure de début" %}</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">{% trans "Heure de début" %}</label>
                             {{ form.start_time_slot }}
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Durée prévue" %}</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">{% trans "Durée prévue" %}</label>
                             {{ form.duration_seconds }}
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8 p-4 bg-blue-700/50 rounded-2xl border border-blue-500/30">
+                <div class="mt-4 p-3 bg-blue-700/50 rounded-xl border border-blue-500/30">
                     <p class="text-xs font-medium text-blue-100 leading-relaxed italic">
                         <i class="las la-lightbulb mr-1"></i>
                         {% trans "La validation créera automatiquement un événement dans le calendrier partagé des techniciens." %}
@@ -144,11 +157,22 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-6">
-                <div class="flex-grow flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-align-left text-lg"></i> {% trans "Travail à effectuer" %}
+            <div class="flex flex-col gap-4">
+                <div class="flex-grow flex flex-col bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-3 flex items-center gap-2">
+                        <i class="las la-align-left text-base"></i> {% trans "Travail à effectuer" %}
                     </h4>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{% trans "Type" %}</label>
+                            {{ form.type }}
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{% trans "Statut de l'intervention" %}</label>
+                            {# Fixé par le système : « En attente » sans technicien, « Planifié » avec. #}
+                            <p class="px-3 py-2 text-sm rounded-xl border border-slate-100 bg-slate-50 font-bold text-slate-700" title="{% trans "Planifié dès qu'un technicien est assigné." %}">{% if ticket %}{{ ticket.get_status_display }}{% else %}{% trans "En attente" %}{% endif %}</p>
+                        </div>
+                    </div>
                     <div class="flex-grow flex flex-col [&>textarea]:flex-grow">
                         {{ form.description }}
                     </div>
@@ -156,21 +180,21 @@
 
                 {% if ticket.status != 'done' %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
+                    <button type="submit" class="w-full py-3 text-sm bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
                         {% if mode == 'reassign' %}{% trans "Réassigner" %}{% elif ticket %}{% trans "Enregistrer les modifications" %}{% else %}{% trans "Ajouter le ticket" %}{% endif %}
                     </button>
-                    <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
+                    <a href="{% url 'ticket_list' %}" class="w-full py-3 text-sm bg-white text-slate-400 font-black uppercase tracking-widest rounded-2xl border border-slate-100 text-center hover:bg-slate-50 transition">
                         {% trans "Annuler" %}
                     </a>
                 </div>
                 {% else %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="w-full py-4 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-3">
+                    <div class="w-full py-3 text-sm bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-3">
                         <i class="las la-lock text-xl"></i>
                         {% trans "INTERVENTION ARCHIVÉE" %}
                     </div>
-                    <a href="{% url 'ticket_list' %}" class="w-full py-4 bg-white text-slate-900 font-black uppercase tracking-widest rounded-2xl border border-slate-200 text-center hover:bg-slate-50 transition">
+                    <a href="{% url 'ticket_list' %}" class="w-full py-3 text-sm bg-white text-slate-900 font-black uppercase tracking-widest rounded-2xl border border-slate-200 text-center hover:bg-slate-50 transition">
                         {% trans "Retour à la liste" %}
                     </a>
                 </div>
@@ -180,7 +204,7 @@
 
         {% if technician_editable %}
         <!-- Dispatching : planning du technicien choisi, avec le créneau du ticket -->
-        <div id="dispatch-planning-section" class="mt-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100" hidden
+        <div id="dispatch-planning-section" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100" hidden
              data-events-url="{% url 'api_events' %}" data-ticket-id="{{ ticket.pk }}" data-ticket-type="{{ ticket.type }}"{% if mode == 'reassign' %} data-focus-technician{% endif %}
              data-label-free="{% trans 'Créneau libre chez ce technicien.' %}"
              data-label-conflict="{% trans 'Ce créneau chevauche une autre intervention de ce technicien.' %}"
@@ -265,6 +289,74 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
+// Fiche résumée du lieu choisi : adresse, contact, téléphone, accès, itinéraire.
+document.addEventListener('DOMContentLoaded', function() {
+    const info = document.getElementById('building-info');
+    if (!info) return;
+    const buildingSelect = document.getElementById('id_building');
+
+    function showBuildingInfo() {
+        // Création : lieu choisi dans la liste ; modification : lieu du ticket.
+        const id = buildingSelect ? buildingSelect.value : info.dataset.building;
+        if (!id) { info.classList.add('hidden'); return; }
+        fetch(info.dataset.url + '?id=' + encodeURIComponent(id))
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data || (buildingSelect && buildingSelect.value !== id)) return;
+                info.querySelectorAll('[data-info]').forEach(el => { el.textContent = data[el.dataset.info] || '—'; });
+                const navigation = document.getElementById('building-info-navigation');
+                navigation.hidden = !data.navigation_url;
+                if (data.navigation_url) navigation.href = data.navigation_url;
+                document.getElementById('building-info-link').href = data.url;
+                info.classList.remove('hidden');
+            });
+    }
+
+    if (buildingSelect) {
+        buildingSelect.addEventListener('change', showBuildingInfo);
+        // Nouvelle liste de lieux (changement de client) : plus de lieu choisi, on masque la fiche.
+        new MutationObserver(showBuildingInfo).observe(buildingSelect, {childList: true});
+    }
+    showBuildingInfo();
+});
+</script>
+
+<script>
+// Fiche résumée de l'équipement choisi : nom, type, n° de série, installation, lieu, dernière intervention.
+document.addEventListener('DOMContentLoaded', function() {
+    const equipmentSelect = document.getElementById('id_equipment');
+    const info = document.getElementById('equipment-info');
+    if (!equipmentSelect || !info) return;
+
+    function showEquipmentInfo() {
+        const id = equipmentSelect.value;
+        if (!id) { info.classList.add('hidden'); return; }
+        fetch(info.dataset.url + '?id=' + encodeURIComponent(id))
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data || equipmentSelect.value !== id) return;
+                info.querySelectorAll('[data-info]').forEach(el => { el.textContent = data[el.dataset.info] || '—'; });
+                document.getElementById('equipment-info-link').href = data.url;
+                // Dernière intervention : lien vers le ticket, ou « aucune intervention ».
+                const lastLink = document.getElementById('equipment-last-ticket');
+                lastLink.hidden = !data.last_ticket;
+                document.getElementById('equipment-no-ticket').hidden = !!data.last_ticket;
+                if (data.last_ticket) {
+                    lastLink.textContent = data.last_ticket.label;
+                    lastLink.href = data.last_ticket.url;
+                }
+                info.classList.remove('hidden');
+            });
+    }
+
+    equipmentSelect.addEventListener('change', showEquipmentInfo);
+    // Nouvelle liste d'équipements (changement de lieu) : plus d'équipement choisi, on masque la fiche.
+    new MutationObserver(showEquipmentInfo).observe(equipmentSelect, {childList: true});
+    showEquipmentInfo();
+});
+</script>
+
+<script>
 // Dispatching : affiche le planning du technicien choisi et le créneau du ticket.
 document.addEventListener('DOMContentLoaded', function() {
     const section = document.getElementById('dispatch-planning-section');
@@ -321,6 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 headerToolbar: {left: 'prev,next today', center: 'title', right: 'timeGridWeek,timeGridDay'},
                 allDaySlot: false,
                 nowIndicator: true,
+                // Hauteur ajustée aux créneaux : le planning s'arrête après la ligne de 19 h.
+                height: 'auto',
                 slotMinTime: '07:00:00',
                 slotMaxTime: '20:00:00',
                 slotEventOverlap: false,

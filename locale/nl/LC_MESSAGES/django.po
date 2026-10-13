@@ -817,6 +817,10 @@ msgstr "Niet toegewezen"
 msgid "Aucune intervention enregistrée pour cet appareil."
 msgstr "Geen interventies geregistreerd voor dit toestel."
 
+#: maintenance/templates/maintenance/ticket_form.html
+msgid "Dernière intervention"
+msgstr "Laatste interventie"
+
 #: inventory/templates/inventory/equipment_form.html:25
 msgid "Attributs du type"
 msgstr "Kenmerken van het type"
@@ -1863,12 +1867,11 @@ msgstr "Alle interventies"
 msgid ""
 "Tickets sans technicien (dont les suites d'interventions à replanifier) et "
 "interventions planifiées non démarrées dont le créneau est dépassé depuis "
-"moins de 7 jours, de la plus ancienne date prévue à la plus récente."
+"moins de 7 jours."
 msgstr ""
 "Tickets zonder technicus (waaronder vervolgen van opnieuw te plannen "
 "interventies) en geplande, niet gestarte interventies waarvan het tijdslot "
-"minder dan 7 dagen geleden verstreken is, van de oudste naar de meest "
-"recente geplande datum."
+"minder dan 7 dagen geleden verstreken is."
 
 #: maintenance/templates/maintenance/ticket_list.html:33
 msgid ""
@@ -1885,12 +1888,12 @@ msgstr "Geen tickets in te plannen"
 #: maintenance/templates/maintenance/ticket_list.html:39
 msgid ""
 "Interventions démarrées par un technicien et pas encore clôturées, quelle "
-"que soit leur date, de la plus ancienne à la plus récente : une session "
-"ouverte depuis la veille signale une clôture oubliée."
+"que soit leur date : une session ouverte depuis la veille signale une "
+"clôture oubliée."
 msgstr ""
 "Interventies die door een technicus gestart en nog niet afgesloten zijn, "
-"ongeacht hun datum, van de oudste naar de meest recente: een sessie die "
-"sinds gisteren openstaat, wijst op een vergeten afsluiting."
+"ongeacht hun datum: een sessie die sinds gisteren openstaat, wijst op een "
+"vergeten afsluiting."
 
 #: maintenance/templates/maintenance/ticket_list.html:40
 msgid "Aucune intervention en cours"
@@ -1913,11 +1916,17 @@ msgstr "Resultaten"
 
 #: maintenance/templates/maintenance/ticket_list.html:103
 msgid ""
-"Par défaut de la plus récente à la plus ancienne date prévue. Cliquez sur "
-"l'en-tête ID, Créé le ou Date prévue pour changer le tri."
+"Par défaut, le dernier ticket créé en premier. Cliquez sur l'en-tête ID, "
+"Créé le ou Date prévue pour changer le tri."
 msgstr ""
-"Standaard van de meest recente naar de oudste geplande datum. Klik op de "
-"kolomkop ID, Aangemaakt op of Geplande datum om de sortering te wijzigen."
+"Standaard het laatst aangemaakte ticket eerst. Klik op de kolomkop ID, "
+"Aangemaakt op of Geplande datum om de sortering te wijzigen."
+
+#: maintenance/templates/maintenance/ticket_list.html
+msgid ""
+"Rechercher (n°, équipement, S/N, lieu, client, technicien, description)..."
+msgstr ""
+"Zoeken (nr., toestel, S/N, locatie, klant, technicus, beschrijving)..."
 
 #: maintenance/templates/maintenance/ticket_list.html:110
 #, python-format

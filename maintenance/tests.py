@@ -503,25 +503,39 @@ class TicketListSectionsTestCase(TestCase):
 
     def test_to_plan_tab(self):
         """Onglet « À planifier » : sans technicien (suites comprises) et planifiées en retard de moins de 7 jours."""
-        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
+        # Tri par date prévue croissante : ordre de la file indépendant de l'ordre de création.
+        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier', 'sort': 'planned_start', 'order': 'asc'})
         ctx = response.context
         self.assertEqual(ctx['tab'], 'a-planifier')
-        self.assertEqual(self._ids(ctx['to_plan']), [self.follow_up.pk, self.late.pk, self.unassigned.pk])
-        self.assertEqual([t.plan_reason for t in ctx['to_plan']], ['follow_up', 'late', 'unassigned'])
-        self.assertEqual(ctx['to_plan'][0].origin_id, self.origin.pk)
+        self.assertEqual(self._ids(ctx['tickets']), [self.follow_up.pk, self.late.pk, self.unassigned.pk])
+        self.assertEqual([t.plan_reason for t in ctx['tickets']], ['follow_up', 'late', 'unassigned'])
+        self.assertEqual(ctx['tickets'][0].origin_id, self.origin.pk)
+        self.assertEqual(ctx['to_plan_count'], 3)
         self.assertEqual(ctx['older_late'], 1)
         html = response.content.decode()
         self.assertIn(f"Suite de l'intervention #{self.origin.pk}", html)
         self.assertIn('Créneau dépassé, non démarrée', html)
         self.assertIn('Non attribué', html)
-        self.assertNotIn('name="technician"', html)  # pas de filtres dans cet onglet
+        self.assertIn('name="technician"', html)  # filtres dans chaque onglet
+
+    def test_tabs_list_last_created_first_and_filter(self):
+        """Chaque onglet : dernier ticket créé en premier par défaut, et les filtres s'appliquent à l'onglet."""
+        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
+        self.assertEqual(self._ids(response.context['tickets']), [self.unassigned.pk, self.late.pk, self.follow_up.pk])
+        response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier', 'technician': 'none'})
+        self.assertEqual(self._ids(response.context['tickets']), [self.unassigned.pk, self.follow_up.pk])
+        self.assertEqual(response.context['tab'], 'a-planifier')
+        self.assertEqual(response.context['to_plan_count'], 3)  # compteur sans filtre
+        response = self.http.get(reverse('ticket_list'), {'tab': 'en-cours', 'technician': 'none'})
+        self.assertEqual(self._ids(response.context['tickets']), [])
+        self.assertEqual(response.context['in_progress_count'], 1)
 
     def test_general_tab_lists_everything_with_filters(self):
         """Onglet « Toutes les interventions » : toutes les interventions et le moteur de filtres ; plus de tableau du jour."""
         self.assertEqual(self.http.get(reverse('ticket_list')).context['tab'], 'a-planifier')  # onglet par défaut
         response = self.http.get(reverse('ticket_list'), {'tab': 'toutes'})
         self.assertEqual(response.context['tab'], 'toutes')
-        self.assertEqual(len(response.context['to_plan']), 3)  # compteur de l'onglet
+        self.assertEqual(response.context['to_plan_count'], 3)  # compteur de l'onglet
         rest = self._ids(response.context['tickets'])
         for ticket in (self.follow_up, self.late, self.started_early, self.today, self.future,
                        self.unassigned, self.done, self.origin, self.old_late, self.done_today):
@@ -531,10 +545,10 @@ class TicketListSectionsTestCase(TestCase):
         self.assertNotIn('Interventions du jour', html)
 
     def test_in_progress_tab(self):
-        """Onglet « En cours » : interventions démarrées non clôturées, quelle que soit leur date, sans filtres."""
+        """Onglet « En cours » : interventions démarrées non clôturées, quelle que soit leur date, avec filtres."""
         response = self.http.get(reverse('ticket_list'), {'tab': 'en-cours'})
-        self.assertEqual(self._ids(response.context['in_progress']), [self.started_early.pk])
-        self.assertNotIn('name="technician"', response.content.decode())
+        self.assertEqual(self._ids(response.context['tickets']), [self.started_early.pk])
+        self.assertIn('name="technician"', response.content.decode())
 
     def test_filtered_link_without_tab_opens_the_full_list(self):
         self.assertEqual(self.http.get(reverse('ticket_list'), {'technician': 'none'}).context['tab'], 'toutes')
@@ -545,7 +559,7 @@ class TicketListSectionsTestCase(TestCase):
         self.follow_up.planned_end = self.follow_up.planned_start + timedelta(hours=1)
         self.follow_up.save()
         response = self.http.get(reverse('ticket_list'), {'tab': 'a-planifier'})
-        self.assertEqual(self._ids(response.context['to_plan']), [self.late.pk, self.unassigned.pk])
+        self.assertEqual(self._ids(response.context['tickets']), [self.unassigned.pk, self.late.pk])
 
     def test_filters_show_a_single_result_list(self):
         response = self.http.get(reverse('ticket_list'), {'status': 'in_progress'})
@@ -766,7 +780,7 @@ class TicketFormLocalTimeTestCase(TestCase):
         response = http.post(reverse('ticket_update', args=[ticket.pk]), {
             'client': client_obj.id, 'building': building.id, 'equipment': equipment.id, 'technician': tech.id,
             'type': 'maintenance', 'status': 'planned', 'planned_date': form.fields['planned_date'].initial,
-            'start_time_slot': form.fields['start_time_slot'].initial, 'duration_seconds': 5400, 'description': '',
+            'start_time_slot': form.fields['start_time_slot'].initial, 'duration_seconds': 5400, 'description': 'Contrôle annuel.',
         })
         self.assertEqual(response.status_code, 302)
         ticket.refresh_from_db()
@@ -1103,7 +1117,7 @@ class TicketStatusRuleTestCase(TestCase):
         data = {
             'client': self.client_obj.id, 'building': self.building.id, 'equipment': self.equipment.id,
             'type': 'repair', 'planned_date': '2026-12-16', 'start_time_slot': '09:00', 'duration_seconds': 3600,
-            'description': '',
+            'description': 'Contrôle annuel.',
         }
         data.update(overrides)
         return data
@@ -1122,6 +1136,13 @@ class TicketStatusRuleTestCase(TestCase):
         self.http.post(reverse('ticket_create'), self._update_data(start_time_slot='11:00'))
         statuses = list(MaintenanceTicket.objects.order_by('pk').values_list('technician', 'status'))
         self.assertEqual(statuses, [(self.tech.pk, 'planned'), (None, 'pending')])
+
+    def test_create_requires_description(self):
+        """Pas d'intervention sans consigne : description obligatoire, aussi pour le navigateur."""
+        response = self.http.post(reverse('ticket_create'), self._update_data(description=''))
+        self.assertEqual(MaintenanceTicket.objects.count(), 0)
+        self.assertIn('description', response.context['form'].errors)
+        self.assertContains(self.http.get(reverse('ticket_create')), 'required id="id_description"')
 
     def test_create_refuses_schedule_conflict(self):
         """À la création aussi, un créneau qui chevauche le planning du technicien est refusé."""
@@ -1342,7 +1363,7 @@ class TicketListCreatedAtTestCase(TestCase):
         self.assertContains(response, '14:25')
 
     def test_sort_by_created_at(self):
-        """Tri par en-tête : date de création décroissante puis croissante ; par défaut, date prévue décroissante."""
+        """Tri par en-tête : date de création décroissante puis croissante ; par défaut, dernier ticket créé en premier."""
         CustomUser.objects.create_user(username='chef_tri', password='Password123!', role='manager')
         client_obj = Client.objects.create(name='Client Tri', address='1 rue Tri')
         building = Building.objects.create(client=client_obj, name='Site Tri', address='1 rue Tri')
@@ -1360,12 +1381,12 @@ class TicketListCreatedAtTestCase(TestCase):
         http.login(username='chef_tri', password='Password123!')
         url = reverse('ticket_list')
         ids = lambda params: [t.pk for t in http.get(url, params).context['tickets'] if t.pk in (a.pk, b.pk)]
-        self.assertEqual(ids({}), [a.pk, b.pk])
+        self.assertEqual(ids({}), [b.pk, a.pk])
         self.assertEqual(ids({'sort': 'created_at', 'order': 'desc'}), [b.pk, a.pk])
         self.assertEqual(ids({'sort': 'created_at', 'order': 'asc'}), [a.pk, b.pk])
-        self.assertEqual(ids({'sort': 'inconnu'}), [a.pk, b.pk])
+        self.assertEqual(ids({'sort': 'inconnu'}), [b.pk, a.pk])
         response = http.get(url, {'sort': 'created_at', 'order': 'desc', 'status': 'pending'})
-        self.assertContains(response, 'status=pending&sort=created_at&order=asc')
+        self.assertContains(response, 'status=pending&amp;tab=toutes&sort=created_at&order=asc')
 
     def test_finished_ticket_is_not_shown_live(self):
         """Une intervention terminée affiche « Réalisé le » avec sa date, pas « EN DIRECT » ; une en cours affiche « EN DIRECT »."""
