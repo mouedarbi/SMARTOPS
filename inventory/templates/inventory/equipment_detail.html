@@ -16,7 +16,7 @@
                 </span>
                 <span class="text-sm font-mono text-slate-400">S/N: {{ equipment.serial_number }}</span>
             </div>
-            <h2 class="text-3xl font-black text-slate-800 mt-2">{{ equipment.name }}</h2>
+            <h2 class="text-3xl font-black text-slate-800 mt-2">{{ equipment.name }}{% include 'inventory/_archived_badge.html' with obj=equipment %}</h2>
             <p class="text-sm text-slate-500 font-semibold mt-2">
                 <i class="las la-map-marker mr-1 text-slate-400"></i> {% trans "Localisation" %} : 
                 <a href="{% url 'building_detail' equipment.building.pk %}" class="text-blue-600 hover:underline font-bold">
@@ -39,9 +39,12 @@
             <a href="{% url 'building_detail' equipment.building.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-arrow-left text-lg mr-2"></i>{% trans "Fiche du lieu" %}
             </a>
-            <a href="{% url 'equipment_create' %}?building={{ equipment.building.pk }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
+{% if equipment.building.is_active %}            <a href="{% url 'equipment_create' %}?building={{ equipment.building.pk }}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-plus text-lg mr-2"></i>{% trans "Ajouter Appareil" %}
-            </a>
+            </a>{% endif %}
+            {% trans "Archiver cet appareil ? Son historique reste consultable." as confirm_text %}
+            {% url 'equipment_archive' equipment.pk as archive_url %}{% url 'equipment_restore' equipment.pk as restore_url %}
+            {% include 'inventory/_archive_button.html' with obj=equipment %}
         </div>
     </div>
 

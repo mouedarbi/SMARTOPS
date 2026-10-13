@@ -2615,3 +2615,87 @@ msgstr[1] ""
 #: api/serializers.py:260
 msgid "Ce technicien n'est plus actif."
 msgstr "Deze technicus is niet meer actief."
+
+#: inventory/services.py:47
+#, python-format
+msgid ""
+"Archivage impossible : %(count)s intervention est encore en attente, "
+"planifiée ou en cours. Terminez-la ou annulez-la d'abord."
+msgid_plural ""
+"Archivage impossible : %(count)s interventions sont encore en attente, "
+"planifiées ou en cours. Terminez-les ou annulez-les d'abord."
+msgstr[0] ""
+"Archiveren niet mogelijk: %(count)s interventie is nog in afwachting, gepland "
+"of bezig. Rond ze eerst af of annuleer ze."
+msgstr[1] ""
+"Archiveren niet mogelijk: %(count)s interventies zijn nog in afwachting, "
+"gepland of bezig. Rond ze eerst af of annuleer ze."
+
+#: inventory/services.py:69
+msgid "Réactivez d'abord le client de ce lieu."
+msgstr "Heractiveer eerst de klant van deze locatie."
+
+#: inventory/services.py:71
+msgid "Réactivez d'abord le lieu de cet appareil."
+msgstr "Heractiveer eerst de locatie van dit toestel."
+
+#: inventory/views.py:41
+#, python-format
+msgid "%(name)s archivé. Son historique reste consultable."
+msgstr "%(name)s gearchiveerd. De geschiedenis blijft raadpleegbaar."
+
+#: inventory/views.py:44
+#, python-format
+msgid "%(name)s réactivé."
+msgstr "%(name)s opnieuw geactiveerd."
+
+#: inventory/views.py
+msgid "Ce client est archivé : réactivez-le avant d'y ajouter un lieu."
+msgstr ""
+"Deze klant is gearchiveerd: heractiveer de klant voordat u een locatie "
+"toevoegt."
+
+#: inventory/views.py
+msgid "Ce lieu est archivé : réactivez-le avant d'y ajouter un appareil."
+msgstr ""
+"Deze locatie is gearchiveerd: heractiveer ze voordat u een toestel toevoegt."
+
+#: inventory/templates/inventory/_archive_button.html:8
+msgid "Archiver"
+msgstr "Archiveren"
+
+#: inventory/templates/inventory/_archive_button.html:15
+msgid "Réactiver"
+msgstr "Heractiveren"
+
+#: inventory/templates/inventory/_archived_badge.html:1
+#: inventory/templates/inventory/client_detail.html:18
+msgid "Archivé"
+msgstr "Gearchiveerd"
+
+#: inventory/templates/inventory/_archived_filter.html:4
+msgid "Actifs"
+msgstr "Actief"
+
+#: inventory/templates/inventory/_archived_filter.html:5
+msgid "Archivés"
+msgstr "Gearchiveerd"
+
+#: inventory/templates/inventory/client_detail.html
+msgid ""
+"Archiver ce client, tous ses lieux et tous ses appareils ? Leur historique "
+"reste consultable."
+msgstr ""
+"Deze klant, al zijn locaties en al zijn toestellen archiveren? De "
+"geschiedenis blijft raadpleegbaar."
+
+#: inventory/templates/inventory/building_detail.html
+msgid ""
+"Archiver ce lieu et tous ses appareils ? Leur historique reste consultable."
+msgstr ""
+"Deze locatie en al haar toestellen archiveren? De geschiedenis blijft "
+"raadpleegbaar."
+
+#: inventory/templates/inventory/equipment_detail.html
+msgid "Archiver cet appareil ? Son historique reste consultable."
+msgstr "Dit toestel archiveren? De geschiedenis blijft raadpleegbaar."

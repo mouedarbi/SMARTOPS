@@ -13,13 +13,14 @@
             <!-- Conserver les paramètres de tri lors de la recherche -->
             <input type="hidden" name="sort" value="{{ sort }}">
             <input type="hidden" name="order" value="{{ order }}">
+            {% include 'inventory/_archived_filter.html' %}
             
             <div class="relative flex-grow">
                 <input type="text" name="q" value="{{ q }}" placeholder="{% trans "Rechercher un client (nom, email, tel, tva)..." %}" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                 <i class="las la-search absolute left-3 top-3.5 text-slate-400 text-lg"></i>
             </div>
             
-            {% if q or sort != 'created_at' or order != 'desc' %}
+            {% if archived or q or sort != 'created_at' or order != 'desc' %}
                 <a href="{% url 'client_list' %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-500 font-bold p-2.5 rounded-xl text-sm flex items-center justify-center transition" title="{% trans "Réinitialiser les filtres" %}">
                     <i class="las la-times text-lg"></i>
                 </a>
@@ -41,7 +42,7 @@
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200">
                     <th class="p-4 pl-8 font-bold text-slate-700 text-xs uppercase tracking-widest">
-                        <a href="?q={{ q }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                        <a href="?q={{ q }}&archived={{ archived }}&sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
                             {% trans "Nom du Client" %}
                             {% if sort == 'name' %}
                                 {% if order == 'asc' %}
@@ -57,7 +58,7 @@
                     <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "E-mail" %}</th>
                     <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">{% trans "Téléphone" %}</th>
                     <th class="p-4 font-bold text-slate-700 text-xs uppercase tracking-widest">
-                        <a href="?q={{ q }}&sort=created_at&order={% if sort == 'created_at' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
+                        <a href="?q={{ q }}&archived={{ archived }}&sort=created_at&order={% if sort == 'created_at' and order == 'asc' %}desc{% else %}asc{% endif %}" class="hover:text-blue-600 flex items-center gap-1.5">
                             {% trans "Date d'Ajout" %}
                             {% if sort == 'created_at' %}
                                 {% if order == 'asc' %}
@@ -79,7 +80,7 @@
                     <td class="p-4 pl-8 font-bold text-slate-800">
                         <a href="{% url 'client_detail' client.pk %}" class="text-blue-600 hover:underline">
                             {{ client.name }}
-                        </a>
+                        </a>{% include 'inventory/_archived_badge.html' with obj=client %}
                     </td>
                     <td class="p-4 text-sm text-slate-600">{{ client.email }}</td>
                     <td class="p-4 text-sm text-slate-600">{{ client.phone }}</td>
@@ -113,10 +114,10 @@
         
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Première page" %}">
+                <a href="?page=1&q={{ q }}&sort={{ sort }}&order={{ order }}&archived={{ archived }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Première page" %}">
                     «
                 </a>
-                <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}&archived={{ archived }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
                     {% trans "Précédent" %}
                 </a>
             {% endif %}
@@ -127,17 +128,17 @@
                         {{ num }}
                     </span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                    <a href="?page={{ num }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                    <a href="?page={{ num }}&q={{ q }}&sort={{ sort }}&order={{ order }}&archived={{ archived }}" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
                         {{ num }}
                     </a>
                 {% endif %}
             {% endfor %}
             
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
+                <a href="?page={{ page_obj.next_page_number }}&q={{ q }}&sort={{ sort }}&order={{ order }}&archived={{ archived }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold">
                     {% trans "Suivant" %}
                 </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Dernière page" %}">
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ q }}&sort={{ sort }}&order={{ order }}&archived={{ archived }}" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-100 transition text-xs font-bold" title="{% trans "Dernière page" %}">
                     »
                 </a>
             {% endif %}

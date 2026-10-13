@@ -1,0 +1,17 @@
+{% load i18n %}
+{# Bouton Archiver / Réactiver d'une fiche (POST). Paramètres : obj, archive_url, restore_url, confirm_text. #}
+{% if obj.is_active %}
+<form method="post" action="{{ archive_url }}" onsubmit="return confirm('{{ confirm_text|escapejs }}')">
+    {% csrf_token %}
+    <button type="submit" class="bg-amber-50 border border-amber-100 hover:bg-amber-100 text-amber-700 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
+        <i class="las la-archive text-lg mr-2"></i>{% trans "Archiver" %}
+    </button>
+</form>
+{% else %}
+<form method="post" action="{{ restore_url }}">
+    {% csrf_token %}
+    <button type="submit" class="bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 text-emerald-700 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
+        <i class="las la-undo text-lg mr-2"></i>{% trans "Réactiver" %}
+    </button>
+</form>
+{% endif %}

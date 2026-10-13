@@ -530,3 +530,161 @@ class InventoryTranslationTests(TestCase):
             'en': ('Create type', 'Manage fields')})
         self._check(reverse('equipment_type_detail', args=[eq_type.pk]), {
             'fr': ('Champs actuels',), 'nl': ('Huidige velden',), 'en': ('Current fields',)})
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class ArchiveTests(TestCase):
+    """
+    Archivage d'un client, d'un lieu ou d'un appareil : rien n'est supprimé, l'historique reste
+    consultable, et un élément archivé n'est plus proposé pour une nouvelle intervention.
+    """
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='mgr_arch', password='pass', role='manager')
+        tech_user = CustomUser.objects.create_user(username='tech_arch', password='pass', role='technician')
+        self.tech = tech_user.technician_profile
+        self.client_obj = Client.objects.create(name='Arch Corp', address='Rue A', contact_name='A', email='a@a.be')
+        self.building = Building.objects.create(client=self.client_obj, name='Lieu Arch', address='Rue A')
+        self.other_building = Building.objects.create(client=self.client_obj, name='Lieu Arch 2', address='Rue B')
+        eq_type = EquipmentType.objects.create(name='Pompe Arch')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Pompe A1', equipment_type=eq_type, serial_number='SN-A1', installed_at='2024-01-01',
+        )
+        self.other_equipment = Equipment.objects.create(
+            building=self.other_building, name='Pompe A2', equipment_type=eq_type, serial_number='SN-A2', installed_at='2024-01-01',
+        )
+        self.http = HttpClient()
+        self.http.login(username='mgr_arch', password='pass')
+
+    def make_ticket(self, status_code, equipment=None):
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=equipment or self.equipment, technician=self.tech,
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+            intervention_report='Rapport conservé',
+        )
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(status=status_code)
+        return ticket
+
+    def refresh(self):
+        for obj in (self.client_obj, self.building, self.other_building, self.equipment, self.other_equipment):
+            obj.refresh_from_db()
+
+    def test_archive_client_cascades_and_keeps_history(self):
+        done = self.make_ticket('done')
+        response = self.http.post(reverse('client_archive', args=[self.client_obj.pk]), follow=True)
+        self.assertContains(response, 'archivé')
+        self.refresh()
+        self.assertEqual(
+            [o.is_active for o in (self.client_obj, self.building, self.other_building, self.equipment, self.other_equipment)],
+            [False] * 5,
+        )
+        # Rien n'est supprimé, l'intervention garde son rapport et reste consultable.
+        done.refresh_from_db()
+        self.assertEqual(done.intervention_report, 'Rapport conservé')
+        self.assertEqual(self.http.get(reverse('ticket_detail', args=[done.pk])).status_code, 200)
+        self.assertEqual(self.http.get(reverse('equipment_detail', args=[self.equipment.pk])).status_code, 200)
+
+    def test_archive_building_cascades_to_its_equipments_only(self):
+        self.http.post(reverse('building_archive', args=[self.building.pk]))
+        self.refresh()
+        self.assertEqual(
+            (self.client_obj.is_active, self.building.is_active, self.equipment.is_active,
+             self.other_building.is_active, self.other_equipment.is_active),
+            (True, False, False, True, True),
+        )
+
+    def test_archive_refused_with_open_ticket(self):
+        for status_code in ('pending', 'planned', 'in_progress'):
+            ticket = self.make_ticket(status_code)
+            for name, obj in (('client_archive', self.client_obj), ('building_archive', self.building),
+                              ('equipment_archive', self.equipment)):
+                with self.subTest(status=status_code, level=name):
+                    response = self.http.post(reverse(name, args=[obj.pk]), follow=True)
+                    self.assertContains(response, 'Archivage impossible')
+                    self.refresh()
+                    self.assertTrue(all(o.is_active for o in (self.client_obj, self.building, self.equipment)))
+            MaintenanceTicket.objects.filter(pk=ticket.pk).delete()
+
+    def test_closed_tickets_do_not_block_archive(self):
+        for status_code in ('done', 'to_reschedule', 'canceled'):
+            self.make_ticket(status_code)
+        self.http.post(reverse('equipment_archive', args=[self.equipment.pk]))
+        self.equipment.refresh_from_db()
+        self.assertFalse(self.equipment.is_active)
+
+    def test_restore_requires_active_parent_and_is_not_cascading(self):
+        self.http.post(reverse('client_archive', args=[self.client_obj.pk]))
+        response = self.http.post(reverse('equipment_restore', args=[self.equipment.pk]), follow=True)
+        self.assertContains(response, 'Réactivez d&#x27;abord le lieu')
+        response = self.http.post(reverse('building_restore', args=[self.building.pk]), follow=True)
+        self.assertContains(response, 'Réactivez d&#x27;abord le client')
+
+        self.http.post(reverse('client_restore', args=[self.client_obj.pk]))
+        self.http.post(reverse('building_restore', args=[self.building.pk]))
+        self.http.post(reverse('equipment_restore', args=[self.equipment.pk]))
+        self.refresh()
+        self.assertEqual(
+            (self.client_obj.is_active, self.building.is_active, self.equipment.is_active,
+             self.other_building.is_active, self.other_equipment.is_active),
+            (True, True, True, False, False),
+        )
+
+    def test_archive_requires_post(self):
+        self.assertEqual(self.http.get(reverse('client_archive', args=[self.client_obj.pk])).status_code, 405)
+        self.client_obj.refresh_from_db()
+        self.assertTrue(self.client_obj.is_active)
+
+    def test_lists_hide_archived_by_default(self):
+        # follow : le message « Pompe A1 archivé » est affiché ici, pas sur la liste.
+        self.http.post(reverse('equipment_archive', args=[self.equipment.pk]), follow=True)
+        url = reverse('equipment_list')
+        self.assertNotContains(self.http.get(url), 'Pompe A1')
+        self.assertContains(self.http.get(url, {'archived': '1'}), 'Pompe A1')
+        self.assertNotContains(self.http.get(url, {'archived': '1'}), 'Pompe A2')
+        everything = self.http.get(url, {'archived': 'all'})
+        self.assertContains(everything, 'Pompe A1')
+        self.assertContains(everything, 'Pompe A2')
+
+    def test_no_creation_under_archived_parent(self):
+        self.http.post(reverse('building_archive', args=[self.building.pk]))
+        response = self.http.get(reverse('equipment_create'), {'building': self.building.pk})
+        self.assertRedirects(response, reverse('building_detail', args=[self.building.pk]))
+        self.http.post(reverse('client_archive', args=[self.client_obj.pk]))
+        response = self.http.get(reverse('building_create'), {'client': self.client_obj.pk})
+        self.assertRedirects(response, reverse('client_detail', args=[self.client_obj.pk]))
+
+    def test_archived_items_not_offered_for_new_ticket(self):
+        self.http.post(reverse('building_archive', args=[self.building.pk]))
+        buildings = self.http.get(reverse('api_get_buildings'), {'client_id': self.client_obj.pk}).json()
+        self.assertEqual([b['name'] for b in buildings], ['Lieu Arch 2'])
+        equipments = self.http.get(reverse('api_get_equipments'), {'building_id': self.building.pk}).json()
+        self.assertEqual(equipments, [])
+
+        from maintenance.forms import MaintenanceTicketForm
+        form = MaintenanceTicketForm(data={
+            'client': self.client_obj.pk, 'building': self.building.pk, 'equipment': self.equipment.pk,
+            'type': 'maintenance', 'description': 'Test', 'planned_date': '2030-01-02',
+            'start_time_slot': '08:00', 'duration_seconds': 3600,
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('equipment', form.errors)
+
+        self.http.post(reverse('client_archive', args=[self.client_obj.pk]))
+        self.assertNotIn(self.client_obj, MaintenanceTicketForm().fields['client'].queryset)
+
+    def test_archive_screens_in_dutch(self):
+        manager = CustomUser.objects.get(username='mgr_arch')
+        manager.language = 'nl'
+        manager.save()
+        detail = self.http.get(reverse('client_detail', args=[self.client_obj.pk]))
+        self.assertContains(detail, 'Archiveren')
+        self.assertContains(detail, 'Deze klant, al zijn locaties en al zijn toestellen archiveren?')
+        response = self.http.post(reverse('equipment_archive', args=[self.equipment.pk]), follow=True)
+        self.assertContains(response, 'Pompe A1 gearchiveerd.')
+        self.assertContains(response, 'Heractiveren')
+        listing = self.http.get(reverse('equipment_list'), {'archived': '1'})
+        self.assertContains(listing, 'Gearchiveerd')

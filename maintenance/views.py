@@ -510,7 +510,8 @@ def api_get_buildings(request):
             'url': reverse('building_detail', args=[building.pk]),
         })
 
-    buildings = Building.objects.filter(client_id=client_id).values('id', 'name')
+    # Lieux actifs seulement : un lieu archivé ne reçoit plus d'intervention.
+    buildings = Building.objects.filter(client_id=client_id, is_active=True).values('id', 'name')
     return JsonResponse(list(buildings), safe=False)
 
 @login_required
@@ -549,6 +550,8 @@ def api_get_equipments(request):
             'url': reverse('equipment_detail', args=[equipment.pk]),
         })
 
+    # Appareils actifs seulement : un appareil archivé ne reçoit plus d'intervention.
+    equipments = equipments.filter(is_active=True)
     if building_id:
         equipments = equipments.filter(building_id=building_id)
     if search:

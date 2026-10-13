@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Filtre d'archivage d'une liste (?archived=) : actifs par défaut, archivés ou tous. #}
+<select name="archived" onchange="this.form.submit()" class="py-2.5 px-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <option value="" {% if archived == '' %}selected{% endif %}>{% trans "Actifs" %}</option>
+    <option value="1" {% if archived == '1' %}selected{% endif %}>{% trans "Archivés" %}</option>
+    <option value="all" {% if archived == 'all' %}selected{% endif %}>{% trans "Tous" %}</option>
+</select>

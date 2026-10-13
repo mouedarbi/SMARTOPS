@@ -15,7 +15,7 @@
                 {% if client.is_active %}
                     <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-100">{% trans "Actif" %}</span>
                 {% else %}
-                    <span class="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-wider rounded-full border border-rose-100">{% trans "Inactif" %}</span>
+                    <span class="px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-black uppercase tracking-wider rounded-full border border-amber-100">{% trans "Archivé" %}</span>
                 {% endif %}
             </div>
             <p class="text-sm text-slate-500 font-semibold mt-1">{% blocktrans with day=client.created_at|date:"d F Y" %}Créé le {{ day }}{% endblocktrans %}</p>
@@ -27,6 +27,9 @@
             <a href="{% url 'client_update' client.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-2xl transition duration-200">
                 <i class="las la-edit text-lg mr-2"></i>{% trans "Modifier" %}
             </a>
+            {% trans "Archiver ce client, tous ses lieux et tous ses appareils ? Leur historique reste consultable." as confirm_text %}
+            {% url 'client_archive' client.pk as archive_url %}{% url 'client_restore' client.pk as restore_url %}
+            {% include 'inventory/_archive_button.html' with obj=client %}
         </div>
     </div>
 
@@ -88,9 +91,9 @@
                     <i class="las la-city text-2xl text-blue-600"></i>
                     {% trans "Lieux associés" %}
                 </h3>
-                <a href="{% url 'building_create' %}?client={{ client.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
+{% if client.is_active %}                <a href="{% url 'building_create' %}?client={{ client.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
                     + {% trans "Nouveau lieu" %}
-                </a>
+                </a>{% endif %}
             </div>
             
             <div class="overflow-x-auto">
@@ -109,7 +112,7 @@
                             <td class="p-4 pl-8 font-bold text-slate-800">
                                 <a href="{% url 'building_detail' building.pk %}" class="text-blue-600 hover:underline">
                                     {{ building.name }}
-                                </a>
+                                </a>{% include 'inventory/_archived_badge.html' with obj=building %}
                             </td>
                             <td class="p-4 text-sm text-slate-600 whitespace-pre-line">{{ building.address }}{% if not building.is_address_complete %}<span class="ml-1 inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider">{% trans "Adresse à compléter" %}</span>{% endif %}</td>
                             <td class="p-4 text-center text-sm font-bold text-slate-500">{{ building.equipments.count }}</td>

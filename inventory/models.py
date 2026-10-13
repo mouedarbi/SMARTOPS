@@ -45,6 +45,8 @@ class Building(models.Model):
     postal_code = models.CharField(max_length=10, blank=True, verbose_name=_("Code postal"))
     city = models.CharField(max_length=100, blank=True, verbose_name=_("Ville"))
     country = models.CharField(max_length=2, choices=COUNTRY_CHOICES, default='BE', verbose_name=_("Pays"))
+    # Archivé : plus proposé pour une nouvelle intervention, son historique reste consultable.
+    is_active = models.BooleanField(default=True, verbose_name=_("Actif"))
     access_notes = models.TextField(blank=True, verbose_name=_("Accès / complément"),
                                     help_text=_("Étage, code de porte, entrée, consignes d'accès."))
     # Adresse complète sur une ligne, recomposée à chaque enregistrement à partir des champs
@@ -125,6 +127,8 @@ class Equipment(models.Model):
     
     # Stockage des valeurs des champs personnalisés
     custom_fields = models.JSONField(default=dict, blank=True, verbose_name=_("Champs personnalisés"))
+    # Archivé : plus proposé pour une nouvelle intervention, son historique reste consultable.
+    is_active = models.BooleanField(default=True, verbose_name=_("Actif"))
 
     def clean(self):
         """

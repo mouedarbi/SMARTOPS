@@ -11,7 +11,7 @@
     <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
             <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">{% trans "Lieu d'intervention" %}</span>
-            <h2 class="text-3xl font-black text-slate-800 mt-1">{{ building.name }}</h2>
+            <h2 class="text-3xl font-black text-slate-800 mt-1">{{ building.name }}{% include 'inventory/_archived_badge.html' with obj=building %}</h2>
             <p class="text-sm text-slate-500 font-semibold mt-2">
                 <i class="las la-user-tie mr-1 text-slate-400"></i> {% trans "Client propriétaire" %} : 
                 <a href="{% url 'client_detail' building.client.pk %}" class="text-blue-600 hover:underline font-bold">
@@ -29,6 +29,9 @@
             <a href="{% url 'building_update' building.pk %}" class="bg-slate-50 border border-slate-100 hover:bg-slate-100 text-slate-600 font-bold py-3 px-5 rounded-2xl transition duration-200 flex items-center">
                 <i class="las la-edit text-lg mr-2"></i>{% trans "Modifier" %}
             </a>
+            {% trans "Archiver ce lieu et tous ses appareils ? Leur historique reste consultable." as confirm_text %}
+            {% url 'building_archive' building.pk as archive_url %}{% url 'building_restore' building.pk as restore_url %}
+            {% include 'inventory/_archive_button.html' with obj=building %}
         </div>
     </div>
 
@@ -71,9 +74,9 @@
                     <i class="las la-tools text-2xl text-blue-600"></i>
                     {% trans "Appareils installés" %} ({{ equipments.count }})
                 </h3>
-                <a href="{% url 'equipment_create' %}?building={{ building.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
+{% if building.is_active %}                <a href="{% url 'equipment_create' %}?building={{ building.pk }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-2.5 px-5 rounded-xl text-xs transition">
                     + {% trans "Nouvel Appareil" %}
-                </a>
+                </a>{% endif %}
             </div>
             
             <div class="overflow-x-auto">
@@ -92,7 +95,7 @@
                             <td class="p-4 pl-8 font-bold text-slate-800">
                                 <a href="{% url 'equipment_detail' equipment.pk %}" class="text-blue-600 hover:underline">
                                     {{ equipment.name }}
-                                </a>
+                                </a>{% include 'inventory/_archived_badge.html' with obj=equipment %}
                             </td>
                             <td class="p-4 text-sm font-semibold text-slate-600">
                                 <span class="px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700 text-[10px] font-bold">

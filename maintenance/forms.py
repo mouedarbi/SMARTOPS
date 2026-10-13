@@ -41,7 +41,7 @@ class MaintenanceTicketForm(forms.ModelForm):
     
     # Champs de filtrage (non-persistés directement mais utilisés pour le UI)
     client = forms.ModelChoiceField(
-        queryset=Client.objects.all(),
+        queryset=Client.objects.filter(is_active=True),
         required=False,
         label=_("Filtrer par Client"),
         widget=forms.Select(attrs={'class': 'w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm'})
@@ -141,11 +141,14 @@ class MaintenanceTicketForm(forms.ModelForm):
             self.fields['client'].initial = client
             
             # Peupler les lieux
-            self.fields['building'].queryset = Building.objects.filter(client=client)
+            # Lieux et appareils actifs ; ceux du ticket restent affichés même archivés.
+            self.fields['client'].queryset = Client.objects.filter(Q(is_active=True) | Q(pk=client.pk))
+            self.fields['building'].queryset = Building.objects.filter(Q(is_active=True) | Q(pk=building.pk), client=client)
             self.fields['building'].initial = building
             
             # Peupler Équipements (groupés par type, tri croissant)
-            self.fields['equipment'].queryset = Equipment.objects.filter(building=building)
+            self.fields['equipment'].queryset = Equipment.objects.filter(
+                Q(is_active=True) | Q(pk=self.instance.equipment_id), building=building)
             self.fields['equipment'].choices = _equipment_choices_by_type(self.fields['equipment'].queryset)
             self.fields['equipment'].initial = self.instance.equipment
 
@@ -164,7 +167,8 @@ class MaintenanceTicketForm(forms.ModelForm):
         if self.data.get('building'):
             try:
                 building_id = int(self.data.get('building'))
-                self.fields['equipment'].queryset = Equipment.objects.filter(building_id=building_id)
+                self.fields['equipment'].queryset = Equipment.objects.filter(
+                    Q(is_active=True) | Q(pk=self.instance.equipment_id), building_id=building_id)
                 self.fields['equipment'].choices = _equipment_choices_by_type(self.fields['equipment'].queryset)
             except (ValueError, TypeError):
                 pass
@@ -172,7 +176,7 @@ class MaintenanceTicketForm(forms.ModelForm):
         if self.data.get('client'):
             try:
                 client_id = int(self.data.get('client'))
-                self.fields['building'].queryset = Building.objects.filter(client_id=client_id)
+                self.fields['building'].queryset = Building.objects.filter(is_active=True, client_id=client_id)
             except (ValueError, TypeError):
                 pass
 

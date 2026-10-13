@@ -2599,3 +2599,84 @@ msgstr[1] ""
 #: api/serializers.py:260
 msgid "Ce technicien n'est plus actif."
 msgstr "This technician is no longer active."
+
+#: inventory/services.py:47
+#, python-format
+msgid ""
+"Archivage impossible : %(count)s intervention est encore en attente, "
+"planifiée ou en cours. Terminez-la ou annulez-la d'abord."
+msgid_plural ""
+"Archivage impossible : %(count)s interventions sont encore en attente, "
+"planifiées ou en cours. Terminez-les ou annulez-les d'abord."
+msgstr[0] ""
+"Cannot archive: %(count)s work order is still pending, scheduled or ongoing. "
+"Complete or cancel it first."
+msgstr[1] ""
+"Cannot archive: %(count)s work orders are still pending, scheduled or "
+"ongoing. Complete or cancel them first."
+
+#: inventory/services.py:69
+msgid "Réactivez d'abord le client de ce lieu."
+msgstr "Reactivate this location's customer first."
+
+#: inventory/services.py:71
+msgid "Réactivez d'abord le lieu de cet appareil."
+msgstr "Reactivate this equipment's location first."
+
+#: inventory/views.py:41
+#, python-format
+msgid "%(name)s archivé. Son historique reste consultable."
+msgstr "%(name)s archived. Its history remains available."
+
+#: inventory/views.py:44
+#, python-format
+msgid "%(name)s réactivé."
+msgstr "%(name)s reactivated."
+
+#: inventory/views.py
+msgid "Ce client est archivé : réactivez-le avant d'y ajouter un lieu."
+msgstr "This customer is archived: reactivate it before adding a location."
+
+#: inventory/views.py
+msgid "Ce lieu est archivé : réactivez-le avant d'y ajouter un appareil."
+msgstr "This location is archived: reactivate it before adding equipment."
+
+#: inventory/templates/inventory/_archive_button.html:8
+msgid "Archiver"
+msgstr "Archive"
+
+#: inventory/templates/inventory/_archive_button.html:15
+msgid "Réactiver"
+msgstr "Reactivate"
+
+#: inventory/templates/inventory/_archived_badge.html:1
+#: inventory/templates/inventory/client_detail.html:18
+msgid "Archivé"
+msgstr "Archived"
+
+#: inventory/templates/inventory/_archived_filter.html:4
+msgid "Actifs"
+msgstr "Active"
+
+#: inventory/templates/inventory/_archived_filter.html:5
+msgid "Archivés"
+msgstr "Archived"
+
+#: inventory/templates/inventory/client_detail.html
+msgid ""
+"Archiver ce client, tous ses lieux et tous ses appareils ? Leur historique "
+"reste consultable."
+msgstr ""
+"Archive this customer, all its locations and all its equipment? Their "
+"history remains available."
+
+#: inventory/templates/inventory/building_detail.html
+msgid ""
+"Archiver ce lieu et tous ses appareils ? Leur historique reste consultable."
+msgstr ""
+"Archive this location and all its equipment? Their history remains "
+"available."
+
+#: inventory/templates/inventory/equipment_detail.html
+msgid "Archiver cet appareil ? Son historique reste consultable."
+msgstr "Archive this equipment? Its history remains available."

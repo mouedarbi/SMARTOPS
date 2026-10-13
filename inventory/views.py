@@ -12,9 +12,64 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from accounts.views import is_management_staff
 from .models import Client, Building, Equipment, EquipmentType, EquipmentTypeField
 from .forms import ClientForm, BuildingForm, EquipmentForm, EquipmentTypeForm, EquipmentTypeFieldForm
+from .services import ArchiveError, archive, restore
+
+# Filtre d'archivage des listes (?archived=) : actifs par défaut, archivés (« 1 ») ou tous (« all »).
+ARCHIVED_FILTERS = ('', '1', 'all')
+
+
+def filter_archived(queryset, request):
+    """Applique le filtre ?archived= à une liste ; retourne (queryset, valeur du filtre)."""
+    archived = request.GET.get('archived', '')
+    if archived not in ARCHIVED_FILTERS:
+        archived = ''
+    if archived == '':
+        queryset = queryset.filter(is_active=True)
+    elif archived == '1':
+        queryset = queryset.filter(is_active=False)
+    return queryset, archived
+
+
+def toggle_archive(request, obj, action, redirect_name):
+    """Archive ou réactive `obj` (POST), avec un message de succès ou de refus, puis revient sur sa fiche."""
+    try:
+        if action == 'archive':
+            archive(obj)
+            messages.success(request, _("%(name)s archivé. Son historique reste consultable.") % {'name': obj.name})
+        else:
+            restore(obj)
+            messages.success(request, _("%(name)s réactivé.") % {'name': obj.name})
+    except ArchiveError as error:
+        messages.error(request, str(error))
+    return redirect(redirect_name, pk=obj.pk)
+
+
+@login_required
+@user_passes_test(is_management_staff)
+@require_POST
+def client_archive_view(request, pk, action):
+    """Archive (avec ses lieux et appareils) ou réactive un client."""
+    return toggle_archive(request, get_object_or_404(Client, pk=pk), action, 'client_detail')
+
+
+@login_required
+@user_passes_test(is_management_staff)
+@require_POST
+def building_archive_view(request, pk, action):
+    """Archive (avec ses appareils) ou réactive un lieu."""
+    return toggle_archive(request, get_object_or_404(Building.objects.select_related('client'), pk=pk), action, 'building_detail')
+
+
+@login_required
+@user_passes_test(is_management_staff)
+@require_POST
+def equipment_archive_view(request, pk, action):
+    """Archive ou réactive un appareil."""
+    return toggle_archive(request, get_object_or_404(Equipment.objects.select_related('building'), pk=pk), action, 'equipment_detail')
 
 # --- VUES CLIENT ---
 
@@ -25,7 +80,7 @@ def client_list_view(request):
     from django.db.models import Q
     from django.core.paginator import Paginator
     
-    clients = Client.objects.all()
+    clients, archived = filter_archived(Client.objects.all(), request)
     
     # Recherche
     q = request.GET.get('q', '').strip()
@@ -54,6 +109,7 @@ def client_list_view(request):
     
     return render(request, 'inventory/client_list.html', {
         'page_obj': page_obj,
+        'archived': archived,
         'q': q,
         'sort': sort_by,
         'order': order
@@ -109,7 +165,7 @@ def building_list_view(request):
     from django.db.models import Q
     from django.core.paginator import Paginator
     
-    buildings = Building.objects.all()
+    buildings, archived = filter_archived(Building.objects.all(), request)
     
     # Recherche
     q = request.GET.get('q', '').strip()
@@ -138,6 +194,7 @@ def building_list_view(request):
     
     return render(request, 'inventory/building_list.html', {
         'page_obj': page_obj,
+        'archived': archived,
         'q': q,
         'sort': sort_by,
         'order': order
@@ -152,6 +209,9 @@ def building_create_view(request):
     if client is None:
         messages.warning(request, _("Un lieu se crée depuis la fiche de son client."))
         return redirect('building_list')
+    if not client.is_active:
+        messages.error(request, _("Ce client est archivé : réactivez-le avant d'y ajouter un lieu."))
+        return redirect('client_detail', pk=client.pk)
     form = BuildingForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         building = form.save(commit=False)
@@ -191,7 +251,7 @@ def equipment_list_view(request):
     from django.db.models import Q
     from django.core.paginator import Paginator
     
-    equipments = Equipment.objects.all()
+    equipments, archived = filter_archived(Equipment.objects.all(), request)
     
     # Recherche
     q = request.GET.get('q', '').strip()
@@ -222,6 +282,7 @@ def equipment_list_view(request):
     
     return render(request, 'inventory/equipment_list.html', {
         'page_obj': page_obj,
+        'archived': archived,
         'q': q,
         'sort': sort_by,
         'order': order
@@ -237,6 +298,9 @@ def equipment_create_view(request):
     if building is None:
         messages.warning(request, _("Un équipement se crée depuis la fiche de son lieu."))
         return redirect('equipment_list')
+    if not building.is_active:
+        messages.error(request, _("Ce lieu est archivé : réactivez-le avant d'y ajouter un appareil."))
+        return redirect('building_detail', pk=building.pk)
     form = EquipmentForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         equipment = form.save(commit=False)
