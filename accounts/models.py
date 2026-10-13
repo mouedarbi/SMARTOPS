@@ -47,30 +47,53 @@ class CustomUser(AbstractUser):
         verbose_name=_("Date de suppression")
     )
 
+    @property
+    def is_working_technician(self):
+        """Vrai pour un technicien dont le compte est actif et non supprimé : il peut recevoir des interventions."""
+        return self.role == 'technician' and self.is_active and not self.is_deleted
+
+    def open_ticket_count(self):
+        """Interventions planifiées ou en cours assignées à ce compte (via son profil technicien)."""
+        from maintenance.models import OPEN_ASSIGNED_STATUSES, MaintenanceTicket
+        return MaintenanceTicket.objects.filter(technician__user_id=self.pk, status__in=OPEN_ASSIGNED_STATUSES).count()
+
     def clean(self):
         """
-        Un technicien qui a encore des interventions planifiées ou en cours garde son rôle :
-        il faut d'abord les réassigner (sinon elles perdraient leur technicien).
+        Un technicien qui a encore des interventions planifiées ou en cours garde son rôle et
+        son compte actif : il faut d'abord les réassigner (sinon elles resteraient bloquées).
         """
         super().clean()
-        if not self.pk or self.role == 'technician':
+        if not self.pk:
             return
-        previous_role = CustomUser.objects.filter(pk=self.pk).values_list('role', flat=True).first()
-        if previous_role != 'technician':
+        previous = CustomUser.objects.filter(pk=self.pk).values_list('role', flat=True).first()
+        if previous != 'technician':
             return
-        from maintenance.models import OPEN_ASSIGNED_STATUSES, MaintenanceTicket
-        count = MaintenanceTicket.objects.filter(technician__user_id=self.pk, status__in=OPEN_ASSIGNED_STATUSES).count()
-        if count:
+        if self.role == 'technician' and self.is_active:
+            return
+        count = self.open_ticket_count()
+        if not count:
+            return
+        if self.role != 'technician':
             raise ValidationError({'role': ngettext(
                 "Ce technicien a encore %(count)s intervention planifiée ou en cours : réassignez-la avant de changer son rôle.",
                 "Ce technicien a encore %(count)s interventions planifiées ou en cours : réassignez-les avant de changer son rôle.",
                 count,
             ) % {'count': count}})
+        raise ValidationError({'is_active': ngettext(
+            "Ce technicien a encore %(count)s intervention planifiée ou en cours : réassignez-la avant de désactiver son compte.",
+            "Ce technicien a encore %(count)s interventions planifiées ou en cours : réassignez-les avant de désactiver son compte.",
+            count,
+        ) % {'count': count}})
 
     def soft_delete(self):
-        """Suppression logique : marque le compte supprimé et date la suppression."""
+        """
+        Suppression logique : le compte est marqué supprimé, daté et désactivé (plus de connexion,
+        web ou application). Ses interventions passées gardent son nom. La vue vérifie d'abord
+        qu'il n'a plus d'intervention planifiée ou en cours.
+        """
         self.is_deleted = True
         self.deleted_at = timezone.now()
+        self.is_active = False
         self.save()
 
     def __str__(self):

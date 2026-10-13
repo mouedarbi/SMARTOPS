@@ -2684,3 +2684,33 @@ msgstr ""
 #: inventory/templates/inventory/equipment_detail.html
 msgid "Archiver cet appareil ? Son historique reste consultable."
 msgstr "Archive this equipment? Its history remains available."
+
+#: accounts/models.py
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de désactiver son compte."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de désactiver son compte."
+msgstr[0] ""
+"This technician still has %(count)s scheduled or ongoing work order: "
+"reassign it before deactivating their account."
+msgstr[1] ""
+"This technician still has %(count)s scheduled or ongoing work orders: "
+"reassign them before deactivating their account."
+
+#: accounts/views.py
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de supprimer son compte."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de supprimer son compte."
+msgstr[0] ""
+"This technician still has %(count)s scheduled or ongoing work order: "
+"reassign it before deleting their account."
+msgstr[1] ""
+"This technician still has %(count)s scheduled or ongoing work orders: "
+"reassign them before deleting their account."

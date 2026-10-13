@@ -282,24 +282,24 @@ def delete_technician_calendar(sender, instance, **kwargs):
 # --- SIGNALS POUR PROFILS TECHNICIENS ---
 
 @receiver(pre_save, sender=settings.AUTH_USER_MODEL)
-def remember_previous_role(sender, instance, **kwargs):
-    """Retient le rôle enregistré avant la modification (None à la création)."""
-    instance._previous_role = (
-        sender.objects.filter(pk=instance.pk).values_list('role', flat=True).first() if instance.pk else None
-    )
+def remember_previous_state(sender, instance, **kwargs):
+    """Retient si le compte était, avant la modification, un technicien en service (False à la création)."""
+    previous = sender.objects.filter(pk=instance.pk).first() if instance.pk else None
+    instance._was_working_technician = bool(previous and previous.is_working_technician)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_technician_profile(sender, instance, created, **kwargs):
     """
-    Crée automatiquement un profil Technicien si le rôle est 'technician'. Quand le rôle change,
-    le profil est désactivé et non supprimé : ses interventions passées gardent leur technicien.
-    Il est réactivé si l'utilisateur redevient technicien.
+    Tient le profil Technicien à jour : créé pour un technicien, désactivé (jamais supprimé) quand
+    le compte change de rôle, est désactivé ou supprimé, pour que ses interventions passées gardent
+    son nom. Réactivé quand le compte redevient un technicien en service ; une désactivation du
+    profil faite à la main, compte inchangé, est respectée.
     """
-    if instance.role == 'technician' and not instance.is_deleted:
+    if instance.is_working_technician:
         technician, profile_created = Technician.objects.get_or_create(user=instance)
-        if not profile_created and not technician.is_active and getattr(instance, '_previous_role', None) not in (None, 'technician'):
+        if not profile_created and not technician.is_active and not getattr(instance, '_was_working_technician', True):
             technician.is_active = True
             technician.save(update_fields=['is_active'])
-    elif instance.role != 'technician':
+    else:
         Technician.objects.filter(user=instance, is_active=True).update(is_active=False)

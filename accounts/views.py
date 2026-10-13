@@ -10,7 +10,8 @@ Description : Vues pour la gestion des utilisateurs dans l'admin custom.
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
+from django.views.decorators.http import require_POST
 from .models import CustomUser
 from django.contrib.auth import update_session_auth_hash
 from .forms import CustomUserForm, CustomUserCreateForm, ProfileForm, ProfilePasswordForm
@@ -82,13 +83,22 @@ def user_edit(request, pk):
 
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 def user_delete(request, pk):
     """
-    Suppression logique d'un utilisateur.
+    Suppression logique d'un utilisateur (compte désactivé, historique conservé). Refusée pour
+    un technicien qui a encore des interventions planifiées ou en cours.
     """
     user_to_delete = get_object_or_404(CustomUser, pk=pk)
+    open_count = user_to_delete.open_ticket_count()
     if user_to_delete == request.user:
         messages.error(request, _("Vous ne pouvez pas vous supprimer vous-même."))
+    elif open_count:
+        messages.error(request, ngettext(
+            "Ce technicien a encore %(count)s intervention planifiée ou en cours : réassignez-la avant de supprimer son compte.",
+            "Ce technicien a encore %(count)s interventions planifiées ou en cours : réassignez-les avant de supprimer son compte.",
+            open_count,
+        ) % {'count': open_count})
     else:
         user_to_delete.soft_delete()
         messages.success(request, _("Utilisateur %(username)s supprimé.") % {'username': user_to_delete.username})

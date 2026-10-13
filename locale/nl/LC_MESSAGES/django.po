@@ -2703,3 +2703,33 @@ msgstr ""
 #: inventory/templates/inventory/equipment_detail.html
 msgid "Archiver cet appareil ? Son historique reste consultable."
 msgstr "Dit toestel archiveren? De geschiedenis blijft raadpleegbaar."
+
+#: accounts/models.py
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de désactiver son compte."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de désactiver son compte."
+msgstr[0] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventie: wijs ze "
+"opnieuw toe voordat u het account deactiveert."
+msgstr[1] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventies: wijs ze "
+"opnieuw toe voordat u het account deactiveert."
+
+#: accounts/views.py
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de supprimer son compte."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de supprimer son compte."
+msgstr[0] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventie: wijs ze "
+"opnieuw toe voordat u het account verwijdert."
+msgstr[1] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventies: wijs ze "
+"opnieuw toe voordat u het account verwijdert."

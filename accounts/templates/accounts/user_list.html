@@ -65,9 +65,12 @@
                             <i class="las la-edit text-xl"></i>
                         </a>
                         {% if u != user %}
-                        <a href="{% url 'user_delete' u.pk %}" onclick="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer cet utilisateur ?" %}{% endfilter %}')" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center">
-                            <i class="las la-trash text-xl"></i>
-                        </a>
+                        <form method="post" action="{% url 'user_delete' u.pk %}" onsubmit="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer cet utilisateur ?" %}{% endfilter %}')">
+                            {% csrf_token %}
+                            <button type="submit" class="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center">
+                                <i class="las la-trash text-xl"></i>
+                            </button>
+                        </form>
                         {% endif %}
                     </td>
                 </tr>

@@ -1665,3 +1665,88 @@ class TechnicianRoleChangeTestCase(TestCase):
         r = api.patch(f'/api/v1/tickets/{pending.pk}/', {'technician': self.tech.pk})
         self.assertEqual(r.status_code, 400)
         self.assertIn('technician', r.data)
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class TechnicianAccountRemovalTestCase(TestCase):
+    """
+    Suppression logique et désactivation du compte d'un technicien : refusées tant qu'il a des
+    interventions planifiées ou en cours ; sinon le compte ne se connecte plus et l'historique garde son nom.
+    """
+
+    def setUp(self):
+        CustomUser.objects.create_user(username='admin_acc', password='pass', role='admin')
+        self.tech_user = CustomUser.objects.create_user(username='tech_acc', password='pass', role='technician')
+        self.tech = Technician.objects.get(user=self.tech_user)
+        client_obj = Client.objects.create(name='Acc Corp', address='Rue C', contact_name='C', email='c@c.be')
+        building = Building.objects.create(client=client_obj, name='Lieu C', address='Rue C')
+        eq_type = EquipmentType.objects.create(name='Pompe C')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Pompe C1', equipment_type=eq_type, serial_number='SN-C1', installed_at='2024-01-01',
+        )
+        self.http = HttpClient()
+        self.http.login(username='admin_acc', password='pass')
+
+    def make_ticket(self, status_code):
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech,
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+        )
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(status=status_code)
+        return ticket
+
+    def test_delete_requires_post(self):
+        self.assertEqual(self.http.get(reverse('user_delete', args=[self.tech_user.pk])).status_code, 405)
+        self.tech_user.refresh_from_db()
+        self.assertFalse(self.tech_user.is_deleted)
+
+    def test_soft_delete_refused_with_open_ticket(self):
+        for status_code in ('planned', 'in_progress'):
+            with self.subTest(status=status_code):
+                ticket = self.make_ticket(status_code)
+                response = self.http.post(reverse('user_delete', args=[self.tech_user.pk]), follow=True)
+                self.assertContains(response, 'avant de supprimer son compte')
+                self.tech_user.refresh_from_db()
+                self.assertFalse(self.tech_user.is_deleted)
+                self.assertTrue(self.tech_user.is_active)
+                MaintenanceTicket.objects.filter(pk=ticket.pk).delete()
+
+    def test_soft_delete_blocks_login_and_keeps_history(self):
+        done = self.make_ticket('done')
+        self.http.post(reverse('user_delete', args=[self.tech_user.pk]))
+        self.tech_user.refresh_from_db()
+        self.assertTrue(self.tech_user.is_deleted)
+        self.assertFalse(self.tech_user.is_active)
+        self.tech.refresh_from_db()
+        self.assertFalse(self.tech.is_active)
+        done.refresh_from_db()
+        self.assertEqual(done.technician, self.tech)
+        # Plus de connexion : ni web, ni jeton de l'application.
+        self.assertFalse(HttpClient().login(username='tech_acc', password='pass'))
+        from rest_framework.test import APIClient
+        r = APIClient().post('/api/v1/auth/token/', {'username': 'tech_acc', 'password': 'pass'})
+        self.assertEqual(r.status_code, 401)
+
+    def test_deactivation_refused_with_open_ticket(self):
+        self.make_ticket('in_progress')
+        response = self.http.post(reverse('user_edit', args=[self.tech_user.pk]), {
+            'username': 'tech_acc', 'first_name': '', 'last_name': '', 'email': 't@c.be',
+            'role': 'technician', 'language': 'fr',
+        })
+        self.assertContains(response, 'avant de désactiver son compte')
+        self.tech_user.refresh_from_db()
+        self.assertTrue(self.tech_user.is_active)
+
+    def test_deactivation_then_reactivation_follows_profile(self):
+        data = {'username': 'tech_acc', 'first_name': '', 'last_name': '', 'email': 't@c.be',
+                'role': 'technician', 'language': 'fr'}
+        self.http.post(reverse('user_edit', args=[self.tech_user.pk]), data)
+        self.tech.refresh_from_db()
+        self.assertFalse(self.tech.is_active)
+        self.http.post(reverse('user_edit', args=[self.tech_user.pk]), {**data, 'is_active': 'on'})
+        self.tech.refresh_from_db()
+        self.assertTrue(self.tech.is_active)
