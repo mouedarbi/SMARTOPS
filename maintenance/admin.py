@@ -57,7 +57,19 @@ class MaintenanceTicketAdmin(admin.ModelAdmin):
     search_fields = ('equipment__nom', 'description', 'id')
     readonly_fields = ('event', 'created_at', 'updated_at')
     inlines = [InterventionPhotoInline]
-    
+
+    def has_delete_permission(self, request, obj=None):
+        """Suppression d'une intervention non démarrée ou annulée seulement."""
+        if obj is not None and not obj.is_deletable:
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def get_actions(self, request):
+        """Pas de suppression en masse : elle ne vérifierait pas le statut de chaque intervention."""
+        actions = super().get_actions(request)
+        actions.pop('delete_selected', None)
+        return actions
+
     fieldsets = (
         ('Informations Générales', {
             'fields': ('equipment', 'technician', 'type', 'status')

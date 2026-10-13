@@ -2573,3 +2573,10 @@ msgid ""
 "qu'elles existent."
 msgstr ""
 "This equipment has work orders: it cannot be deleted while they exist."
+
+#: api/views.py:175 maintenance/views.py:385
+msgid ""
+"Une intervention démarrée ou clôturée ne peut pas être supprimée : elle "
+"reste dans l'historique."
+msgstr ""
+"A started or closed work order cannot be deleted: it stays in the history."

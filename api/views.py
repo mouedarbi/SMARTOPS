@@ -172,6 +172,10 @@ def validate_or_detail(serializer, time_field):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+TICKET_NOT_DELETABLE = gettext_noop(
+    "Une intervention démarrée ou clôturée ne peut pas être supprimée : elle reste dans l'historique."
+)
+
 # Relations lues par `equipment_detail` (fiche de l'appareil) dans MaintenanceTicketSerializer.
 EQUIPMENT_DETAIL_RELATED = ('equipment__equipment_type', 'equipment__building__client')
 EQUIPMENT_DETAIL_PREFETCH = ('equipment__equipment_type__fields',)
@@ -236,6 +240,14 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         if self.action in ('start', 'stop', 'photos'):
             return [IsAuthenticated(), IsTechnicianOwner()]
         return [IsAuthenticated()]
+
+    @extend_schema(responses={204: None, 409: inline_serializer('TicketNotDeletable', {'detail': serializers.CharField()})})
+    def destroy(self, request, *args, **kwargs):
+        """Supprime une intervention non démarrée ou annulée ; en cours ou clôturée : 409."""
+        ticket = self.get_object()
+        if not ticket.is_deletable:
+            return Response({'detail': _(TICKET_NOT_DELETABLE)}, status=status.HTTP_409_CONFLICT)
+        return super().destroy(request, *args, **kwargs)
 
     @extend_schema(
         request=TicketStartSerializer,

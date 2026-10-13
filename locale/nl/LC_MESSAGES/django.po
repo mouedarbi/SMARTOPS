@@ -2588,3 +2588,11 @@ msgid ""
 msgstr ""
 "Dit toestel heeft interventies: het kan niet worden verwijderd zolang die "
 "bestaan."
+
+#: api/views.py:175 maintenance/views.py:385
+msgid ""
+"Une intervention démarrée ou clôturée ne peut pas être supprimée : elle "
+"reste dans l'historique."
+msgstr ""
+"Een gestarte of afgesloten interventie kan niet worden verwijderd: ze blijft "
+"in de geschiedenis."

@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.utils.dateparse import parse_date, parse_datetime
 from django.utils.translation import gettext as _
 from .models import MaintenanceTicket, Technician, InterventionPhoto
@@ -373,11 +374,16 @@ def ticket_create(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
+@require_POST
 def ticket_delete(request, pk):
     """
-    Suppression d'un ticket (réservé aux SuperAdmins).
+    Suppression d'un ticket (réservé aux SuperAdmins), seulement s'il n'a pas démarré ou
+    s'il est annulé : une intervention en cours ou clôturée reste dans l'historique.
     """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk)
+    if not ticket.is_deletable:
+        messages.error(request, _("Une intervention démarrée ou clôturée ne peut pas être supprimée : elle reste dans l'historique."))
+        return redirect('ticket_detail', pk=ticket.pk)
     ticket_id = ticket.id
     ticket.delete()
     messages.success(request, _("Intervention #%(id)s supprimée définitivement.") % {'id': ticket_id})

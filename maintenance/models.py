@@ -47,6 +47,9 @@ class Technician(models.Model):
 
 # Statuts d'une intervention pas encore démarrée, fixés par le système selon le technicien.
 NOT_STARTED = ('pending', 'planned')
+# Seule une intervention sans données terrain se supprime : pas démarrée, ou annulée
+# (on n'annule qu'avant le démarrage). En cours ou clôturée, elle reste dans l'historique.
+DELETABLE_STATUSES = NOT_STARTED + ('canceled',)
 
 
 class MaintenanceTicket(models.Model):
@@ -122,6 +125,11 @@ class MaintenanceTicket(models.Model):
             if update_fields is not None and 'technician' in update_fields:
                 kwargs['update_fields'] = {*update_fields, 'status'}
         super().save(*args, **kwargs)
+
+    @property
+    def is_deletable(self):
+        """Vrai si l'intervention peut être supprimée : pas démarrée, ou annulée."""
+        return self.status in DELETABLE_STATUSES
 
     def __str__(self):
         return f"Ticket #{self.id} - {self.equipment.name} ({self.get_status_display()})"

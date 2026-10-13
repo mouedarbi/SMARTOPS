@@ -1500,3 +1500,67 @@ class ProtectedMediaTestCase(TestCase):
         http = HttpClient()
         http.login(username='chef_un', password='Password123!')
         self.assertContains(http.get(reverse('ticket_list'), {'tab': 'toutes'}), '>technicien_99</span>')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class TicketDeletionTestCase(TestCase):
+    """Suppression d'une intervention (superadmin, web et admin Django) : non démarrée ou annulée seulement."""
+
+    def setUp(self):
+        self.admin = CustomUser.objects.create_superuser(username='root_del', password='pass', email='r@d.be', role='admin')
+        tech_user = CustomUser.objects.create_user(username='tech_del_web', password='pass', role='technician')
+        self.tech = Technician.objects.get(user=tech_user)
+        client_obj = Client.objects.create(name='Del Web', address='Rue W', contact_name='W', email='w@w.be')
+        building = Building.objects.create(client=client_obj, name='Lieu W', address='Rue W')
+        eq_type = EquipmentType.objects.create(name='Pompe W')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Pompe W1', equipment_type=eq_type, serial_number='SN-W1', installed_at='2024-01-01',
+        )
+        self.http = HttpClient()
+        self.http.login(username='root_del', password='pass')
+
+    def make_ticket(self, status_code):
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech,
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+        )
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(status=status_code)
+        ticket.refresh_from_db()
+        return ticket
+
+    def test_delete_requires_post(self):
+        ticket = self.make_ticket('planned')
+        response = self.http.get(reverse('ticket_delete', args=[ticket.pk]))
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(MaintenanceTicket.objects.filter(pk=ticket.pk).exists())
+
+    def test_web_deletion_depends_on_status(self):
+        for status_code in ('pending', 'planned', 'canceled', 'in_progress', 'to_reschedule', 'done'):
+            with self.subTest(status=status_code):
+                ticket = self.make_ticket(status_code)
+                deletable = ticket.is_deletable
+                detail = self.http.get(reverse('ticket_detail', args=[ticket.pk]))
+                self.assertEqual(reverse('ticket_delete', args=[ticket.pk]) in detail.content.decode(), deletable)
+                self.http.post(reverse('ticket_delete', args=[ticket.pk]))
+                self.assertEqual(MaintenanceTicket.objects.filter(pk=ticket.pk).exists(), not deletable)
+        self.assertEqual(
+            sorted(MaintenanceTicket.objects.values_list('status', flat=True)), ['done', 'in_progress', 'to_reschedule'],
+        )
+
+    def test_refusal_message(self):
+        ticket = self.make_ticket('done')
+        response = self.http.post(reverse('ticket_delete', args=[ticket.pk]), follow=True)
+        self.assertContains(response, "ne peut pas être supprimée")
+
+    def test_django_admin_cannot_delete_started_ticket(self):
+        done = self.make_ticket('done')
+        planned = self.make_ticket('planned')
+        url = lambda t: reverse('admin:maintenance_maintenanceticket_delete', args=[t.pk])
+        self.assertEqual(self.http.get(url(done)).status_code, 403)
+        self.assertEqual(self.http.get(url(planned)).status_code, 200)
+        changelist = self.http.get(reverse('admin:maintenance_maintenanceticket_changelist'))
+        self.assertNotContains(changelist, 'delete_selected')

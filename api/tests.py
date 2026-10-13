@@ -784,6 +784,19 @@ class DeletionRulesAPITestCase(TestCase):
             self.assertEqual(self.api.delete(url).status_code, status.HTTP_204_NO_CONTENT, url)
         self.assert_counts(0, 0, 0, 0)
 
+    def test_ticket_deletion_depends_on_status(self):
+        """Non démarrée ou annulée : supprimée. En cours, à replanifier, terminée : 409, rien ne bouge."""
+        expected = {'pending': 204, 'planned': 204, 'canceled': 204,
+                    'in_progress': 409, 'to_reschedule': 409, 'done': 409}
+        for status_code, http_code in expected.items():
+            with self.subTest(status=status_code):
+                ticket = self.make_ticket(status_code)
+                r = self.api.delete(f'/api/v1/tickets/{ticket.id}/')
+                self.assertEqual(r.status_code, http_code)
+                self.assertEqual(MaintenanceTicket.objects.filter(pk=ticket.pk).exists(), http_code == 409)
+                if http_code == 409:
+                    self.assertIn('historique', r.data['detail'])
+
     def test_protected_message_follows_language(self):
         r = self.api.delete(f'/api/v1/buildings/{self.building.id}/', HTTP_ACCEPT_LANGUAGE='nl')
         self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)

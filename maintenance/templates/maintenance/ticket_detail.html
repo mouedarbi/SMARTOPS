@@ -19,13 +19,15 @@
         </div>
         
         <div class="no-print flex gap-3">
-            {% if request.user.is_superuser %}
-            <a href="{% url 'ticket_delete' ticket.id %}" 
-               onclick="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette action est irréversible." %}{% endfilter %}')"
-               class="px-6 py-3 bg-rose-50 text-rose-600 font-bold rounded-2xl border border-rose-100 hover:bg-rose-100 transition flex items-center gap-2">
-                <i class="las la-trash-alt text-xl"></i>
-                {% trans "Supprimer" %}
-            </a>
+            {% if request.user.is_superuser and ticket.is_deletable %}
+            <form method="post" action="{% url 'ticket_delete' ticket.id %}"
+                  onsubmit="return confirm('{% filter escapejs %}{% trans "Êtes-vous sûr de vouloir supprimer définitivement cette intervention ? Cette action est irréversible." %}{% endfilter %}')">
+                {% csrf_token %}
+                <button type="submit" class="px-6 py-3 bg-rose-50 text-rose-600 font-bold rounded-2xl border border-rose-100 hover:bg-rose-100 transition flex items-center gap-2">
+                    <i class="las la-trash-alt text-xl"></i>
+                    {% trans "Supprimer" %}
+                </button>
+            </form>
             {% endif %}
             
             {% if ticket.status == 'pending' or ticket.status == 'planned' %}
