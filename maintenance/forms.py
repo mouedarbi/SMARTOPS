@@ -108,14 +108,11 @@ class MaintenanceTicketForm(forms.ModelForm):
                     field.disabled = True
                     field.required = False
 
-        # À la création, pas de technicien : le ticket naît « En attente » et s'assigne en modification.
-        if not self.instance.pk:
-            del self.fields['technician']
-        else:
-            # Nom suivi de l'identifiant de connexion du technicien, ex. « Nicolas Martin (nmartin) ».
-            technician_field = self.fields['technician']
-            technician_field.queryset = technician_field.queryset.select_related('user')
-            technician_field.label_from_instance = lambda technician: f"{technician} ({technician.user.username})"
+        # Technicien facultatif : sans lui le ticket est « En attente », avec lui « Planifié ».
+        # Nom suivi de l'identifiant de connexion du technicien, ex. « Nicolas Martin (nmartin) ».
+        technician_field = self.fields['technician']
+        technician_field.queryset = technician_field.queryset.select_related('user')
+        technician_field.label_from_instance = lambda technician: f"{technician} ({technician.user.username})"
 
         # 1. État par défaut (vide)
         self.fields['equipment'].queryset = Equipment.objects.none()

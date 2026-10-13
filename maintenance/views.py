@@ -355,6 +355,7 @@ def ticket_create(request):
     
     context = {
         'form': form,
+        'technician_editable': True,
         'page_title': _("Nouveau ticket d'intervention")
     }
     return render(request, 'maintenance/ticket_form.html', context)

@@ -101,7 +101,7 @@
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Équipement sélectionné" %}</label>
                             {{ form.equipment }}
                         </div>
-                        {% if ticket and mode != 'description' %}
+                        {% if mode != 'description' %}
                         <div>
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Technicien assigné" %}</label>
                             {{ form.technician }}

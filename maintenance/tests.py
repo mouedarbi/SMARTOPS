@@ -190,7 +190,7 @@ class MaintenanceWebViewsTestCase(TestCase):
             'client': self.client_obj.id,
             'building': self.building.id,
             'equipment': self.equipment.id,
-            'technician': self.tech1.id,  # ignoré : pas de technicien à la création
+            'technician': self.tech1.id,
             'type': 'maintenance',
             'status': 'done',  # ignoré : le statut est fixé par le système
             'planned_date': '2026-09-15',
@@ -205,8 +205,8 @@ class MaintenanceWebViewsTestCase(TestCase):
         ticket = MaintenanceTicket.objects.filter(description__contains='Maintenance préventive semestrielle').first()
         self.assertIsNotNone(ticket)
         self.assertEqual(ticket.equipment, self.equipment)
-        self.assertIsNone(ticket.technician)
-        self.assertEqual(ticket.status, 'pending')
+        self.assertEqual(ticket.technician, self.tech1)
+        self.assertEqual(ticket.status, 'planned')
         local_start = timezone.localtime(ticket.planned_start)
         local_end = timezone.localtime(ticket.planned_end)
         self.assertEqual(local_start.strftime('%Y-%m-%d %H:%M'), '2026-09-15 10:00')
@@ -1108,13 +1108,27 @@ class TicketStatusRuleTestCase(TestCase):
         data.update(overrides)
         return data
 
-    def test_create_form_has_no_status_nor_technician(self):
-        """Écran de création : ni liste de statuts ni technicien ; le statut affiché est « En attente »."""
+    def test_create_form_has_no_status_but_optional_technician(self):
+        """Écran de création : pas de liste de statuts ; technicien facultatif ; le statut affiché est « En attente »."""
         response = self.http.get(reverse('ticket_create'))
         form = response.context['form']
         self.assertNotIn('status', form.fields)
-        self.assertNotIn('technician', form.fields)
+        self.assertFalse(form.fields['technician'].required)
         self.assertContains(response, 'En attente')
+
+    def test_create_with_and_without_technician(self):
+        """Créé avec un technicien : « Planifié » ; sans : « En attente »."""
+        self.http.post(reverse('ticket_create'), self._update_data(technician=self.tech.pk))
+        self.http.post(reverse('ticket_create'), self._update_data(start_time_slot='11:00'))
+        statuses = list(MaintenanceTicket.objects.order_by('pk').values_list('technician', 'status'))
+        self.assertEqual(statuses, [(self.tech.pk, 'planned'), (None, 'pending')])
+
+    def test_create_refuses_schedule_conflict(self):
+        """À la création aussi, un créneau qui chevauche le planning du technicien est refusé."""
+        self._ticket(technician=self.tech)
+        response = self.http.post(reverse('ticket_create'), self._update_data(technician=self.tech.pk))
+        self.assertContains(response, 'Conflit de planning')
+        self.assertEqual(MaintenanceTicket.objects.count(), 1)
 
     def test_assign_and_unassign_by_form(self):
         """Assigner en modification donne « Planifié » ; vider le technicien ramène à « En attente »."""
@@ -1216,9 +1230,9 @@ class DispatchPlanningTestCase(TestCase):
         )
 
     def test_planning_section_only_when_dispatching(self):
-        """Présent en modification d'un ticket non démarré, absent à la création et sur un ticket démarré."""
+        """Présent à la création et en modification d'un ticket non démarré, absent sur un ticket démarré."""
         self.assertContains(self.http.get(reverse('ticket_update', args=[self._ticket().pk])), 'id="dispatch-planning-section"')
-        self.assertNotContains(self.http.get(reverse('ticket_create')), 'id="dispatch-planning-section"')
+        self.assertContains(self.http.get(reverse('ticket_create')), 'id="dispatch-planning-section"')
         started = self._ticket(technician=self.tech)
         MaintenanceTicket.objects.filter(pk=started.pk).update(status='in_progress')
         response = self.http.get(reverse('ticket_update', args=[started.pk]), follow=True)
