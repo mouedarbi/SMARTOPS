@@ -2596,3 +2596,22 @@ msgid ""
 msgstr ""
 "Een gestarte of afgesloten interventie kan niet worden verwijderd: ze blijft "
 "in de geschiedenis."
+
+#: accounts/models.py:64
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de changer son rôle."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de changer son rôle."
+msgstr[0] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventie: wijs ze "
+"opnieuw toe voordat u de rol wijzigt."
+msgstr[1] ""
+"Deze technicus heeft nog %(count)s geplande of lopende interventies: wijs ze "
+"opnieuw toe voordat u de rol wijzigt."
+
+#: api/serializers.py:260
+msgid "Ce technicien n'est plus actif."
+msgstr "Deze technicus is niet meer actief."

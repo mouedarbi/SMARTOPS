@@ -912,9 +912,9 @@ class TechnicianCalendarTestCase(TestCase):
         from schedule.models import Event
         ticket = self._ticket(self.tech)
         slug = self.Calendar.objects.get_calendar_for_object(self.tech, distinction='owner').slug
-        user = self.tech.user
-        user.role = 'manager'
-        user.save()
+        # Profil supprimé (admin Django) ; un changement de rôle, lui, ne fait que le désactiver.
+        self.tech.delete()
+        ticket.refresh_from_db()
         event, copies = self._events(ticket)
         self.assertIsNone(ticket.technician)
         self.assertEqual(copies, [])
@@ -1564,3 +1564,104 @@ class TicketDeletionTestCase(TestCase):
         self.assertEqual(self.http.get(url(planned)).status_code, 200)
         changelist = self.http.get(reverse('admin:maintenance_maintenanceticket_changelist'))
         self.assertNotContains(changelist, 'delete_selected')
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
+class TechnicianRoleChangeTestCase(TestCase):
+    """
+    Changement de rôle d'un technicien : refusé tant qu'il a des interventions planifiées ou
+    en cours ; sinon son profil est désactivé (pas supprimé) et l'historique garde son nom.
+    """
+
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(username='admin_role', password='pass', role='admin')
+        self.tech_user = CustomUser.objects.create_user(
+            username='tech_role', password='pass', role='technician', first_name='Tom', last_name='Role',
+        )
+        self.tech = Technician.objects.get(user=self.tech_user)
+        client_obj = Client.objects.create(name='Role Corp', address='Rue R', contact_name='R', email='r@r.be')
+        building = Building.objects.create(client=client_obj, name='Lieu R', address='Rue R')
+        eq_type = EquipmentType.objects.create(name='Pompe R')
+        self.equipment = Equipment.objects.create(
+            building=building, name='Pompe R1', equipment_type=eq_type, serial_number='SN-R1', installed_at='2024-01-01',
+        )
+        self.http = HttpClient()
+        self.http.login(username='admin_role', password='pass')
+
+    def make_ticket(self, status_code):
+        now = timezone.now()
+        ticket = MaintenanceTicket.objects.create(
+            equipment=self.equipment, technician=self.tech,
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+        )
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(status=status_code)
+        return ticket
+
+    def change_role(self, role):
+        return self.http.post(reverse('user_edit', args=[self.tech_user.pk]), {
+            'username': 'tech_role', 'first_name': 'Tom', 'last_name': 'Role', 'email': 'tom@r.be',
+            'role': role, 'language': 'fr', 'is_active': 'on',
+        })
+
+    def test_role_change_refused_with_open_ticket(self):
+        for status_code in ('planned', 'in_progress'):
+            with self.subTest(status=status_code):
+                ticket = self.make_ticket(status_code)
+                response = self.change_role('manager')
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "réassignez-la avant de changer son rôle")
+                self.tech_user.refresh_from_db()
+                self.assertEqual(self.tech_user.role, 'technician')
+                ticket.refresh_from_db()
+                self.assertEqual(ticket.technician, self.tech)
+                MaintenanceTicket.objects.filter(pk=ticket.pk).delete()
+
+    def test_role_change_keeps_history_and_deactivates_profile(self):
+        closed = [self.make_ticket(status_code) for status_code in ('done', 'to_reschedule', 'canceled')]
+        response = self.change_role('manager')
+        self.assertEqual(response.status_code, 302)
+        self.tech_user.refresh_from_db()
+        self.assertEqual(self.tech_user.role, 'manager')
+        self.tech.refresh_from_db()
+        self.assertFalse(self.tech.is_active)
+        for ticket in closed:
+            ticket.refresh_from_db()
+            self.assertEqual(ticket.technician, self.tech)
+
+        # Redevenu technicien : même profil, réactivé.
+        self.change_role('technician')
+        self.tech.refresh_from_db()
+        self.assertTrue(self.tech.is_active)
+        self.assertEqual(Technician.objects.filter(user=self.tech_user).count(), 1)
+
+    def test_manual_deactivation_survives_other_edits(self):
+        """Un technicien désactivé à la main n'est pas réactivé par une simple modification de son compte."""
+        self.tech.is_active = False
+        self.tech.save()
+        self.change_role('technician')
+        self.tech.refresh_from_db()
+        self.assertFalse(self.tech.is_active)
+
+    def test_inactive_technician_cannot_receive_new_ticket(self):
+        self.tech.is_active = False
+        self.tech.save()
+        manager = CustomUser.objects.create_user(username='mgr_role', password='pass', role='manager')
+        from maintenance.forms import MaintenanceTicketForm
+        self.assertNotIn(self.tech, MaintenanceTicketForm().fields['technician'].queryset)
+        # Déjà assigné : il reste dans la liste de son ticket.
+        ticket = self.make_ticket('done')
+        self.assertIn(self.tech, MaintenanceTicketForm(instance=ticket).fields['technician'].queryset)
+
+        from rest_framework.test import APIClient
+        api = APIClient()
+        api.force_authenticate(manager)
+        pending = MaintenanceTicket.objects.create(
+            equipment=self.equipment, planned_start=timezone.now() + timedelta(days=2),
+            planned_end=timezone.now() + timedelta(days=2, hours=1),
+        )
+        r = api.patch(f'/api/v1/tickets/{pending.pk}/', {'technician': self.tech.pk})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('technician', r.data)

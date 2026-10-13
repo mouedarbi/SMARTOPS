@@ -10,6 +10,7 @@ Description : Formulaires pour la gestion de la maintenance.
 from itertools import groupby
 
 from django import forms
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -115,7 +116,10 @@ class MaintenanceTicketForm(forms.ModelForm):
         # Technicien facultatif : sans lui le ticket est « En attente », avec lui « Planifié ».
         # Nom suivi de l'identifiant de connexion du technicien, ex. « Nicolas Martin (nmartin) ».
         technician_field = self.fields['technician']
-        technician_field.queryset = technician_field.queryset.select_related('user')
+        # Techniciens actifs seulement ; le technicien déjà assigné reste affiché.
+        technician_field.queryset = technician_field.queryset.filter(
+            Q(is_active=True) | Q(pk=self.instance.technician_id)
+        ).select_related('user')
         technician_field.label_from_instance = lambda technician: f"{technician} ({technician.user.username})"
 
         # 1. État par défaut (vide)

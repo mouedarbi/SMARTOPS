@@ -243,8 +243,8 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """
         Refuse un technicien à la création (on l'assigne par une modification),
-        vérifie que la fin prévue suit le début prévu et refuse un conflit de
-        planning avec une autre intervention du même technicien.
+        refuse un technicien inactif, vérifie que la fin prévue suit le début prévu
+        et refuse un conflit de planning avec une autre intervention du même technicien.
         """
         attrs = super().validate(attrs)
         instance = self.instance
@@ -253,6 +253,11 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
 
         def current(field):
             return attrs[field] if field in attrs else getattr(instance, field, None)
+
+        # Un technicien désactivé (ou qui a changé de rôle) ne reçoit plus de nouvelle intervention.
+        technician = attrs.get('technician')
+        if technician and not technician.is_active and technician.pk != getattr(instance, 'technician_id', None):
+            raise serializers.ValidationError({'technician': _("Ce technicien n'est plus actif.")})
 
         start, end = current('planned_start'), current('planned_end')
         if start and end and end <= start:

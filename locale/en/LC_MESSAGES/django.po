@@ -2580,3 +2580,22 @@ msgid ""
 "reste dans l'historique."
 msgstr ""
 "A started or closed work order cannot be deleted: it stays in the history."
+
+#: accounts/models.py:64
+#, python-format
+msgid ""
+"Ce technicien a encore %(count)s intervention planifiée ou en cours : "
+"réassignez-la avant de changer son rôle."
+msgid_plural ""
+"Ce technicien a encore %(count)s interventions planifiées ou en cours : "
+"réassignez-les avant de changer son rôle."
+msgstr[0] ""
+"This technician still has %(count)s scheduled or ongoing work order: "
+"reassign it before changing their role."
+msgstr[1] ""
+"This technician still has %(count)s scheduled or ongoing work orders: "
+"reassign them before changing their role."
+
+#: api/serializers.py:260
+msgid "Ce technicien n'est plus actif."
+msgstr "This technician is no longer active."

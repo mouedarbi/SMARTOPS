@@ -11,7 +11,7 @@ Description : Gestion des interventions techniques, des techniciens et
 from django.db import models
 from django.conf import settings
 from schedule.models import Event, Calendar, EventRelation
-from django.db.models.signals import post_save, post_delete, pre_delete
+from django.db.models.signals import post_save, post_delete, pre_delete, pre_save
 from django.dispatch import receiver
 from inventory.models import Equipment
 from datetime import timedelta
@@ -50,6 +50,8 @@ NOT_STARTED = ('pending', 'planned')
 # Seule une intervention sans données terrain se supprime : pas démarrée, ou annulée
 # (on n'annule qu'avant le démarrage). En cours ou clôturée, elle reste dans l'historique.
 DELETABLE_STATUSES = NOT_STARTED + ('canceled',)
+# Interventions qui attendent encore leur technicien : on ne lui retire pas son rôle.
+OPEN_ASSIGNED_STATUSES = ('planned', 'in_progress')
 
 
 class MaintenanceTicket(models.Model):
@@ -279,13 +281,25 @@ def delete_technician_calendar(sender, instance, **kwargs):
 
 # --- SIGNALS POUR PROFILS TECHNICIENS ---
 
+@receiver(pre_save, sender=settings.AUTH_USER_MODEL)
+def remember_previous_role(sender, instance, **kwargs):
+    """Retient le rôle enregistré avant la modification (None à la création)."""
+    instance._previous_role = (
+        sender.objects.filter(pk=instance.pk).values_list('role', flat=True).first() if instance.pk else None
+    )
+
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_technician_profile(sender, instance, created, **kwargs):
     """
-    Crée automatiquement un profil Technicien si le rôle est 'technician'.
+    Crée automatiquement un profil Technicien si le rôle est 'technician'. Quand le rôle change,
+    le profil est désactivé et non supprimé : ses interventions passées gardent leur technicien.
+    Il est réactivé si l'utilisateur redevient technicien.
     """
     if instance.role == 'technician' and not instance.is_deleted:
-        Technician.objects.get_or_create(user=instance)
+        technician, profile_created = Technician.objects.get_or_create(user=instance)
+        if not profile_created and not technician.is_active and getattr(instance, '_previous_role', None) not in (None, 'technician'):
+            technician.is_active = True
+            technician.save(update_fields=['is_active'])
     elif instance.role != 'technician':
-        # Optionnel : On pourrait désactiver ou supprimer le profil si le rôle change
-        Technician.objects.filter(user=instance).delete()
+        Technician.objects.filter(user=instance, is_active=True).update(is_active=False)

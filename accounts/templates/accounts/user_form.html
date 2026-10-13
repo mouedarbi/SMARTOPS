@@ -19,7 +19,16 @@
     <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-100">
         <form method="POST" class="space-y-6">
             {% csrf_token %}
-            
+
+            {% if form.errors %}
+            <!-- Erreurs du formulaire (identifiant déjà pris, rôle refusé…) -->
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-700 text-sm font-bold space-y-1">
+                {% for field, errors in form.errors.items %}{% for error in errors %}
+                <p><i class="las la-exclamation-circle mr-1"></i>{{ error }}</p>
+                {% endfor %}{% endfor %}
+            </div>
+            {% endif %}
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Nom d'utilisateur" %}</label>
