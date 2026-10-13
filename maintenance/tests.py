@@ -907,14 +907,22 @@ class TechnicianCalendarTestCase(TestCase):
         self.assertEqual(Event.objects.count(), 0)
 
     def test_removed_technician_loses_copies_only(self):
-        """Un technicien supprimé perd son calendrier et ses copies ; l'événement global reste pour une réassignation."""
+        """
+        Un technicien qui a des interventions ne peut pas être supprimé (historique). Sans intervention,
+        il perd son calendrier ; l'événement global du ticket qu'il avait reste pour une réassignation.
+        """
+        from django.db.models import ProtectedError
         from maintenance.calendars import GLOBAL_CALENDAR_SLUG
         from schedule.models import Event
         ticket = self._ticket(self.tech)
         slug = self.Calendar.objects.get_calendar_for_object(self.tech, distinction='owner').slug
-        # Profil supprimé (admin Django) ; un changement de rôle, lui, ne fait que le désactiver.
+        with self.assertRaises(ProtectedError):
+            self.tech.delete()
+        self.assertTrue(self.Calendar.objects.filter(slug=slug).exists())
+
+        ticket.technician = None
+        ticket.save()
         self.tech.delete()
-        ticket.refresh_from_db()
         event, copies = self._events(ticket)
         self.assertIsNone(ticket.technician)
         self.assertEqual(copies, [])
@@ -1750,3 +1758,19 @@ class TechnicianAccountRemovalTestCase(TestCase):
         self.http.post(reverse('user_edit', args=[self.tech_user.pk]), {**data, 'is_active': 'on'})
         self.tech.refresh_from_db()
         self.assertTrue(self.tech.is_active)
+
+    def test_django_admin_cannot_hard_delete_accounts(self):
+        """Admin Django : pas de suppression définitive d'un compte ; un profil technicien avec interventions est protégé."""
+        superuser = CustomUser.objects.create_superuser(username='root_acc', password='pass', email='r@c.be', role='admin')
+        admin_http = HttpClient()
+        admin_http.force_login(superuser)
+        self.make_ticket('done')
+        self.assertEqual(admin_http.get(reverse('admin:accounts_customuser_delete', args=[self.tech_user.pk])).status_code, 403)
+        self.assertNotContains(admin_http.get(reverse('admin:accounts_customuser_changelist')), 'delete_selected')
+        # Supprimer le profil technicien qui a une intervention : refusé, rien ne bouge.
+        admin_http.post(reverse('admin:maintenance_technician_delete', args=[self.tech.pk]), {'post': 'yes'})
+        self.assertTrue(Technician.objects.filter(pk=self.tech.pk).exists())
+        self.assertEqual(MaintenanceTicket.objects.get(status='done').technician, self.tech)
+        # La case « supprimé » n'est pas modifiable dans l'admin (elle contournerait les contrôles).
+        change = admin_http.get(reverse('admin:accounts_customuser_change', args=[self.tech_user.pk]))
+        self.assertNotContains(change, 'name="is_deleted"')

@@ -21,5 +21,12 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Informations Métier', {'fields': ('role',)}),
     )
+    # Suppression logique uniquement, depuis l'application (contrôle des interventions ouvertes) :
+    # une suppression définitive retirerait le technicien de son historique d'interventions.
+    readonly_fields = ('is_deleted', 'deleted_at')
+
+    def has_delete_permission(self, request, obj=None):
+        """Pas de suppression définitive d'un compte."""
+        return False
 
 admin.site.register(CustomUser, CustomUserAdmin)
