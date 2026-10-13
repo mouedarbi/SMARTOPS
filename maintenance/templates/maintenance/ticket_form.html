@@ -5,7 +5,7 @@
 {% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="w-full">
     
     <div class="mb-8 flex items-center gap-4">
         <a href="{% url 'ticket_list' %}" class="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-blue-600 transition">
@@ -52,120 +52,119 @@
         </div>
         {% endif %}
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <!-- Colonne Gauche : Identification -->
-            <div class="space-y-6">
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-search text-lg"></i> {% trans "Sélection Rapide" %}
-                    </h4>
-                    
-                    <div class="space-y-4">
-                        {% if not ticket %}
-                        <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "1. Choisir le Client" %}</label>
-                            {{ form.client }}
-                        </div>
-                        <div id="building_container" class="hidden">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "2. Choisir le lieu" %}</label>
-                            {{ form.building }}
-                        </div>
-                        <div id="equipment_reference_container" class="space-y-2">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Ou Rechercher par Référence / Nom" %}</label>
-                            <div class="relative">
-                                <input type="text" id="equipment_search" class="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm" placeholder="{% trans "Ex: SN-12345, Ascenseur..." %}">
-                                <i class="las la-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            </div>
-                            <div id="search_results" class="hidden mt-2 max-h-40 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg z-10">
-                                <!-- Résultats AJAX -->
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{% trans "Client & Lieu" %}</p>
-                            <p class="font-black text-slate-800">{{ ticket.equipment.building.client.name }}</p>
-                            <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
+        <!-- Ligne 1 : Client | Matériel -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                    <i class="las la-search text-lg"></i> {% trans "Sélection Rapide" %}
+                </h4>
 
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-info-circle text-lg"></i> {% trans "Identification" %}
-                    </h4>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Équipement sélectionné" %}</label>
-                            {{ form.equipment }}
-                        </div>
-                        {% if mode != 'description' %}
-                        <div>
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Technicien assigné" %}</label>
-                            {{ form.technician }}
-                        </div>
-                        {% endif %}
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Type" %}</label>
-                                {{ form.type }}
-                            </div>
-                            <div>
-                                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Statut de l'intervention" %}</label>
-                                {# Fixé par le système : « En attente » sans technicien, « Planifié » avec. #}
-                                <p class="px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 font-bold text-slate-700">{% if ticket %}{{ ticket.get_status_display }}{% else %}{% trans "En attente" %}{% endif %}</p>
-                                <p class="mt-1 text-xs text-slate-400">{% trans "Planifié dès qu'un technicien est assigné." %}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
-                        <i class="las la-align-left text-lg"></i> {% trans "Travail à effectuer" %}
-                    </h4>
+                <div class="space-y-4">
+                    {% if not ticket %}
                     <div>
-                        {{ form.description }}
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "1. Choisir le Client" %}</label>
+                        {{ form.client }}
                     </div>
+                    <div id="building_container" class="hidden">
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "2. Choisir le lieu" %}</label>
+                        {{ form.building }}
+                    </div>
+                    <div id="equipment_reference_container" class="space-y-2">
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Ou Rechercher par Référence / Nom" %}</label>
+                        <div class="relative">
+                            <input type="text" id="equipment_search" class="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 bg-white text-slate-900 shadow-sm" placeholder="{% trans "Ex: SN-12345, Ascenseur..." %}">
+                            <i class="las la-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        </div>
+                        <div id="search_results" class="hidden mt-2 max-h-40 overflow-y-auto bg-white border border-slate-100 rounded-xl shadow-lg z-10">
+                            <!-- Résultats AJAX -->
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{% trans "Client & Lieu" %}</p>
+                        <p class="font-black text-slate-800">{{ ticket.equipment.building.client.name }}</p>
+                        <p class="text-sm text-slate-500">{{ ticket.equipment.building.name }}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Colonne Droite : Planification -->
-            <div class="space-y-6">
-                <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white">
-                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
-                        <i class="las la-calendar-check text-lg"></i> {% trans "Planification" %}
-                    </h4>
-                    
-                    <div class="space-y-5">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                    <i class="las la-info-circle text-lg"></i> {% trans "Identification" %}
+                </h4>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Équipement sélectionné" %}</label>
+                        {{ form.equipment }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Date de l'intervention" %}</label>
-                            {{ form.planned_date }}
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Type" %}</label>
+                            {{ form.type }}
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Heure de début" %}</label>
-                                {{ form.start_time_slot }}
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Durée prévue" %}</label>
-                                {{ form.duration_seconds }}
-                            </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{% trans "Statut de l'intervention" %}</label>
+                            {# Fixé par le système : « En attente » sans technicien, « Planifié » avec. #}
+                            <p class="px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 font-bold text-slate-700">{% if ticket %}{{ ticket.get_status_display }}{% else %}{% trans "En attente" %}{% endif %}</p>
+                            <p class="mt-1 text-xs text-slate-400">{% trans "Planifié dès qu'un technicien est assigné." %}</p>
                         </div>
                     </div>
-                    
-                    <div class="mt-8 p-4 bg-blue-700/50 rounded-2xl border border-blue-500/30">
-                        <p class="text-xs font-medium text-blue-100 leading-relaxed italic">
-                            <i class="las la-lightbulb mr-1"></i>
-                            {% trans "La validation créera automatiquement un événement dans le calendrier partagé des techniciens." %}
-                        </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ligne 2 : Technicien et créneau | Travail à effectuer et validation -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-blue-600 p-8 rounded-3xl shadow-lg shadow-blue-200 text-white">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-6 flex items-center gap-2">
+                    <i class="las la-calendar-check text-lg"></i> {% trans "Planification" %}
+                </h4>
+
+                <div class="space-y-5">
+                    {% if mode != 'description' %}
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Technicien assigné" %}</label>
+                        {{ form.technician }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Date de l'intervention" %}</label>
+                        {{ form.planned_date }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Heure de début" %}</label>
+                            {{ form.start_time_slot }}
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">{% trans "Durée prévue" %}</label>
+                            {{ form.duration_seconds }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 bg-blue-700/50 rounded-2xl border border-blue-500/30">
+                    <p class="text-xs font-medium text-blue-100 leading-relaxed italic">
+                        <i class="las la-lightbulb mr-1"></i>
+                        {% trans "La validation créera automatiquement un événement dans le calendrier partagé des techniciens." %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-6">
+                <div class="flex-grow flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-6 flex items-center gap-2">
+                        <i class="las la-align-left text-lg"></i> {% trans "Travail à effectuer" %}
+                    </h4>
+                    <div class="flex-grow flex flex-col [&>textarea]:flex-grow">
+                        {{ form.description }}
                     </div>
                 </div>
 
                 {% if ticket.status != 'done' %}
-                <div class="flex flex-col gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-black transition flex items-center justify-center gap-3">
                         <i class="las la-check-circle text-xl"></i>
                         {% if mode == 'reassign' %}{% trans "Réassigner" %}{% elif ticket %}{% trans "Enregistrer les modifications" %}{% else %}{% trans "Ajouter le ticket" %}{% endif %}
@@ -175,7 +174,7 @@
                     </a>
                 </div>
                 {% else %}
-                <div class="flex flex-col gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="w-full py-4 bg-emerald-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl flex items-center justify-center gap-3">
                         <i class="las la-lock text-xl"></i>
                         {% trans "INTERVENTION ARCHIVÉE" %}
@@ -186,7 +185,6 @@
                 </div>
                 {% endif %}
             </div>
-
         </div>
 
         {% if technician_editable %}

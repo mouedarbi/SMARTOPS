@@ -87,6 +87,7 @@ class MaintenanceTicketForm(forms.ModelForm):
         fields = ['equipment', 'technician', 'type', 'description']
         widgets = {
             'equipment': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm'}),
+            'technician': forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 transition shadow-sm'}),
             'description': forms.Textarea(attrs={'class': 'w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 shadow-sm', 'rows': 4}),
         }
 
