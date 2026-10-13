@@ -530,6 +530,42 @@ class RolePermissionsAPITestCase(TestCase):
         self.ticket_b.refresh_from_db()
         self.assertEqual(self.ticket_b.status, 'planned')
 
+    def test_technician_reads_linked_ticket_of_colleague(self):
+        """Ticket lié (origine ou suite) d'un collègue : détail et photos en lecture, aucune action terrain."""
+        from maintenance.services import reschedule_ticket
+        self.ticket_a.status = 'in_progress'
+        self.ticket_a.effective_start = timezone.now() - timedelta(minutes=30)
+        self.ticket_a.save()
+        follow_up = reschedule_ticket(self.ticket_a, 'Pièce à commander')
+        follow_up.technician = self.tech_b
+        follow_up.save()
+
+        # tech_b, chargé de la suite, lit l'intervention d'origine de tech_a.
+        self.login_as('tech_b')
+        r = self.api.get(f'/api/v1/tickets/{self.ticket_a.id}/')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data['intervention_report'], 'Pièce à commander')
+        self.assertEqual(self.api.get(f'/api/v1/tickets/{self.ticket_a.id}/photos/').status_code, status.HTTP_200_OK)
+        for suffix in ('start/', 'stop/', 'photos/'):
+            r = self.api.post(f'/api/v1/tickets/{self.ticket_a.id}/{suffix}', {})
+            self.assertEqual(r.status_code, status.HTTP_404_NOT_FOUND, suffix)
+        self.assertEqual(self.api.patch(f'/api/v1/tickets/{self.ticket_a.id}/', {'description': 'x'}).status_code,
+                         status.HTTP_403_FORBIDDEN)
+        # La liste reste limitée à ses propres tickets.
+        ids = [row['id'] for row in self.api.get('/api/v1/tickets/').data['results']]
+        self.assertNotIn(self.ticket_a.id, ids)
+
+        # tech_a lit la suite de l'intervention qu'il a clôturée, sans pouvoir la démarrer.
+        self.login_as('tech_a')
+        self.assertEqual(self.api.get(f'/api/v1/tickets/{follow_up.id}/').status_code, status.HTTP_200_OK)
+        self.assertEqual(self.api.post(f'/api/v1/tickets/{follow_up.id}/start/', {}).status_code,
+                         status.HTTP_404_NOT_FOUND)
+        # Un ticket sans lien reste introuvable.
+        self.assertEqual(self.api.get(f'/api/v1/tickets/{self.ticket_b.id}/').status_code, status.HTTP_404_NOT_FOUND)
+        self.ticket_a.refresh_from_db()
+        follow_up.refresh_from_db()
+        self.assertEqual((self.ticket_a.status, follow_up.status), ('to_reschedule', 'planned'))
+
     def test_technician_starts_and_stops_own_ticket(self):
         self.login_as('tech_a')
         r = self.api.post(f'/api/v1/tickets/{self.ticket_a.id}/start/', {})

@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
+from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
@@ -27,7 +28,7 @@ from accounts.security import get_client_ip
 from licensing.models import Plugin
 from inventory.models import Client, Building, EquipmentType, Equipment
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
-from maintenance.services import reschedule_ticket, technician_tickets, with_display_start
+from maintenance.services import related_ticket_ids, reschedule_ticket, technician_tickets, with_display_start
 
 from .serializers import (
     MeSerializer,
@@ -160,7 +161,8 @@ EQUIPMENT_DETAIL_PREFETCH = ('equipment__equipment_type__fields',)
 class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     """
     CRUD sur les tickets de maintenance.
-    Les techniciens ne voient que leurs propres tickets.
+    Les techniciens ne voient que leurs propres tickets, et peuvent lire en plus
+    (détail et photos) les tickets liés aux leurs.
     """
     serializer_class = MaintenanceTicketSerializer
     permission_classes = [IsAuthenticated]
@@ -168,7 +170,9 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Tickets du plus récent au plus ancien ; un technicien ne voit que les siens.
-        Filtres : ?status= et, pour la gestion, ?technician=.
+        En lecture (détail, photos en GET), il ouvre aussi les tickets liés aux siens, même
+        assignés à un collègue : intervention d'origine d'un ticket de suite, ou suite d'une
+        intervention qu'il a clôturée. Filtres : ?status= et, pour la gestion, ?technician=.
         """
         qs = MaintenanceTicket.objects.select_related(
             'equipment', 'technician', 'technician__user', *EQUIPMENT_DETAIL_RELATED
@@ -177,7 +181,10 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
         if self.request.user.role == 'technician':
             try:
                 tech = self.request.user.technician_profile
-                qs = qs.filter(technician=tech)
+                if self.is_linked_read():
+                    qs = qs.filter(Q(technician=tech) | Q(pk__in=related_ticket_ids(tech)))
+                else:
+                    qs = qs.filter(technician=tech)
             except Exception:
                 return MaintenanceTicket.objects.none()
 
@@ -191,14 +198,21 @@ class MaintenanceTicketViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def is_linked_read(self):
+        """Lecture ouverte aux tickets liés : détail d'un ticket ou liste de ses photos."""
+        return self.action == 'retrieve' or (self.action == 'photos' and self.request.method == 'GET')
+
     def get_permissions(self):
         """
         Création, modification et suppression : administrateur ou gestionnaire ;
-        actions terrain : technicien du ticket.
+        actions terrain : technicien du ticket. Lire les photos : tout ticket que
+        get_queryset() laisse voir (y compris un ticket lié d'un collègue).
         """
         # Création et modification : gestionnaire (CDC F5) ; actions terrain : technicien du ticket.
         if self.action in ('create', 'update', 'partial_update', 'destroy'):
             return [IsAuthenticated(), IsAdminOrManager()]
+        if self.is_linked_read():
+            return [IsAuthenticated()]
         if self.action in ('start', 'stop', 'photos'):
             return [IsAuthenticated(), IsTechnicianOwner()]
         return [IsAuthenticated()]
