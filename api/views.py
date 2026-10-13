@@ -28,6 +28,7 @@ from accounts.models import CustomUser
 from accounts.security import get_client_ip
 from licensing.models import Plugin
 from inventory.models import Client, Building, EquipmentType, Equipment
+from inventory.services import ArchiveError, archive, restore
 from maintenance.models import Technician, MaintenanceTicket, InterventionPhoto
 from maintenance.services import related_ticket_ids, reschedule_ticket, technician_tickets, with_display_start
 
@@ -80,8 +81,44 @@ class ProtectedDestroyMixin:
             return Response({'detail': _(self.protected_detail)}, status=status.HTTP_409_CONFLICT)
 
 
-@extend_schema(tags=['Inventaire'])
-class ClientViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
+class ArchiveActionsMixin:
+    """
+    Actions `archive` et `restore` (POST) d'un client, d'un lieu ou d'un appareil, et filtre
+    ?is_active=true|false des listes. Archivage refusé en 409 tant qu'une intervention y est
+    en attente, planifiée ou en cours ; réactivation refusée en 409 si le parent est archivé.
+    """
+
+    def filter_queryset(self, queryset):
+        """Applique ?is_active=true|false en plus des filtres de la vue."""
+        queryset = super().filter_queryset(queryset)
+        is_active = self.request.query_params.get('is_active')
+        if is_active in ('true', 'false'):
+            queryset = queryset.filter(is_active=is_active == 'true')
+        return queryset
+
+    def _toggle(self, function):
+        obj = self.get_object()
+        try:
+            function(obj)
+        except ArchiveError as error:
+            return Response({'detail': str(error)}, status=status.HTTP_409_CONFLICT)
+        return Response(self.get_serializer(obj).data)
+
+    @extend_schema(request=None, summary="Archiver (avec les lieux et appareils qu'il contient)")
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Archive l'élément et ce qu'il contient ; 409 s'il a des interventions ouvertes."""
+        return self._toggle(archive)
+
+    @extend_schema(request=None, summary="Réactiver (seul, parent d'abord)")
+    @action(detail=True, methods=['post'])
+    def restore(self, request, pk=None):
+        """Réactive l'élément seul ; 409 si son client ou son lieu est archivé."""
+        return self._toggle(restore)
+
+
+@extend_schema(tags=['Inventaire'], parameters=[OpenApiParameter('is_active', bool, description="Filtrer actifs / archivés")])
+class ClientViewSet(ArchiveActionsMixin, ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les clients B2B."""
     protected_detail = gettext_noop("Ce client a encore des lieux : supprimez-les d'abord.")
     queryset = Client.objects.all().order_by('name')
@@ -89,8 +126,8 @@ class ClientViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
-@extend_schema(tags=['Inventaire'])
-class BuildingViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
+@extend_schema(tags=['Inventaire'], parameters=[OpenApiParameter('is_active', bool, description="Filtrer actifs / archivés")])
+class BuildingViewSet(ArchiveActionsMixin, ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les lieux."""
     protected_detail = gettext_noop("Ce lieu a encore des appareils : supprimez-les d'abord.")
     serializer_class = BuildingSerializer
@@ -114,8 +151,8 @@ class EquipmentTypeViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
-@extend_schema(tags=['Inventaire'])
-class EquipmentViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
+@extend_schema(tags=['Inventaire'], parameters=[OpenApiParameter('is_active', bool, description="Filtrer actifs / archivés")])
+class EquipmentViewSet(ArchiveActionsMixin, ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les équipements (administrateurs et gestionnaires)."""
     protected_detail = gettext_noop("Cet appareil a des interventions : il ne peut pas être supprimé tant qu'elles existent.")
     serializer_class = EquipmentSerializer

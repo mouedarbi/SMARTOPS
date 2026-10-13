@@ -807,6 +807,81 @@ class DeletionRulesAPITestCase(TestCase):
     SECURE_SSL_REDIRECT=False,
     PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
 )
+class ArchiveAPITestCase(TestCase):
+    """Archivage par l'API : actions archive / restore, is_active en lecture seule, plus d'intervention sur un appareil archivé."""
+
+    def setUp(self):
+        self.api = APIClient()
+        self.manager = CustomUser.objects.create_user(username='mgr_arch_api', password='pass', role='manager')
+        tech_user = CustomUser.objects.create_user(username='tech_arch_api', password='pass', role='technician')
+        self.tech_user = tech_user
+        self.api.force_authenticate(self.manager)
+        self.tech = Technician.objects.get(user=tech_user)
+        self.client_obj = Client.objects.create(name='Arch API', address='Rue Z', contact_name='Z', email='z@z.be')
+        self.building = Building.objects.create(client=self.client_obj, name='Lieu Z', address='Rue Z')
+        eq_type = EquipmentType.objects.create(name='Pompe Z')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Pompe Z1', equipment_type=eq_type, serial_number='SN-Z1', installed_at='2024-01-01',
+        )
+
+    def ticket_payload(self):
+        now = timezone.now()
+        return {'equipment': self.equipment.id, 'type': 'repair', 'description': 'Fuite',
+                'planned_start': (now + timedelta(days=1)).isoformat(),
+                'planned_end': (now + timedelta(days=1, hours=1)).isoformat()}
+
+    def test_archive_client_cascades(self):
+        r = self.api.post(f'/api/v1/clients/{self.client_obj.id}/archive/')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertFalse(r.data['is_active'])
+        self.building.refresh_from_db()
+        self.equipment.refresh_from_db()
+        self.assertEqual((self.building.is_active, self.equipment.is_active), (False, False))
+        # Filtre des listes.
+        self.assertEqual(self.api.get('/api/v1/equipments/?is_active=true').data['count'], 0)
+        self.assertEqual(self.api.get('/api/v1/equipments/?is_active=false').data['count'], 1)
+
+    def test_archive_refused_with_open_ticket(self):
+        ticket = self.api.post('/api/v1/tickets/', self.ticket_payload())
+        self.assertEqual(ticket.status_code, status.HTTP_201_CREATED)
+        r = self.api.post(f'/api/v1/buildings/{self.building.id}/archive/')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('Archivage impossible', r.data['detail'])
+        self.building.refresh_from_db()
+        self.assertTrue(self.building.is_active)
+
+    def test_restore_requires_active_parent(self):
+        self.api.post(f'/api/v1/buildings/{self.building.id}/archive/')
+        # Lieu encore archivé : l'appareil ne peut pas être réactivé seul.
+        r = self.api.post(f'/api/v1/equipments/{self.equipment.id}/restore/')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(self.api.post(f'/api/v1/buildings/{self.building.id}/restore/').status_code, status.HTTP_200_OK)
+        self.assertEqual(self.api.post(f'/api/v1/equipments/{self.equipment.id}/restore/').status_code, status.HTTP_200_OK)
+        self.equipment.refresh_from_db()
+        self.assertTrue(self.equipment.is_active)
+
+    def test_is_active_is_read_only(self):
+        r = self.api.patch(f'/api/v1/clients/{self.client_obj.id}/', {'is_active': False}, format='json')
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.client_obj.refresh_from_db()
+        self.assertTrue(self.client_obj.is_active)
+
+    def test_no_new_ticket_on_archived_equipment(self):
+        self.api.post(f'/api/v1/equipments/{self.equipment.id}/archive/')
+        r = self.api.post('/api/v1/tickets/', self.ticket_payload())
+        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('equipment', r.data)
+
+    def test_technician_cannot_archive(self):
+        self.api.force_authenticate(self.tech_user)
+        self.assertEqual(self.api.post(f'/api/v1/clients/{self.client_obj.id}/archive/').status_code,
+                         status.HTTP_403_FORBIDDEN)
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class OpenAPISchemaTestCase(TestCase):
     def setUp(self):
         self.api = APIClient()

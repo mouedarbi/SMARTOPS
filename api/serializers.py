@@ -59,7 +59,8 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = ['id', 'name', 'address', 'contact_name', 'email', 'phone', 'vat_number', 'is_active', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        # Archivage par l'action archive / restore, qui vérifie les interventions ouvertes.
+        read_only_fields = ['id', 'is_active', 'created_at']
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -78,9 +79,9 @@ class BuildingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'client', 'client_name', 'name', 'address',
             'street', 'house_number', 'box', 'postal_code', 'city', 'country', 'access_notes',
-            'is_address_complete', 'navigation_url',
+            'is_address_complete', 'navigation_url', 'is_active',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'is_active']
         extra_kwargs = {'address': {'required': False}}
 
 
@@ -111,9 +112,9 @@ class EquipmentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'building', 'building_name', 'client_name',
             'name', 'equipment_type', 'equipment_type_name',
-            'serial_number', 'installed_at', 'custom_fields',
+            'serial_number', 'installed_at', 'custom_fields', 'is_active',
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'is_active']
 
 
 class TechnicianSerializer(serializers.ModelSerializer):
@@ -243,7 +244,7 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """
         Refuse un technicien à la création (on l'assigne par une modification),
-        refuse un technicien inactif, vérifie que la fin prévue suit le début prévu
+        refuse un appareil archivé et un technicien inactif, vérifie que la fin prévue suit le début prévu
         et refuse un conflit de planning avec une autre intervention du même technicien.
         """
         attrs = super().validate(attrs)
@@ -253,6 +254,11 @@ class MaintenanceTicketSerializer(serializers.ModelSerializer):
 
         def current(field):
             return attrs[field] if field in attrs else getattr(instance, field, None)
+
+        # Un appareil archivé ne reçoit plus de nouvelle intervention.
+        equipment = attrs.get('equipment')
+        if equipment and not equipment.is_active and equipment.pk != getattr(instance, 'equipment_id', None):
+            raise serializers.ValidationError({'equipment': _("Cet appareil est archivé.")})
 
         # Un technicien désactivé (ou qui a changé de rôle) ne reçoit plus de nouvelle intervention.
         technician = attrs.get('technician')

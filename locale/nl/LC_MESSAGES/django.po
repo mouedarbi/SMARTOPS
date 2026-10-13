@@ -2616,6 +2616,10 @@ msgstr[1] ""
 msgid "Ce technicien n'est plus actif."
 msgstr "Deze technicus is niet meer actief."
 
+#: api/serializers.py
+msgid "Cet appareil est archivé."
+msgstr "Dit toestel is gearchiveerd."
+
 #: inventory/services.py:47
 #, python-format
 msgid ""
