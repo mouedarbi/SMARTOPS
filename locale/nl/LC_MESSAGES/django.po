@@ -2568,3 +2568,23 @@ msgstr "Geschiedenis van het toestel"
 #: technician/templates/technician/ticket_detail.html:176
 msgid "Première intervention sur cet appareil"
 msgstr "Eerste interventie op dit toestel"
+
+#: api/views.py:84
+msgid "Ce client a encore des lieux : supprimez-les d'abord."
+msgstr "Deze klant heeft nog locaties: verwijder die eerst."
+
+#: api/views.py:93
+msgid "Ce lieu a encore des appareils : supprimez-les d'abord."
+msgstr "Deze locatie heeft nog toestellen: verwijder die eerst."
+
+#: api/views.py:109
+msgid "Ce type est encore utilisé par des appareils."
+msgstr "Dit type wordt nog door toestellen gebruikt."
+
+#: api/views.py:120
+msgid ""
+"Cet appareil a des interventions : il ne peut pas être supprimé tant "
+"qu'elles existent."
+msgstr ""
+"Dit toestel heeft interventies: het kan niet worden verwijderd zolang die "
+"bestaan."

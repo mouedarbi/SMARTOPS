@@ -36,7 +36,7 @@ class Building(models.Model):
     """
     Représente un lieu (site / bâtiment) associé à un client.
     """
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='buildings', verbose_name=_("Client"))
+    client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='buildings', verbose_name=_("Client"))
     name = models.CharField(max_length=255, verbose_name=_("Nom du lieu"))
     # Adresse structurée (balises addr:* d'OpenStreetMap) : c'est la destination du technicien.
     street = models.CharField(max_length=255, blank=True, verbose_name=_("Rue"))
@@ -117,7 +117,7 @@ class Equipment(models.Model):
     """
     Entité principale d'équipement avec des attributs communs et dynamiques.
     """
-    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='equipments', verbose_name=_("Lieu"))
+    building = models.ForeignKey(Building, on_delete=models.PROTECT, related_name='equipments', verbose_name=_("Lieu"))
     name = models.CharField(max_length=255, verbose_name=_("Nom de l'équipement"))
     equipment_type = models.ForeignKey(EquipmentType, on_delete=models.PROTECT, verbose_name=_("Type"))
     serial_number = models.CharField(max_length=100, unique=True, verbose_name=_("Numéro de série"))

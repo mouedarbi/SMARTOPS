@@ -2554,3 +2554,22 @@ msgstr "Equipment history"
 #: technician/templates/technician/ticket_detail.html:176
 msgid "Première intervention sur cet appareil"
 msgstr "First work order on this equipment"
+
+#: api/views.py:84
+msgid "Ce client a encore des lieux : supprimez-les d'abord."
+msgstr "This customer still has locations: delete them first."
+
+#: api/views.py:93
+msgid "Ce lieu a encore des appareils : supprimez-les d'abord."
+msgstr "This location still has equipment: delete it first."
+
+#: api/views.py:109
+msgid "Ce type est encore utilisé par des appareils."
+msgstr "This type is still used by equipment."
+
+#: api/views.py:120
+msgid ""
+"Cet appareil a des interventions : il ne peut pas être supprimé tant "
+"qu'elles existent."
+msgstr ""
+"This equipment has work orders: it cannot be deleted while they exist."

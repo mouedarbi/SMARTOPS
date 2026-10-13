@@ -708,6 +708,92 @@ class EquipmentDetailAPITestCase(TestCase):
     SECURE_SSL_REDIRECT=False,
     PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
 )
+class DeletionRulesAPITestCase(TestCase):
+    """
+    Suppressions par la gestion : rien ne part en cascade. Un client avec des lieux, un lieu
+    avec des appareils, un appareil avec des interventions ou un type utilisé sont refusés (409).
+    """
+    STATUSES = ['pending', 'planned', 'in_progress', 'to_reschedule', 'done', 'canceled']
+
+    def setUp(self):
+        self.api = APIClient()
+        manager = CustomUser.objects.create_user(username='mgr_del', password='pass', role='manager')
+        tech_user = CustomUser.objects.create_user(username='tech_del', password='pass', role='technician')
+        self.api.force_authenticate(manager)
+        self.tech = Technician.objects.get(user=tech_user)
+        self.client_obj = Client.objects.create(name='Del Corp', address='Rue D', contact_name='Dan', email='d@d.be')
+        self.building = Building.objects.create(client=self.client_obj, name='Lieu D', address='Rue D')
+        self.eq_type = EquipmentType.objects.create(name='Chaudière')
+        self.equipment = Equipment.objects.create(
+            building=self.building, name='Chaudière 1', equipment_type=self.eq_type,
+            serial_number='SN-DEL-1', installed_at='2024-01-01',
+        )
+
+    def make_ticket(self, status_code, equipment=None):
+        """Intervention de l'appareil au statut donné (technicien assigné sauf « en attente »)."""
+        now = timezone.now()
+        started = status_code in ('in_progress', 'to_reschedule', 'done')
+        ticket = MaintenanceTicket.objects.create(
+            equipment=equipment or self.equipment,
+            technician=None if status_code == 'pending' else self.tech,
+            planned_start=now + timedelta(days=1), planned_end=now + timedelta(days=1, hours=1),
+            effective_start=now - timedelta(hours=1) if started else None,
+            effective_end=now if status_code in ('to_reschedule', 'done') else None,
+        )
+        MaintenanceTicket.objects.filter(pk=ticket.pk).update(status=status_code)
+        ticket.refresh_from_db()
+        return ticket
+
+    def assert_counts(self, clients, buildings, equipments, tickets):
+        self.assertEqual(
+            (Client.objects.count(), Building.objects.count(), Equipment.objects.count(), MaintenanceTicket.objects.count()),
+            (clients, buildings, equipments, tickets),
+        )
+
+    def test_client_with_buildings_is_protected(self):
+        r = self.api.delete(f'/api/v1/clients/{self.client_obj.id}/')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('lieux', r.data['detail'])
+        self.assert_counts(1, 1, 1, 0)
+
+    def test_building_with_equipments_is_protected(self):
+        r = self.api.delete(f'/api/v1/buildings/{self.building.id}/')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('appareils', r.data['detail'])
+        self.assert_counts(1, 1, 1, 0)
+
+    def test_equipment_with_ticket_is_protected_whatever_its_status(self):
+        for status_code in self.STATUSES:
+            with self.subTest(status=status_code):
+                ticket = self.make_ticket(status_code)
+                r = self.api.delete(f'/api/v1/equipments/{self.equipment.id}/')
+                self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+                self.assertIn('interventions', r.data['detail'])
+                self.assert_counts(1, 1, 1, 1)
+                MaintenanceTicket.objects.filter(pk=ticket.pk).delete()
+
+    def test_used_equipment_type_is_protected(self):
+        r = self.api.delete(f'/api/v1/equipment-types/{self.eq_type.id}/')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertTrue(EquipmentType.objects.filter(pk=self.eq_type.pk).exists())
+
+    def test_bottom_up_deletion_succeeds(self):
+        """Dans l'ordre (appareil, lieu, client, type), chaque suppression passe."""
+        for url in (f'/api/v1/equipments/{self.equipment.id}/', f'/api/v1/buildings/{self.building.id}/',
+                    f'/api/v1/clients/{self.client_obj.id}/', f'/api/v1/equipment-types/{self.eq_type.id}/'):
+            self.assertEqual(self.api.delete(url).status_code, status.HTTP_204_NO_CONTENT, url)
+        self.assert_counts(0, 0, 0, 0)
+
+    def test_protected_message_follows_language(self):
+        r = self.api.delete(f'/api/v1/buildings/{self.building.id}/', HTTP_ACCEPT_LANGUAGE='nl')
+        self.assertEqual(r.status_code, status.HTTP_409_CONFLICT)
+        self.assertNotIn('appareils', r.data['detail'])
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    PASSWORD_HASHERS=['django.contrib.auth.hashers.MD5PasswordHasher']
+)
 class OpenAPISchemaTestCase(TestCase):
     def setUp(self):
         self.api = APIClient()

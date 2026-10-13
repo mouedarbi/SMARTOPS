@@ -69,7 +69,7 @@ class MaintenanceTicket(models.Model):
         ("emergency", _("Urgence")),
     ]
 
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="maintenance_tickets", verbose_name=_("Équipement"))
+    equipment = models.ForeignKey(Equipment, on_delete=models.PROTECT, related_name="maintenance_tickets", verbose_name=_("Équipement"))
     technician = models.ForeignKey(Technician, null=True, blank=True, on_delete=models.SET_NULL, related_name="tickets", verbose_name=_("Technicien"))
     type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="maintenance", verbose_name=_("Type d'intervention"))
 

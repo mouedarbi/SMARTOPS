@@ -16,7 +16,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
-from django.db.models import Q
+from django.db.models import Q, ProtectedError
+from django.utils.translation import gettext as _, gettext_noop
 from django.utils import timezone
 from datetime import timedelta
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
@@ -64,17 +65,34 @@ class MeView(APIView):
         return Response(serializer.data)
 
 
+class ProtectedDestroyMixin:
+    """
+    Suppression refusée en 409 (`protected_detail`) tant que des éléments dépendants existent
+    (clés étrangères PROTECT : lieux d'un client, appareils d'un lieu, tickets d'un appareil…).
+    """
+    protected_detail = ""
+
+    def destroy(self, request, *args, **kwargs):
+        """Supprime l'élément, ou renvoie 409 s'il a encore des éléments dépendants."""
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response({'detail': _(self.protected_detail)}, status=status.HTTP_409_CONFLICT)
+
+
 @extend_schema(tags=['Inventaire'])
-class ClientViewSet(viewsets.ModelViewSet):
+class ClientViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les clients B2B."""
+    protected_detail = gettext_noop("Ce client a encore des lieux : supprimez-les d'abord.")
     queryset = Client.objects.all().order_by('name')
     serializer_class = ClientSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
 @extend_schema(tags=['Inventaire'])
-class BuildingViewSet(viewsets.ModelViewSet):
+class BuildingViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les lieux."""
+    protected_detail = gettext_noop("Ce lieu a encore des appareils : supprimez-les d'abord.")
     serializer_class = BuildingSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
@@ -88,16 +106,18 @@ class BuildingViewSet(viewsets.ModelViewSet):
 
 
 @extend_schema(tags=['Inventaire'])
-class EquipmentTypeViewSet(viewsets.ModelViewSet):
+class EquipmentTypeViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD sur les types d'équipements."""
+    protected_detail = gettext_noop("Ce type est encore utilisé par des appareils.")
     queryset = EquipmentType.objects.prefetch_related('fields').order_by('name')
     serializer_class = EquipmentTypeSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 
 @extend_schema(tags=['Inventaire'])
-class EquipmentViewSet(viewsets.ModelViewSet):
+class EquipmentViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     """CRUD complet sur les équipements (administrateurs et gestionnaires)."""
+    protected_detail = gettext_noop("Cet appareil a des interventions : il ne peut pas être supprimé tant qu'elles existent.")
     serializer_class = EquipmentSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
