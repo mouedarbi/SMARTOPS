@@ -2297,6 +2297,10 @@ msgstr "Een goed moment om uw voorraad na te kijken!"
 msgid "Planning vide pour la semaine"
 msgstr "Lege planning voor deze week"
 
+#: technician/templates/technician/dashboard.html
+msgid "Aucune intervention en retard"
+msgstr "Geen achterstallige interventies"
+
 #: technician/templates/technician/history.html:7
 msgid "Vos interventions terminées, à replanifier ou annulées."
 msgstr "Uw afgeronde, opnieuw te plannen of geannuleerde interventies."

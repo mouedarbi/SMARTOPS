@@ -331,6 +331,17 @@ class TechnicianMenuPagesTests(TestCase):
         self.assertNotIn(self.planned, listed)  # demain : pas en retard
         self.assertContains(response, 'En retard')
 
+        # 3e onglet, après « Aujourd'hui » et « Cette semaine » : les onglets restent en tête (issue #59).
+        html = response.content.decode()
+        self.assertLess(html.index('id="btn-week"'), html.index('id="btn-overdue"'))
+        self.assertLess(html.index('id="tab-week"'), html.index('id="tab-overdue"'))
+        self.assertLess(html.index('id="btn-overdue"'), html.index('Pompe'))
+
+    def test_dashboard_without_overdue_tickets(self):
+        response = self.client_http.get(reverse('technician_dashboard'))
+        self.assertContains(response, 'id="tab-overdue"')
+        self.assertContains(response, 'Aucune intervention en retard')
+
     def test_ticket_done_ahead_of_schedule_is_dated_by_effective_start(self):
         """Prévue demain mais réalisée aujourd'hui : datée du jour réel (issue #18)."""
         now = timezone.now()
