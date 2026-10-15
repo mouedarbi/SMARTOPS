@@ -20,7 +20,6 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.conf import settings
 from django.http import StreamingHttpResponse, JsonResponse
-from django.core.management import call_command
 
 from .services import LicenseService
 from .models import Plugin
@@ -159,9 +158,20 @@ def plugin_install_stream_view(request):
                     plugin.save()
                     return
 
-            # 4. Migrations
+            # 4. Migrations, dans un nouveau processus qui connaît le module (voir PluginInstaller.migrate_command)
             yield ">>> Lancement des migrations de base de données...\n"
-            call_command('migrate', interactive=False)
+            process = subprocess.Popen(
+                PluginInstaller.migrate_command(), cwd=settings.BASE_DIR,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+            )
+            for line in process.stdout:
+                yield f"    {line}"
+            process.wait()
+            if process.returncode != 0:
+                yield f"!!! ERREUR MIGRATIONS (Code {process.returncode})\n"
+                plugin.is_active = False
+                plugin.save()
+                return
             yield "\n🎉 MODULE ACTIVÉ ET INSTALLÉ AVEC SUCCÈS !\n"
             yield from _reload_application_stream(request)
 

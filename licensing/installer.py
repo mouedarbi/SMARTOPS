@@ -17,7 +17,6 @@ from importlib.metadata import packages_distributions
 import os
 import requests
 import tempfile
-from django.core.management import call_command
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -65,9 +64,11 @@ class PluginInstaller:
                 
                 logger.info(f"Pip output : {result.stdout}")
 
-            # 3. Lancement des migrations Django
-            PluginInstaller.run_migrations()
-            
+            # 3. Lancement des migrations Django (dont celles du module)
+            migrated, output = PluginInstaller.run_migrations()
+            if not migrated:
+                return False, f"Erreur lors des migrations : {output}"
+
             return True, f"Installation de {package_name} terminée avec succès."
 
         except subprocess.CalledProcessError as e:
@@ -78,13 +79,26 @@ class PluginInstaller:
             return False, str(e)
 
     @staticmethod
+    def migrate_command():
+        """
+        Commande `manage.py migrate` lancée dans un nouveau processus. Le processus en cours a calculé
+        INSTALLED_APPS à son démarrage, avant l'activation du module : il ne connaît pas les migrations
+        du module. Un nouveau processus relit les modules actifs en base (settings.get_dynamic_apps).
+        """
+        return [sys.executable, str(settings.BASE_DIR / 'manage.py'), 'migrate', '--noinput']
+
+    @staticmethod
     def run_migrations():
         """
-        Exécute les migrations pour intégrer les nouveaux modèles du plugin.
+        Applique les migrations du Core et des modules actifs. Le module doit déjà être actif en base.
+        Retourne (succès, sortie de la commande).
         """
-        try:
-            logger.info("Exécution des migrations Django...")
-            call_command('migrate', interactive=False)
-            logger.info("Migrations terminées.")
-        except Exception as e:
-            logger.error(f"Erreur lors des migrations : {e}")
+        logger.info("Exécution des migrations Django...")
+        result = subprocess.run(PluginInstaller.migrate_command(), capture_output=True, text=True,
+                                cwd=settings.BASE_DIR)
+        output = (result.stdout + result.stderr).strip()
+        if result.returncode != 0:
+            logger.error(f"Erreur lors des migrations : {output}")
+            return False, output
+        logger.info("Migrations terminées.")
+        return True, output
